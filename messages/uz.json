@@ -1,0 +1,36 @@
+{
+  "Meta": {
+    "title": "Mezon Ta'lim — AAOIFI Shariat standartlari",
+    "description": "AAOIFI Shariat standartlarini o'zbek tilida video-kurslar orqali o'rganing. Sertifikat bilan yakunlanadi."
+  },
+  "Nav": {
+    "courses": "Kurslar",
+    "about": "AAOIFI haqida",
+    "faq": "Savol-javob",
+    "login": "Kirish",
+    "signup": "Ro'yxatdan o'tish"
+  },
+  "LanguageSwitcher": {
+    "label": "Til",
+    "uz": "O'zbekcha",
+    "ru": "Ruscha"
+  },
+  "Landing": {
+    "heroTitle": "AAOIFI Shariat standartlarini o'zbek tilida o'rganing",
+    "heroSubtitle": "Tuzilgan video-darslar, amaliy testlar va yakuniy imtihon — tan olingan sertifikat bilan yakunlanadi.",
+    "browseCourses": "Kurslarni ko'rish",
+    "aboutAaoifi": "AAOIFI haqida",
+    "affiliationNote": "AAOIFI bilan rasmiy hamkorlikda",
+    "valueVideoTitle": "Video-darslar",
+    "valueVideoBody": "Har bir mavzu bo'yicha tuzilgan, o'zbek tilidagi video-darslar.",
+    "valueAssessTitle": "Baholash",
+    "valueAssessBody": "Dars testlari, modul sinovlari va yakuniy imtihon orqali bilimni mustahkamlang.",
+    "valueCertTitle": "Sertifikat",
+    "valueCertBody": "Kursni muvaffaqiyatli yakunlab, tekshiriladigan sertifikatga ega bo'ling.",
+    "comingSoon": "Platforma ishlab chiqilmoqda."
+  },
+  "Footer": {
+    "tagline": "AAOIFI Shariat standartlari bo'yicha onlayn ta'lim platformasi.",
+    "rights": "Barcha huquqlar himoyalangan."
+  }
+}
