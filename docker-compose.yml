@@ -1,0 +1,47 @@
+# Local development services for Mezon Ta'lim.
+# In production these run on the in-country PS Cloud VPS (Tashkent). Bunny.net
+# (video) and Resend (email) are the only off-shore services — not here.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: mezon-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mezon
+      POSTGRES_PASSWORD: mezon
+      POSTGRES_DB: mezon_talim
+    ports:
+      - "5432:5432"
+    volumes:
+      - mezon-postgres-data:/var/lib/postgresql/data
+      # Enables the citext extension (used for case-insensitive emails) on first init.
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mezon -d mezon_talim"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: mezon-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: mezon
+      MINIO_ROOT_PASSWORD: mezon-secret
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console
+    volumes:
+      - mezon-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mezon-postgres-data:
+  mezon-minio-data:
