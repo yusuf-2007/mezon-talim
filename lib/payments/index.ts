@@ -1,18 +1,32 @@
-import type { PaymentAdapter, PaymentProviderId } from "./types";
+import { isClickConfigured, clickCheckoutUrl } from "./click";
+import { isPaymeConfigured, paymeCheckoutUrl } from "./payme";
 
 export type * from "./types";
+export type { PaymeMeta } from "./service";
 
-/**
- * Payment adapters registry. Phase 5 implements the Click and Payme adapters
- * (webhook route handlers in /app/api/webhooks/*) and registers them here.
- */
+export type PaymentProviderId = "click" | "payme";
 
-const NOT_IMPLEMENTED =
-  "lib/payments: adapters not implemented until Phase 5 (Click + Payme).";
+/** Providers with credentials configured (others fall back to dev-enroll). */
+export function enabledPaymentProviders(): PaymentProviderId[] {
+  const out: PaymentProviderId[] = [];
+  if (isClickConfigured()) out.push("click");
+  if (isPaymeConfigured()) out.push("payme");
+  return out;
+}
 
-export function getPaymentAdapter(provider: PaymentProviderId): PaymentAdapter {
-  // TODO(phase-5): return the Click or Payme adapter.
-  throw new Error(`${NOT_IMPLEMENTED} (requested: ${provider})`);
+export function isPaymentsConfigured(): boolean {
+  return enabledPaymentProviders().length > 0;
+}
+
+/** Build the hosted-checkout URL for a provider. */
+export function checkoutUrlFor(
+  provider: PaymentProviderId,
+  args: { paymentId: string; amountTiyin: number; returnUrl: string },
+): string {
+  if (provider === "click") {
+    return clickCheckoutUrl(args.paymentId, args.amountTiyin / 100, args.returnUrl);
+  }
+  return paymeCheckoutUrl(args.paymentId, args.amountTiyin, args.returnUrl);
 }
 
 /** Integer-tiyin money formatter for display. Never used for arithmetic. */
