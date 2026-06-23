@@ -1,15 +1,21 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
+import { getCurrentUser } from "@/lib/auth";
+import { landingPathForRole } from "@/lib/auth/landing";
 import { Button } from "@/components/ui/button";
 import { BrandWordmark } from "@/components/brand-wordmark";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 /**
- * Light top bar that sits above the navy hero. Nav targets are placeholders;
- * real routes (catalog, auth) arrive in later phases.
+ * Light top bar that sits above the navy hero. Shows auth actions based on the
+ * current session. Catalog/about/faq targets are still placeholders.
  */
 export async function SiteHeader() {
-  const t = await getTranslations("Nav");
+  const [t, user] = await Promise.all([
+    getTranslations("Nav"),
+    getCurrentUser(),
+  ]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur">
@@ -32,14 +38,37 @@ export async function SiteHeader() {
 
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
-          <Button
-            render={<Link href="/" />}
-            variant="outline"
-            size="sm"
-            className="hidden sm:inline-flex"
-          >
-            {t("login")}
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Button
+                render={<Link href={landingPathForRole(user.role)} />}
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
+                {user.fullName ?? user.email ?? user.phone}
+              </Button>
+              <LogoutButton />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button
+                render={<Link href="/login" />}
+                variant="outline"
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
+                {t("login")}
+              </Button>
+              <Button
+                render={<Link href="/signup" />}
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
+                {t("signup")}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
