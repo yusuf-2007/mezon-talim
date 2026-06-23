@@ -33,7 +33,7 @@ export default async function LandingPage({
             {t("heroSubtitle")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button render={<Link href="/" />} size="lg">
+            <Button render={<Link href="/catalog" />} size="lg">
               {t("browseCourses")}
             </Button>
             <Button

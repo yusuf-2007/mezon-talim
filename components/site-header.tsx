@@ -25,7 +25,7 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-slate-500 md:flex">
-          <Link href="/" className="transition-colors hover:text-navy-800">
+          <Link href="/catalog" className="transition-colors hover:text-navy-800">
             {t("courses")}
           </Link>
           <Link href="/" className="transition-colors hover:text-navy-800">
