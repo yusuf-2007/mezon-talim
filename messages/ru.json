@@ -166,6 +166,9 @@
     "preview": "Бесплатно",
     "locked": "Заблокировано",
     "loginToEnroll": "Войдите, чтобы записаться",
+    "payWithClick": "Оплатить через Click",
+    "payWithPayme": "Оплатить через Payme",
+    "devEnrollNote": "Платёжная система не настроена — dev-режим.",
     "byLine": "Автор",
     "noLessons": "В этом курсе пока нет уроков.",
     "lessonsLabel": "ур."

@@ -166,6 +166,9 @@
     "preview": "Bepul",
     "locked": "Qulflangan",
     "loginToEnroll": "Ro'yxatdan o'tish uchun kiring",
+    "payWithClick": "Click orqali to'lash",
+    "payWithPayme": "Payme orqali to'lash",
+    "devEnrollNote": "To'lov tizimi sozlanmagan — dev rejimi.",
     "byLine": "Muallif",
     "noLessons": "Bu kursda hali darslar yo'q.",
     "lessonsLabel": "dars"
