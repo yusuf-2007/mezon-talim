@@ -1,0 +1,136 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Mezon Ta'lim design tokens — from /docs/design-system.md
+ * Navy + gold brand. Light interface, formal-academic with warmth.
+ * Brand scale (navy-*, gold-*, ink, etc.) is exposed as Tailwind utilities
+ * (e.g. bg-navy-800, text-gold-500). shadcn semantic tokens below are mapped
+ * onto the brand so shadcn/ui components inherit Mezon colours.
+ */
+@theme {
+  /* Brand scale — usable as bg-navy-800, text-gold-500, border-line, … */
+  --color-navy-900: #033668;
+  --color-navy-800: #023a69;
+  --color-navy-600: #0a4e8a;
+  --color-navy-100: #e7eef6;
+  --color-gold-500: #f8b801;
+  --color-gold-400: #f0b720;
+  --color-gold-100: #fdf1cc;
+  --color-ink: #1a2230;
+  --color-slate-500: #5b6b7f;
+  --color-line: #e2e8f0;
+  --color-surface: #ffffff;
+  --color-bg: #f7f9fc;
+  --color-success: #1e9e6a;
+  --color-danger: #d14343;
+}
+
+@theme inline {
+  /* Fonts: Inter (body/UI) + Source Serif 4 (headings), both Cyrillic-capable */
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-source-serif);
+
+  /* shadcn semantic tokens → Mezon brand */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+  --radius: 0.625rem; /* 10px — medium, friendly-but-serious (design §3) */
+
+  --background: #f7f9fc; /* bg — soft, not pure white */
+  --foreground: #1a2230; /* ink */
+  --card: #ffffff; /* surface */
+  --card-foreground: #1a2230;
+  --popover: #ffffff;
+  --popover-foreground: #1a2230;
+
+  /* Primary = gold CTA on navy text (gold bg needs navy text — a11y, design §5) */
+  --primary: #f8b801;
+  --primary-foreground: #023a69;
+
+  /* Secondary = navy surface */
+  --secondary: #e7eef6;
+  --secondary-foreground: #023a69;
+
+  --muted: #e7eef6;
+  --muted-foreground: #5b6b7f; /* slate-500 */
+
+  --accent: #e7eef6;
+  --accent-foreground: #023a69;
+
+  --destructive: #d14343; /* danger */
+
+  --border: #e2e8f0; /* line */
+  --input: #e2e8f0;
+  --ring: #0a4e8a; /* navy-600 */
+
+  --chart-1: #023a69;
+  --chart-2: #0a4e8a;
+  --chart-3: #f8b801;
+  --chart-4: #1e9e6a;
+  --chart-5: #5b6b7f;
+
+  /* Sidebar (Studio/Admin shells) — navy structure */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a2230;
+  --sidebar-primary: #023a69;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e7eef6;
+  --sidebar-accent-foreground: #023a69;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #0a4e8a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4 {
+    @apply font-heading;
+  }
+}
