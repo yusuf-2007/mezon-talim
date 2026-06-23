@@ -8,3 +8,6 @@
  * added as their phases land.
  */
 export { coursesRepository } from "./courses";
+export { usersRepository } from "./users";
+export { phoneOtpsRepository } from "./phone-otps";
+export { verificationTokensRepository } from "./verification-tokens";

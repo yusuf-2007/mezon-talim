@@ -1,11 +1,13 @@
 import "server-only";
+import { resolveSmsSender } from "./eskiz";
 
 /**
  * Transactional notifications. Email via Resend (external delivery is allowed —
  * non-personal transport), SMS via Eskiz (in-country). Telegram is Later.
  *
- * Phase 8 implements the senders; Phase 1 is the typed contract only. Every
- * send is also recorded in the `notifications` table for delivery auditing.
+ * SMS (Eskiz) is implemented early to back phone-OTP login; email (Resend) is
+ * wired in Phase 8. Every send should also be recorded in the `notifications`
+ * table for delivery auditing.
  */
 export interface EmailMessage {
   to: string;
@@ -36,6 +38,6 @@ export function getEmailSender(): EmailSender {
 }
 
 export function getSmsSender(): SmsSender {
-  // TODO(phase-8): Eskiz client.
-  throw new Error(NOT_IMPLEMENTED);
+  // Eskiz SMS (with dev-console fallback). Implemented early for phone-OTP login.
+  return resolveSmsSender();
 }

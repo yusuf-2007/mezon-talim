@@ -46,6 +46,15 @@ const envSchema = z.object({
   ESKIZ_EMAIL: z.string().optional(),
   ESKIZ_PASSWORD: z.string().optional(),
   ESKIZ_FROM: z.string().optional(),
+
+  // --- Feature flags ---
+  // Phone-OTP login. Keep OFF until Eskiz onboarding (sender name + approved
+  // OTP template) is complete; email+password works without it. See the
+  // phase2-auth-sequencing decision.
+  OTP_LOGIN_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
 });
 
 export type Env = z.infer<typeof envSchema>;

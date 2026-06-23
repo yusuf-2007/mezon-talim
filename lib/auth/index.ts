@@ -1,39 +1,56 @@
 import "server-only";
+import { redirectLocalized } from "@/lib/i18n/redirect";
+import { auth } from "./config";
 import type { Role, SessionUser } from "./types";
 
 export type { Role, SessionUser } from "./types";
+export { signIn, signOut } from "./config";
 
 /**
  * Auth access helpers — the ONLY way app code reads the current user or guards
- * a route by role (CLAUDE.md §2.5, §8). Components/route handlers never call the
- * Auth.js SDK directly.
- *
- * Phase 1 ships the typed contract only. Phase 2 wires Auth.js v5 (Credentials:
- * email+password via argon2, phone OTP via Eskiz) and the Drizzle adapter.
+ * by role (CLAUDE.md §2.5, §8). Components/route handlers never call the Auth.js
+ * SDK directly; they call these. Redirects preserve the active request locale.
  */
 
-const NOT_IMPLEMENTED =
-  "lib/auth: not implemented until Phase 2 (Auth & 4 roles).";
-
-/** Returns the signed-in user, or null if anonymous. */
+/**
+ * Returns the signed-in user, or null if anonymous. A session cookie that can't
+ * be decoded (e.g. encrypted under a rotated AUTH_SECRET, or otherwise corrupt)
+ * is treated as logged-out rather than crashing the request — Auth.js throws a
+ * JWTSessionError in that case.
+ */
 export async function getCurrentUser(): Promise<SessionUser | null> {
-  // TODO(phase-2): read the Auth.js session and map to SessionUser.
-  throw new Error(NOT_IMPLEMENTED);
+  let session;
+  try {
+    session = await auth();
+  } catch {
+    return null;
+  }
+  if (!session?.user?.id) return null;
+  const u = session.user;
+  return {
+    id: u.id,
+    role: u.role,
+    fullName: u.fullName,
+    email: u.email ?? null,
+    phone: u.phone,
+    locale: u.locale,
+  };
+}
+
+/** Asserts an authenticated user; redirects to the localized login otherwise. */
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user) return redirectLocalized("/login");
+  return user;
 }
 
 /**
- * Asserts an authenticated user whose role is in `allowed`; otherwise redirects
- * to login / 403. Returns the user for convenience.
+ * Asserts an authenticated user whose role is in `allowed`. Redirects anonymous
+ * users to login and authenticated-but-unauthorized users to a 403 page.
  */
-export async function requireRole(
-  ..._allowed: Role[]
-): Promise<SessionUser> {
-  // TODO(phase-2): enforce auth + role, redirect on failure.
-  throw new Error(NOT_IMPLEMENTED);
-}
-
-/** Convenience guard: any authenticated user. */
-export async function requireUser(): Promise<SessionUser> {
-  // TODO(phase-2).
-  throw new Error(NOT_IMPLEMENTED);
+export async function requireRole(...allowed: Role[]): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user) return redirectLocalized("/login");
+  if (!allowed.includes(user.role)) return redirectLocalized("/forbidden");
+  return user;
 }
