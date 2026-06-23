@@ -10,6 +10,11 @@
 export { coursesRepository } from "./courses";
 export { modulesRepository } from "./modules";
 export { lessonsRepository } from "./lessons";
+export { enrollmentsRepository } from "./enrollments";
+export { lessonProgressRepository } from "./lesson-progress";
+export { notesRepository } from "./notes";
+export { bookmarksRepository } from "./bookmarks";
+export { glossaryRepository } from "./glossary";
 export { usersRepository } from "./users";
 export { phoneOtpsRepository } from "./phone-otps";
 export { verificationTokensRepository } from "./verification-tokens";

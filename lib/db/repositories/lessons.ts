@@ -1,7 +1,7 @@
 import "server-only";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../client";
-import { lessons } from "../schema";
+import { lessons, modules } from "../schema";
 import type { LocalizedText } from "../schema";
 
 export type LessonInsert = {
@@ -32,6 +32,31 @@ export const lessonsRepository = {
       .where(and(eq(lessons.id, id), isNull(lessons.deletedAt)))
       .limit(1);
     return row ?? null;
+  },
+
+  /** All non-deleted lessons of a course, ordered by module then lesson. */
+  async listByCourse(courseId: string) {
+    return db
+      .select({ lesson: lessons, moduleOrder: modules.orderIndex })
+      .from(lessons)
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(and(eq(modules.courseId, courseId), isNull(lessons.deletedAt)))
+      .orderBy(asc(modules.orderIndex), asc(lessons.orderIndex));
+  },
+
+  /** Lesson count per course id (for catalog cards). */
+  async countByCourses(courseIds: string[]) {
+    if (courseIds.length === 0) return new Map<string, number>();
+    const rows = await db
+      .select({
+        courseId: modules.courseId,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(lessons)
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(and(inArray(modules.courseId, courseIds), isNull(lessons.deletedAt)))
+      .groupBy(modules.courseId);
+    return new Map(rows.map((r) => [r.courseId, r.count]));
   },
 
   async create(input: LessonInsert) {
