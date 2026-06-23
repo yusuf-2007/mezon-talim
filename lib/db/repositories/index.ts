@@ -15,6 +15,7 @@ export { lessonProgressRepository } from "./lesson-progress";
 export { notesRepository } from "./notes";
 export { bookmarksRepository } from "./bookmarks";
 export { glossaryRepository } from "./glossary";
+export { paymentsRepository } from "./payments";
 export { usersRepository } from "./users";
 export { phoneOtpsRepository } from "./phone-otps";
 export { verificationTokensRepository } from "./verification-tokens";
