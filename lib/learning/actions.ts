@@ -51,7 +51,7 @@ export async function devEnrollAction(courseId: string): Promise<void> {
     accessDurationDays: course.accessDurationDays,
   });
   revalidatePath(`/courses/${course.slug}`);
-  await redirectLocalized(`/learn/${courseId}`);
+  return redirectLocalized(`/learn/${courseId}`);
 }
 
 // ── Progress ─────────────────────────────────────────────────────────────────

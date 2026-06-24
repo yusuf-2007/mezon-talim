@@ -14,7 +14,7 @@ export async function requireCourseEditor(courseId: string) {
   const course = await coursesRepository.findById(courseId);
   if (!course) notFound();
   if (user.role !== "super_admin" && course.createdBy !== user.id) {
-    await redirectLocalized("/forbidden");
+    return redirectLocalized("/forbidden");
   }
   return { user, course };
 }

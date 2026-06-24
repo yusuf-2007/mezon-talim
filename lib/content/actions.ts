@@ -120,7 +120,7 @@ export async function deleteCourseAction(courseId: string): Promise<void> {
   await requireCourseEditor(courseId);
   await coursesRepository.softDelete(courseId);
   revalidatePath("/studio");
-  await redirectLocalized("/studio");
+  return redirectLocalized("/studio");
 }
 
 // ── Module ───────────────────────────────────────────────────────────────────
