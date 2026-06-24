@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { requireRole } from "@/lib/auth";
 import { usersRepository } from "@/lib/db/repositories/users";
+import { Link } from "@/lib/i18n/navigation";
 import { RoleSelect } from "@/components/admin/role-select";
+import { StatCard } from "@/components/admin/stat-card";
 
 export default async function AdminUsersPage({
   searchParams,
@@ -12,7 +14,12 @@ export default async function AdminUsersPage({
   const t = await getTranslations("Admin");
   const { q } = await searchParams;
 
-  const users = await usersRepository.listAll({ search: q, limit: 200 });
+  const [users, roleCounts] = await Promise.all([
+    usersRepository.listAll({ search: q, limit: 200 }),
+    usersRepository.countByRole(),
+  ]);
+  const countFor = (...roles: string[]) =>
+    roleCounts.filter((r) => roles.includes(r.role)).reduce((n, r) => n + r.count, 0);
 
   return (
     <div className="space-y-6">
@@ -29,6 +36,12 @@ export default async function AdminUsersPage({
             className="rounded-md border border-line bg-surface px-3 py-1.5 text-sm"
           />
         </form>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label={t("statTotalUsers")} value={String(countFor("student", "teacher", "accountant", "super_admin"))} />
+        <StatCard label={t("statAdmins")} value={String(countFor("super_admin", "accountant"))} />
+        <StatCard label={t("statStudents")} value={String(countFor("student"))} />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
@@ -51,7 +64,12 @@ export default async function AdminUsersPage({
               users.map((u) => (
                 <tr key={u.id}>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-ink">{u.fullName || "—"}</p>
+                    <Link
+                      href={`/admin/users/${u.id}`}
+                      className="font-medium text-ink hover:text-navy-600"
+                    >
+                      {u.fullName || "—"}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-slate-500">
                     {u.email || u.phone || "—"}

@@ -44,6 +44,23 @@ export const certificatesRepository = {
     return row ?? null;
   },
 
+  /** ALL certificates a user holds incl. revoked, with course (admin detail). */
+  async listForUserAll(userId: string) {
+    return db
+      .select({
+        id: certificates.id,
+        verificationCode: certificates.verificationCode,
+        issuedAt: certificates.issuedAt,
+        revokedAt: certificates.revokedAt,
+        courseId: courses.id,
+        courseTitle: courses.title,
+      })
+      .from(certificates)
+      .innerJoin(courses, eq(courses.id, certificates.courseId))
+      .where(eq(certificates.userId, userId))
+      .orderBy(desc(certificates.issuedAt));
+  },
+
   /** All non-revoked certificates a user holds (most recent first). */
   async listForUser(userId: string) {
     return db
