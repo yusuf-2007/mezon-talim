@@ -5,6 +5,7 @@ import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import type { LocalizedText } from "@/lib/db/schema";
 import { grade, orderQuestionsForAttempt } from "./grading";
+import { issueIfEligible } from "@/lib/certificates/service";
 
 type Assessment = NonNullable<
   Awaited<ReturnType<typeof assessmentsRepository.findById>>
@@ -196,6 +197,17 @@ export async function submitAttempt(attemptId: string, userId: string) {
     ? result.scorePct >= assessment.passThresholdPct
     : true;
   await attemptsRepository.submit(attempt.id, result.scorePct, passed);
+
+  // Passing a (scored) final exam auto-issues the completion certificate.
+  // Best-effort: a certificate failure must never break exam submission.
+  if (passed && assessment.isScored && assessment.type === "final_exam") {
+    try {
+      await issueIfEligible(userId, assessment.courseId);
+    } catch (err) {
+      console.error("auto-issue certificate failed (non-fatal):", err);
+    }
+  }
+
   return { scorePct: result.scorePct, passed };
 }
 

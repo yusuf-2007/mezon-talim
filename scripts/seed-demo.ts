@@ -207,7 +207,7 @@ async function main() {
     })
     .returning();
 
-  const q1 = await insertQuestion(db, exam.id, 0, "single", {
+  await insertQuestion(db, exam.id, 0, "single", {
     prompt: { uz: "Riba nima?", ru: "Что такое риба?" },
     explanation: {
       uz: "Riba — sudxo'rlik foizi, shariatda man etilgan.",
@@ -220,7 +220,7 @@ async function main() {
     ],
   });
 
-  const q2 = await insertQuestion(db, exam.id, 1, "true_false", {
+  await insertQuestion(db, exam.id, 1, "true_false", {
     prompt: {
       uz: "AAOIFI islom moliya institutlari uchun standartlar ishlab chiqadi.",
       ru: "AAOIFI разрабатывает стандарты для исламских финансовых институтов.",
@@ -235,7 +235,7 @@ async function main() {
     ],
   });
 
-  const q3 = await insertQuestion(db, exam.id, 2, "multiple", {
+  await insertQuestion(db, exam.id, 2, "multiple", {
     prompt: {
       uz: "Quyidagilardan qaysilari shariatda man etilgan? (bir nechta javob)",
       ru: "Что из перечисленного запрещено в шариате? (несколько ответов)",
@@ -251,7 +251,7 @@ async function main() {
     ],
   });
 
-  const q4 = await insertQuestion(db, exam.id, 3, "single", {
+  await insertQuestion(db, exam.id, 3, "single", {
     prompt: { uz: "Murobaha shartnomasi nimaga asoslanadi?", ru: "На чём основан договор мурабаха?" },
     explanation: {
       uz: "Murobaha — xarid narxiga ochiq foyda qo'shilgan savdo.",
@@ -263,8 +263,6 @@ async function main() {
       { label: { uz: "Noaniq kelishuv", ru: "Неопределённое соглашение" }, correct: false },
     ],
   });
-
-  void q1, q2, q3, q4;
 
   console.info(`✓ Demo course seeded: ${course.slug}`);
   console.info(`  Modules: 2, Lessons: 5, Glossary: 3, Final exam: 4 questions`);
