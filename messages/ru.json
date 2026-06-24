@@ -288,5 +288,19 @@
     "progress": "{percent}% пройдено",
     "continue": "Продолжить",
     "completed": "Пройдено"
+  },
+  "Certificate": {
+    "verifyTitle": "Проверка сертификата",
+    "verifySubtitle": "Ниже показана подлинность сертификата.",
+    "notFound": "Сертификат не найден",
+    "notFoundHint": "Сертификат с кодом {code} не существует.",
+    "valid": "Сертификат действителен",
+    "revoked": "Сертификат отозван",
+    "student": "Студент",
+    "course": "Курс",
+    "issued": "Дата выдачи",
+    "code": "Код проверки",
+    "download": "Скачать PDF",
+    "getCertificate": "Сертификат"
   }
 }

@@ -288,5 +288,19 @@
     "progress": "{percent}% tugallandi",
     "continue": "Davom etish",
     "completed": "Tugallandi"
+  },
+  "Certificate": {
+    "verifyTitle": "Sertifikatni tekshirish",
+    "verifySubtitle": "Quyida sertifikat haqiqiyligi koʻrsatilgan.",
+    "notFound": "Sertifikat topilmadi",
+    "notFoundHint": "{code} kodi boʻyicha sertifikat mavjud emas.",
+    "valid": "Sertifikat haqiqiy",
+    "revoked": "Sertifikat bekor qilingan",
+    "student": "Talaba",
+    "course": "Kurs",
+    "issued": "Berilgan sana",
+    "code": "Tekshirish kodi",
+    "download": "PDF yuklab olish",
+    "getCertificate": "Sertifikat"
   }
 }

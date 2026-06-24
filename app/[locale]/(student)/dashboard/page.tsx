@@ -4,6 +4,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
+import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -11,6 +12,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 export default async function DashboardPage() {
   const user = await requireUser();
   const t = await getTranslations("Dashboard");
+  const tCert = await getTranslations("Certificate");
   const locale = await getLocale();
 
   const enrolled = await enrollmentsRepository.listActiveWithCourse(user.id);
@@ -23,7 +25,11 @@ export default async function DashboardPage() {
       const completed = progress.filter((p) => p.completed).length;
       const total = ids.length;
       const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-      return { course, pct, total };
+      const certificate = await certificatesRepository.findForUserCourse(
+        user.id,
+        course.id,
+      );
+      return { course, pct, total, certificate };
     }),
   );
 
@@ -48,7 +54,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map(({ course, pct }) => (
+          {cards.map(({ course, pct, certificate }) => (
             <li
               key={course.id}
               className="flex flex-col rounded-xl border border-line bg-surface p-5 shadow-sm"
@@ -69,6 +75,16 @@ export default async function DashboardPage() {
               >
                 {pct >= 100 ? t("completed") : t("continue")}
               </Button>
+              {certificate && (
+                <Button
+                  render={<Link href={`/verify/${certificate.verificationCode}`} />}
+                  className="mt-2"
+                  size="sm"
+                  variant="outline"
+                >
+                  🎓 {tCert("getCertificate")}
+                </Button>
+              )}
             </li>
           ))}
         </ul>

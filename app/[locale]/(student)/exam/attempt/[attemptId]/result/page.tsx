@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { Link } from "@/lib/i18n/navigation";
 import { getResult } from "@/lib/assessments/service";
+import { issueIfEligible } from "@/lib/certificates/service";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,17 @@ export default async function ExamResultPage({
   const { attemptId } = await params;
   const user = await requireUser();
   const t = await getTranslations("Exam");
+  const tCert = await getTranslations("Certificate");
   const locale = await getLocale();
 
   const result = await getResult(attemptId, user.id);
   if (!result) notFound();
   const course = await coursesRepository.findById(result.assessment.courseId);
+
+  // On a pass, auto-issue the completion certificate (idempotent) and surface it.
+  const certificate = result.passed
+    ? await issueIfEligible(user.id, result.assessment.courseId)
+    : null;
 
   return (
     <section className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
@@ -39,14 +46,22 @@ export default async function ExamResultPage({
             {t("yourScore", { pct: result.scorePct })}
           </p>
         )}
-        <div className="mt-6 flex justify-center gap-2">
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {certificate && (
+            <Button render={<Link href={`/verify/${certificate.verificationCode}`} />}>
+              🎓 {tCert("getCertificate")}
+            </Button>
+          )}
           {!result.passed && result.isScored && (
             <Button render={<Link href={`/exam/${result.assessment.id}`} />} variant="outline">
               {t("retry")}
             </Button>
           )}
           {course && (
-            <Button render={<Link href={`/courses/${course.slug}`} />}>
+            <Button
+              render={<Link href={`/courses/${course.slug}`} />}
+              variant={certificate ? "outline" : "default"}
+            >
               {t("backToCourse")}
             </Button>
           )}
