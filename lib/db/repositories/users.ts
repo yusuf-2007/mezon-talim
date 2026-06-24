@@ -1,5 +1,5 @@
 import "server-only";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../client";
 import { users } from "../schema";
 import type { Role } from "@/lib/auth/types";
@@ -78,6 +78,52 @@ export const usersRepository = {
     await db
       .update(users)
       .set({ phoneVerified: sql`now()`, updatedAt: sql`now()` })
+      .where(eq(users.id, userId));
+  },
+
+  // --- Admin (user management, B35) ---
+
+  /** List users for the admin table; optional case-insensitive name/email/phone search. */
+  async listAll(opts: { search?: string; limit?: number } = {}) {
+    const limit = opts.limit ?? 100;
+    const q = opts.search?.trim();
+    const rows = await db
+      .select({
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+        phone: users.phone,
+        role: users.role,
+        locale: users.locale,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .where(
+        q
+          ? or(
+              ilike(users.fullName, `%${q}%`),
+              ilike(users.email, `%${q}%`),
+              ilike(users.phone, `%${q}%`),
+            )
+          : undefined,
+      )
+      .orderBy(desc(users.createdAt))
+      .limit(limit);
+    return rows;
+  },
+
+  async countByRole() {
+    const rows = await db
+      .select({ role: users.role, count: sql<number>`count(*)` })
+      .from(users)
+      .groupBy(users.role);
+    return rows.map((r) => ({ role: r.role, count: Number(r.count) }));
+  },
+
+  async setRole(userId: string, role: Role) {
+    await db
+      .update(users)
+      .set({ role, updatedAt: sql`now()` })
       .where(eq(users.id, userId));
   },
 };
