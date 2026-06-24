@@ -154,6 +154,21 @@ export const usersRepository = {
       .where(eq(users.id, userId));
   },
 
+  /** Update a user's notification channel preferences (self-service settings). */
+  async updateNotificationPrefs(
+    userId: string,
+    prefs: { notifyEmail?: boolean; notifySms?: boolean },
+  ) {
+    await db
+      .update(users)
+      .set({
+        ...(prefs.notifyEmail !== undefined ? { notifyEmail: prefs.notifyEmail } : {}),
+        ...(prefs.notifySms !== undefined ? { notifySms: prefs.notifySms } : {}),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(users.id, userId));
+  },
+
   /** Activate / deactivate an account (admin). Inactive users can't sign in. */
   async setActive(userId: string, isActive: boolean) {
     await db
