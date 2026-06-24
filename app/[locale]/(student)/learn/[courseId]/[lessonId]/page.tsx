@@ -7,6 +7,8 @@ import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { notesRepository } from "@/lib/db/repositories/notes";
 import { bookmarksRepository } from "@/lib/db/repositories/bookmarks";
 import { glossaryRepository } from "@/lib/db/repositories/glossary";
+import { assessmentsRepository } from "@/lib/db/repositories/assessments";
+import { questionsRepository } from "@/lib/db/repositories/questions";
 import { getCurriculum, locateLesson } from "@/lib/learning/curriculum";
 import {
   addBookmarkAction,
@@ -37,6 +39,7 @@ export default async function PlayerPage({
   const user = await requireUser();
   const locale = await getLocale();
   const t = await getTranslations("Player");
+  const tExam = await getTranslations("Exam");
 
   const course = await coursesRepository.findById(courseId);
   if (!course) notFound();
@@ -63,12 +66,14 @@ export default async function PlayerPage({
     );
   }
 
-  const [full, notes, bookmarks, glossary] = await Promise.all([
+  const [full, notes, bookmarks, glossary, quiz] = await Promise.all([
     lessonsRepository.findById(lessonId),
     notesRepository.listForLesson(user.id, lessonId),
     bookmarksRepository.listForLesson(user.id, lessonId),
     glossaryRepository.listForCourse(courseId),
+    assessmentsRepository.findForLesson(lessonId),
   ]);
+  const quizCount = quiz ? await questionsRepository.countByAssessment(quiz.id) : 0;
   const lessonTitle = pickLocale(lesson.title, locale);
   const bodyText = pickLocale(full?.body, locale);
 
@@ -81,6 +86,14 @@ export default async function PlayerPage({
       <div className="mt-4">
         <VideoFrame bunnyVideoId={full?.bunnyVideoId ?? null} title={lessonTitle} />
       </div>
+
+      {quiz && quizCount > 0 && (
+        <div className="mt-4">
+          <Button render={<Link href={`/exam/${quiz.id}`} />} variant="outline">
+            {tExam("takeQuiz")}
+          </Button>
+        </div>
+      )}
 
       <div className="mt-5">
         <CompleteControls

@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { coursesRepository } from "@/lib/db/repositories/courses";
+import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurriculum } from "@/lib/learning/curriculum";
 import { pickLocale } from "@/lib/i18n/localized";
+import { Link } from "@/lib/i18n/navigation";
+import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/routing";
 import { CurriculumAccordion } from "@/components/catalog/curriculum-accordion";
 import { EnrollCard } from "@/components/catalog/enroll-card";
@@ -23,6 +26,14 @@ export default async function CourseDetailPage({
   const user = await getCurrentUser();
   const curriculum = await getCurriculum(course.id, user?.id ?? null);
   const loc = await getLocale();
+  const tExam = await getTranslations("Exam");
+
+  // Course-level exams (final + mock), shown once enrolled.
+  const courseExams = curriculum.enrolled
+    ? (await assessmentsRepository.listByCourse(course.id)).filter(
+        (a) => a.type === "final_exam" || a.type === "mock_exam",
+      )
+    : [];
 
   return (
     <div>
@@ -60,6 +71,16 @@ export default async function CourseDetailPage({
             </h2>
             <CurriculumAccordion courseId={course.id} curriculum={curriculum} />
           </div>
+
+          {courseExams.length > 0 && (
+            <div className="flex flex-wrap gap-3">
+              {courseExams.map((a) => (
+                <Button key={a.id} render={<Link href={`/exam/${a.id}`} />} variant="outline">
+                  {pickLocale(a.title, loc)} — {tExam("takeExam")}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
         <aside className="lg:sticky lg:top-20 lg:self-start">
