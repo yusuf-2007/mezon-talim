@@ -6,6 +6,7 @@ import { usersRepository } from "@/lib/db/repositories/users";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { getStorageClient, isStorageConfigured } from "@/lib/storage";
+import { notifyCertificateIssued } from "@/lib/notifications/service";
 import { generateCertificatePdf } from "./pdf";
 import { pickLocale } from "@/lib/i18n/localized";
 import { env } from "@/lib/env";
@@ -121,6 +122,9 @@ export async function issueIfEligible(userId: string, courseId: string) {
       console.error("certificate archive failed (non-fatal):", err);
     }
   }
+
+  // Certificate-issued email (best-effort; never blocks issuance).
+  await notifyCertificateIssued(userId, courseId, cert.verificationCode);
 
   return cert;
 }

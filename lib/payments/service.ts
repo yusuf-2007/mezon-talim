@@ -2,6 +2,7 @@ import "server-only";
 import { paymentsRepository } from "@/lib/db/repositories/payments";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
+import { notifyReceipt } from "@/lib/notifications/service";
 
 /**
  * Provider-agnostic payment lifecycle. The Click and Payme webhook handlers call
@@ -72,6 +73,9 @@ export async function markPaidAndEnroll(
     accessDurationDays: course.accessDurationDays,
     sourcePaymentId: payment.id,
   });
+
+  // Receipt email + payment-confirm SMS (best-effort; never blocks enrollment).
+  await notifyReceipt(payment.userId, payment.courseId, payment.amountTiyin);
 }
 
 /** Mark a payment refunded/cancelled (e.g. Payme CancelTransaction). */

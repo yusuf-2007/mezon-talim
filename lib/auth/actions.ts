@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { redirectLocalized } from "@/lib/i18n/redirect";
 import { usersRepository } from "@/lib/db/repositories/users";
+import { notifyWelcome } from "@/lib/notifications/service";
 import { env } from "@/lib/env";
 import { signIn, signOut } from "./config";
 import { hashPassword } from "./password";
@@ -47,12 +48,15 @@ export async function signUpAction(
   const existing = await usersRepository.findByEmail(parsed.data.email);
   if (existing) return { fieldErrors: { email: [t("emailTaken")] } };
 
-  await usersRepository.createWithPassword({
+  const created = await usersRepository.createWithPassword({
     email: parsed.data.email,
     fullName: parsed.data.fullName,
     passwordHash: await hashPassword(parsed.data.password),
     role: "student",
   });
+
+  // Welcome email (best-effort; never blocks signup).
+  await notifyWelcome(created.id);
 
   try {
     await signIn("password", {
