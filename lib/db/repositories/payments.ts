@@ -1,7 +1,7 @@
 import "server-only";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../client";
-import { payments } from "../schema";
+import { courses, payments, users } from "../schema";
 
 type Provider = "click" | "payme";
 type Status = "pending" | "paid" | "failed" | "refunded";
@@ -66,6 +66,60 @@ export const paymentsRepository = {
       )
       .limit(1);
     return row ?? null;
+  },
+
+  /** Admin ledger: all payments (any status) with buyer + course, search/filter. */
+  async listAll(
+    opts: { search?: string; status?: Status; limit?: number } = {},
+  ) {
+    const q = opts.search?.trim();
+    const conds = [];
+    if (opts.status) conds.push(eq(payments.status, opts.status));
+    if (q) {
+      conds.push(
+        or(
+          ilike(users.fullName, `%${q}%`),
+          ilike(users.email, `%${q}%`),
+          ilike(payments.providerTxnId, `%${q}%`),
+          sql`${courses.title}->>'uz' ilike ${`%${q}%`}`,
+        ),
+      );
+    }
+    return db
+      .select({
+        id: payments.id,
+        amountTiyin: payments.amountTiyin,
+        provider: payments.provider,
+        status: payments.status,
+        providerTxnId: payments.providerTxnId,
+        createdAt: payments.createdAt,
+        userName: users.fullName,
+        userEmail: users.email,
+        courseTitle: courses.title,
+      })
+      .from(payments)
+      .innerJoin(users, eq(users.id, payments.userId))
+      .innerJoin(courses, eq(courses.id, payments.courseId))
+      .where(conds.length ? and(...conds) : undefined)
+      .orderBy(desc(payments.createdAt))
+      .limit(opts.limit ?? 200);
+  },
+
+  /** Per-status counts + summed amount, for the ledger stat cards. */
+  async statusCounts() {
+    const rows = await db
+      .select({
+        status: payments.status,
+        count: sql<number>`count(*)`,
+        totalTiyin: sql<number>`coalesce(sum(${payments.amountTiyin}), 0)`,
+      })
+      .from(payments)
+      .groupBy(payments.status);
+    return rows.map((r) => ({
+      status: r.status,
+      count: Number(r.count),
+      totalTiyin: Number(r.totalTiyin),
+    }));
   },
 
   async update(

@@ -126,4 +126,20 @@ export const usersRepository = {
       .set({ role, updatedAt: sql`now()` })
       .where(eq(users.id, userId));
   },
+
+  /** Update editable profile fields from the admin user-detail page. */
+  async updateProfile(
+    userId: string,
+    patch: { fullName?: string | null; locale?: "uz" | "ru"; role?: Role },
+  ) {
+    await db
+      .update(users)
+      .set({
+        ...(patch.fullName !== undefined ? { fullName: patch.fullName, name: patch.fullName } : {}),
+        ...(patch.locale ? { locale: patch.locale } : {}),
+        ...(patch.role ? { role: patch.role } : {}),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(users.id, userId));
+  },
 };

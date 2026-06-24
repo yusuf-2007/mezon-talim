@@ -75,6 +75,38 @@ export async function issueIfEligible(userId: string, courseId: string) {
 
   if (!(await hasPassedFinalExam(userId, courseId))) return null;
 
+  return createAndArchive(userId, courseId, course);
+}
+
+type CourseRow = NonNullable<
+  Awaited<ReturnType<typeof coursesRepository.findById>>
+>;
+
+/**
+ * Admin override: issue a certificate regardless of exam result (idempotent).
+ * Used by the admin user-detail / certificates pages.
+ */
+export async function issueManual(userId: string, courseId: string) {
+  const course = await coursesRepository.findById(courseId);
+  if (!course) return null;
+  const existing = await certificatesRepository.findForUserCourse(
+    userId,
+    courseId,
+  );
+  // Reuse only an ACTIVE cert; a revoked one should be replaced (re-issue flow).
+  if (existing && !existing.revokedAt) return existing;
+  return createAndArchive(userId, courseId, course);
+}
+
+/**
+ * Create the certificate row, best-effort archive the PDF to MinIO, and notify.
+ * Shared by the eligible (exam-pass) and manual (admin) issue paths.
+ */
+async function createAndArchive(
+  userId: string,
+  courseId: string,
+  course: CourseRow,
+) {
   // Generate a unique code (retry on the rare unique-constraint collision).
   let cert = null;
   for (let attempt = 0; attempt < 3 && !cert; attempt++) {

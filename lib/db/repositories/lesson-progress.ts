@@ -62,6 +62,34 @@ export const lessonProgressRepository = {
     return row;
   },
 
+  /** Reset (delete) a user's progress for a set of lessons (admin action). */
+  async resetForLessons(userId: string, lessonIds: string[]) {
+    if (lessonIds.length === 0) return;
+    await db
+      .delete(lessonProgress)
+      .where(
+        and(
+          eq(lessonProgress.userId, userId),
+          inArray(lessonProgress.lessonId, lessonIds),
+        ),
+      );
+  },
+
+  /** Completed-lesson count per user across a set of lessons (course roster). */
+  async completedCountsForLessons(lessonIds: string[]) {
+    if (lessonIds.length === 0)
+      return [] as { userId: string; completed: number }[];
+    const rows = await db
+      .select({
+        userId: lessonProgress.userId,
+        completed: sql<number>`count(*) filter (where ${lessonProgress.completed})`,
+      })
+      .from(lessonProgress)
+      .where(inArray(lessonProgress.lessonId, lessonIds))
+      .groupBy(lessonProgress.userId);
+    return rows.map((r) => ({ userId: r.userId, completed: Number(r.completed) }));
+  },
+
   /** Persist the last playback position for resume. */
   async savePosition(userId: string, lessonId: string, seconds: number) {
     await db

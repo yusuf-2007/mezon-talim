@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../client";
-import { attemptAnswers, attempts } from "../schema";
+import { assessments, attemptAnswers, attempts } from "../schema";
 
 /** Exam attempts + saved answers. Enforcement (limits/cooldown/window) lives in
  * the attempt service; this is pure persistence. */
@@ -23,6 +23,27 @@ export const attemptsRepository = {
         and(eq(attempts.userId, userId), eq(attempts.assessmentId, assessmentId)),
       )
       .orderBy(desc(attempts.attemptNo));
+  },
+
+  /** Every submitted attempt for a user, joined with its assessment (admin view). */
+  async listForUserAll(userId: string) {
+    return db
+      .select({
+        attempt: attempts,
+        assessment: {
+          id: assessments.id,
+          type: assessments.type,
+          title: assessments.title,
+          courseId: assessments.courseId,
+          isScored: assessments.isScored,
+          passThresholdPct: assessments.passThresholdPct,
+          maxAttempts: assessments.maxAttempts,
+        },
+      })
+      .from(attempts)
+      .innerJoin(assessments, eq(assessments.id, attempts.assessmentId))
+      .where(eq(attempts.userId, userId))
+      .orderBy(desc(attempts.startedAt));
   },
 
   async findInProgress(userId: string, assessmentId: string) {
