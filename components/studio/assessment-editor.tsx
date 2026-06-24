@@ -92,6 +92,7 @@ export async function AssessmentEditor({
                   type: q.type,
                   prompt: q.prompt,
                   explanation: q.explanation,
+                  points: q.points,
                   options: q.options.map((o) => ({ label: o.label, isCorrect: o.isCorrect })),
                 }}
                 updateAction={updateQuestionAction.bind(null, courseId, assessmentId, q.id)}

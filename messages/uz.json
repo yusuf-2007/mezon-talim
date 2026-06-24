@@ -140,7 +140,8 @@
     "isPreview": "Bepul ko'rish (preview)",
     "previewBadge": "Bepul",
     "lessons": "dars",
-    "cancel": "Bekor qilish"
+    "cancel": "Bekor qilish",
+    "category": "Kategoriya"
   },
   "Catalog": {
     "title": "Kurslar",
@@ -244,7 +245,10 @@
     "addOption": "Variant qo'shish",
     "cancel": "Bekor qilish",
     "confirmDelete": "Ishonchingiz komilmi?",
-    "questionsCount": "{count} savol"
+    "questionsCount": "{count} savol",
+    "isPublished": "Chop etilgan (talabalarga ko'rinadi)",
+    "questionsToServe": "Beriladigan savollar soni (bo'sh = barchasi)",
+    "points": "Ball"
   },
   "Exam": {
     "start": "Boshlash",
@@ -278,7 +282,8 @@
     "retry": "Qayta urinish",
     "backToCourse": "Kursga qaytish",
     "takeExam": "Imtihon topshirish",
-    "takeQuiz": "Testni topshirish"
+    "takeQuiz": "Testni topshirish",
+    "blocked_unpublished": "Bu test hali chop etilmagan."
   },
   "Dashboard": {
     "title": "Mening kurslarim",
@@ -451,6 +456,13 @@
     "pay_refunded": "Qaytarilgan",
     "colRef": "Tranzaksiya",
     "colPayStatus": "Holat",
-    "noPayments": "To'lovlar topilmadi."
+    "noPayments": "To'lovlar topilmadi.",
+    "profileBio": "Bio",
+    "accountStatus": "Hisob holati",
+    "statusActive": "Faol",
+    "statusInactive": "Bloklangan",
+    "activate": "Faollashtirish",
+    "deactivate": "Bloklash",
+    "grantRetry": "Qayta urinish berish"
   }
 }

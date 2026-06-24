@@ -27,6 +27,7 @@ export const courses = pgTable("courses", {
   summary: jsonb("summary").$type<LocalizedText>(), // short, for cards
   description: jsonb("description").$type<LocalizedText>(), // long, course page
   coverUrl: text("cover_url"),
+  category: text("category"), // course taxonomy / subject (admin-set, optional)
   status: courseStatus("status").notNull().default("draft"),
 
   // Money is integer tiyin (UZS × 100). Never float. Pricing model is TBD #1 —

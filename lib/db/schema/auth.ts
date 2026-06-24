@@ -37,6 +37,9 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"), // argon2; null for social-only (later)
   locale: text("locale").notNull().default("uz"), // 'uz' | 'ru'
 
+  isActive: boolean("is_active").notNull().default(true), // admin can deactivate an account
+  bio: text("bio"), // short profile bio (admin-editable)
+
   notifyEmail: boolean("notify_email").notNull().default(true),
   notifySms: boolean("notify_sms").notNull().default(true),
   notifyTelegram: boolean("notify_telegram").notNull().default(false), // Later

@@ -44,6 +44,7 @@ export const courseUpsertSchema = z.object({
   descriptionUz: z.string().trim().optional(),
   descriptionRu: z.string().trim().optional(),
   coverUrl: z.union([z.url(), z.literal("")]).optional(),
+  category: z.string().trim().max(80).optional(),
   // Price entered in so'm in the UI; converted to integer tiyin server-side.
   priceSom: z.coerce.number().int().min(0).max(100_000_000),
   accessDurationDays: z.coerce.number().int().min(1).max(3650),

@@ -34,6 +34,8 @@ export const assessmentUpsertSchema = z.object({
   attemptCooldownHours: optionalPositive, // null = none
   isScored: checkbox,
   randomize: checkbox,
+  isPublished: checkbox,
+  questionsToServe: optionalPositive, // null = serve all questions
 });
 export type AssessmentUpsertInput = z.infer<typeof assessmentUpsertSchema>;
 
@@ -45,4 +47,5 @@ export const questionMetaSchema = z.object({
   promptRu: z.string().trim().optional(),
   explanationUz: z.string().trim().optional(),
   explanationRu: z.string().trim().optional(),
+  points: z.coerce.number().int().min(1).max(100).catch(1),
 });

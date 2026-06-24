@@ -27,7 +27,10 @@ export type GradeResult = {
   perQuestion: { questionId: string; correct: boolean }[];
 };
 
-/** Grade an attempt: equal weight per question, integer percentage. */
+/**
+ * Grade an attempt: weighted by each question's `points` (default 1, so an
+ * all-equal bank behaves exactly as before). Integer percentage.
+ */
 export function grade(
   qs: QuestionWithOptions[],
   answers: Map<string, string[]>,
@@ -38,7 +41,13 @@ export function grade(
   }));
   const correctCount = perQuestion.filter((p) => p.correct).length;
   const total = qs.length;
-  const scorePct = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+  const totalPoints = qs.reduce((sum, q) => sum + (q.points ?? 1), 0);
+  const earnedPoints = qs.reduce(
+    (sum, q, i) => sum + (perQuestion[i].correct ? q.points ?? 1 : 0),
+    0,
+  );
+  const scorePct =
+    totalPoints === 0 ? 0 : Math.round((earnedPoints / totalPoints) * 100);
   return { scorePct, correctCount, total, perQuestion };
 }
 

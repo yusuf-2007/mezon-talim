@@ -10,11 +10,13 @@ import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import {
   adminEnrollAction,
+  grantRetryAction,
   issueCertificateAction,
   reissueCertificateAction,
   removeEnrollmentAction,
   resetProgressAction,
   revokeCertificateAction,
+  setUserActiveAction,
   updateUserProfileAction,
 } from "@/lib/admin/actions";
 import { pickLocale } from "@/lib/i18n/localized";
@@ -153,6 +155,17 @@ export default async function AdminUserDetailPage({
                 className="w-full rounded-md border border-line bg-bg px-3 py-2 text-sm"
               />
             </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-navy-800">
+                {t("profileBio")}
+              </label>
+              <textarea
+                name="bio"
+                rows={2}
+                defaultValue={user.bio ?? ""}
+                className="w-full rounded-md border border-line bg-bg px-3 py-2 text-sm"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-navy-800">
@@ -191,6 +204,21 @@ export default async function AdminUserDetailPage({
             </dl>
             <Button type="submit">{t("saveProfile")}</Button>
           </form>
+
+          {/* Account status */}
+          <div className="mt-4 flex max-w-lg items-center justify-between rounded-xl border border-line bg-surface p-4 shadow-sm">
+            <div>
+              <p className="text-sm font-medium text-navy-800">{t("accountStatus")}</p>
+              <p className="text-xs text-slate-500">
+                {user.isActive ? t("statusActive") : t("statusInactive")}
+              </p>
+            </div>
+            <form action={setUserActiveAction.bind(null, userId, !user.isActive)}>
+              <Button type="submit" variant={user.isActive ? "outline" : "default"} size="sm">
+                {user.isActive ? t("deactivate") : t("activate")}
+              </Button>
+            </form>
+          </div>
         </TabsContent>
 
         {/* ── Enrollments ── */}
@@ -248,12 +276,12 @@ export default async function AdminUserDetailPage({
 
         {/* ── Quizzes ── */}
         <TabsContent value="quizzes" className="pt-6">
-          <AttemptsTable groups={quizGroups} t={t} locale={locale} />
+          <AttemptsTable groups={quizGroups} userId={userId} t={t} locale={locale} />
         </TabsContent>
 
         {/* ── Module tests ── */}
         <TabsContent value="moduletests" className="pt-6">
-          <AttemptsTable groups={moduleGroups} t={t} locale={locale} />
+          <AttemptsTable groups={moduleGroups} userId={userId} t={t} locale={locale} />
         </TabsContent>
 
         {/* ── Certificates ── */}
@@ -327,15 +355,21 @@ function Field({ label, value }: { label: string; value: string }) {
 
 function AttemptsTable({
   groups,
+  userId,
   t,
   locale,
 }: {
   groups: {
-    assessment: { title: import("@/lib/db/schema").LocalizedText; maxAttempts: number | null };
+    assessment: {
+      id: string;
+      title: import("@/lib/db/schema").LocalizedText;
+      maxAttempts: number | null;
+    };
     submitted: number;
     best: number | null;
     passed: boolean;
   }[];
+  userId: string;
   t: Awaited<ReturnType<typeof getTranslations>>;
   locale: Locale;
 }) {
@@ -350,6 +384,7 @@ function AttemptsTable({
             <th className="px-4 py-3 font-medium">{t("bestScore")}</th>
             <th className="px-4 py-3 font-medium">{t("quizAttempts")}</th>
             <th className="px-4 py-3 font-medium">{t("colStatus")}</th>
+            <th className="px-4 py-3 font-medium" />
           </tr>
         </thead>
         <tbody className="divide-y divide-line">
@@ -370,6 +405,15 @@ function AttemptsTable({
                   <Badge className="bg-success/10 text-success">{t("passedLabel")}</Badge>
                 ) : (
                   <Badge variant="destructive">{t("failedLabel")}</Badge>
+                )}
+              </td>
+              <td className="px-4 py-3 text-right">
+                {g.submitted > 0 && (
+                  <form action={grantRetryAction.bind(null, userId, g.assessment.id)}>
+                    <Button type="submit" variant="ghost" size="sm">
+                      {t("grantRetry")}
+                    </Button>
+                  </form>
                 )}
               </td>
             </tr>

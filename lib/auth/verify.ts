@@ -43,6 +43,7 @@ export async function verifyPasswordLogin(
 
   const ok = await verifyPassword(user.passwordHash, parsed.data.password);
   if (!ok) return null;
+  if (!user.isActive) return null; // deactivated accounts can't sign in
 
   return toAuthUser(user);
 }
@@ -61,6 +62,7 @@ export async function verifyOtpLogin(raw: unknown): Promise<AuthUser | null> {
   if (!ok) return null;
 
   const user = await usersRepository.findOrCreateByPhone(parsed.data.phone);
+  if (!user.isActive) return null; // deactivated accounts can't sign in
   await usersRepository.markPhoneVerified(user.id);
   return toAuthUser(user);
 }

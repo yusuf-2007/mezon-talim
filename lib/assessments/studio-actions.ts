@@ -56,6 +56,8 @@ export async function createAssessmentAction(
     attemptCooldownHours: d.attemptCooldownHours,
     isScored: d.isScored,
     randomize: d.randomize,
+    isPublished: d.isPublished,
+    questionsToServe: d.questionsToServe,
   });
   // basePath is "/studio" or "/admin" — both surfaces reuse this editor.
   revalidatePath(`${basePath}/courses/${courseId}/assessments`);
@@ -86,6 +88,8 @@ export async function updateAssessmentAction(
     attemptCooldownHours: d.attemptCooldownHours,
     isScored: d.isScored,
     randomize: d.randomize,
+    isPublished: d.isPublished,
+    questionsToServe: d.questionsToServe,
   });
   revalidatePath(`/studio/courses/${courseId}/assessments/${assessmentId}`);
   return {};
@@ -135,6 +139,7 @@ async function buildQuestionInput(formData: FormData) {
       type: meta.data.type,
       prompt: loc(meta.data.promptUz, meta.data.promptRu),
       explanation: optLoc(meta.data.explanationUz, meta.data.explanationRu),
+      points: meta.data.points,
       options,
     },
   };

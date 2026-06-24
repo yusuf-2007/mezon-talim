@@ -40,6 +40,8 @@ export const assessments = pgTable("assessments", {
   attemptCooldownHours: integer("attempt_cooldown_hours"), // e.g. 24 (B15)
   isScored: boolean("is_scored").notNull().default(true), // false for mock (B17)
   randomize: boolean("randomize").notNull().default(false), // light integrity (TBD #4)
+  isPublished: boolean("is_published").notNull().default(true), // module tests can be drafted
+  questionsToServe: integer("questions_to_serve"), // serve a random subset (null = all)
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -53,6 +55,7 @@ export const questions = pgTable("questions", {
   type: questionType("type").notNull(),
   prompt: jsonb("prompt").$type<LocalizedText>().notNull(),
   explanation: jsonb("explanation").$type<LocalizedText>(), // shown in review (B16)
+  points: integer("points").notNull().default(1), // weighted grading
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -82,6 +85,7 @@ export const attempts = pgTable(
     submittedAt: timestamptz("submitted_at"),
     scorePct: integer("score_pct"),
     passed: boolean("passed"),
+    voided: boolean("voided").notNull().default(false), // admin "grant retry": excluded from limit
   },
   (t) => [
     unique("attempts_user_assessment_no_uq").on(

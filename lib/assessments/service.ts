@@ -1,6 +1,7 @@
 import "server-only";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
+import type { QuestionWithOptions } from "@/lib/db/repositories/questions";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import type { LocalizedText } from "@/lib/db/schema";
@@ -23,7 +24,8 @@ export type BlockReason =
   | "not_enrolled"
   | "already_passed"
   | "no_attempts_left"
-  | "cooldown";
+  | "cooldown"
+  | "unpublished";
 
 export type ExamOverview = {
   assessment: Assessment;
@@ -57,7 +59,8 @@ export async function getExamOverview(
     enrollmentsRepository.isActive(userId, assessment.courseId),
   ]);
 
-  const submitted = all.filter((a) => a.submittedAt);
+  // Voided attempts ("grant retry") don't count toward limits or cooldown.
+  const submitted = all.filter((a) => a.submittedAt && !a.voided);
   const attemptsUsed = submitted.length;
   const alreadyPassed = submitted.some((a) => a.passed);
   const bestScorePct = submitted.reduce<number | null>(
@@ -81,7 +84,8 @@ export async function getExamOverview(
   }
 
   let blockedReason: BlockReason | null = null;
-  if (!enrolled) blockedReason = "not_enrolled";
+  if (!assessment.isPublished) blockedReason = "unpublished";
+  else if (!enrolled) blockedReason = "not_enrolled";
   else if (!inProgress && alreadyPassed && assessment.isScored)
     blockedReason = "already_passed";
   else if (!inProgress && attemptsLeft === 0) blockedReason = "no_attempts_left";
@@ -128,10 +132,29 @@ async function loadOwnedAttempt(attemptId: string, userId: string) {
   return { attempt, assessment };
 }
 
+/**
+ * The questions actually served to this attempt: a deterministic per-attempt
+ * subset (when `questions_to_serve` is set) in the attempt's display order.
+ * Must be used identically for the runner, grading, and review so the three
+ * always agree on the same set.
+ */
+function servedQuestions(
+  qs: QuestionWithOptions[],
+  attempt: { id: string },
+  assessment: Assessment,
+): QuestionWithOptions[] {
+  const n = assessment.questionsToServe;
+  const pool =
+    n && n > 0 && n < qs.length
+      ? orderQuestionsForAttempt(qs, `${attempt.id}:serve`, true).slice(0, n)
+      : qs;
+  return orderQuestionsForAttempt(pool, attempt.id, assessment.randomize);
+}
+
 export async function getRunnerState(attemptId: string, userId: string) {
   const { attempt, assessment } = await loadOwnedAttempt(attemptId, userId);
   const qs = await questionsRepository.listByAssessment(assessment.id);
-  const ordered = orderQuestionsForAttempt(qs, attempt.id, assessment.randomize);
+  const ordered = servedQuestions(qs, attempt, assessment);
   const answers = await attemptsRepository.listAnswers(attempt.id);
   const answerMap: Record<string, string[]> = {};
   for (const a of answers) answerMap[a.questionId] = a.selectedOptionIds;
@@ -179,10 +202,11 @@ export async function submitAttempt(attemptId: string, userId: string) {
     return { scorePct: attempt.scorePct ?? 0, passed: Boolean(attempt.passed) };
   }
   const qs = await questionsRepository.listByAssessment(assessment.id);
+  const served = servedQuestions(qs, attempt, assessment);
   const answers = await attemptsRepository.listAnswers(attempt.id);
   const answerMap = new Map(answers.map((a) => [a.questionId, a.selectedOptionIds]));
 
-  const result = grade(qs, answerMap);
+  const result = grade(served, answerMap);
   for (const pq of result.perQuestion) {
     if (answerMap.has(pq.questionId)) {
       await attemptsRepository.setAnswerCorrectness(
@@ -245,7 +269,7 @@ export async function getResult(attemptId: string, userId: string) {
     const qs = await questionsRepository.listByAssessment(assessment.id);
     const answers = await attemptsRepository.listAnswers(attempt.id);
     const answerMap = new Map(answers.map((a) => [a.questionId, a.selectedOptionIds]));
-    result.review = orderQuestionsForAttempt(qs, attempt.id, assessment.randomize).map(
+    result.review = servedQuestions(qs, attempt, assessment).map(
       (q) => ({
         prompt: q.prompt,
         explanation: q.explanation,

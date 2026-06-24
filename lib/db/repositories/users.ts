@@ -130,16 +130,30 @@ export const usersRepository = {
   /** Update editable profile fields from the admin user-detail page. */
   async updateProfile(
     userId: string,
-    patch: { fullName?: string | null; locale?: "uz" | "ru"; role?: Role },
+    patch: {
+      fullName?: string | null;
+      bio?: string | null;
+      locale?: "uz" | "ru";
+      role?: Role;
+    },
   ) {
     await db
       .update(users)
       .set({
         ...(patch.fullName !== undefined ? { fullName: patch.fullName, name: patch.fullName } : {}),
+        ...(patch.bio !== undefined ? { bio: patch.bio } : {}),
         ...(patch.locale ? { locale: patch.locale } : {}),
         ...(patch.role ? { role: patch.role } : {}),
         updatedAt: sql`now()`,
       })
+      .where(eq(users.id, userId));
+  },
+
+  /** Activate / deactivate an account (admin). Inactive users can't sign in. */
+  async setActive(userId: string, isActive: boolean) {
+    await db
+      .update(users)
+      .set({ isActive, updatedAt: sql`now()` })
       .where(eq(users.id, userId));
   },
 };

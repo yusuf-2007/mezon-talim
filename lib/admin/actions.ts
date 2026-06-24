@@ -8,6 +8,7 @@ import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import { certificatesRepository } from "@/lib/db/repositories/certificates";
+import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { auditRepository } from "@/lib/db/repositories/audit";
 import { issueManual } from "@/lib/certificates/service";
 import type { Role } from "@/lib/auth/types";
@@ -73,6 +74,7 @@ export async function updateUserProfileAction(
 ): Promise<void> {
   const actor = await requireRole("super_admin");
   const fullName = String(formData.get("fullName") ?? "").trim() || null;
+  const bio = String(formData.get("bio") ?? "").trim() || null;
   const localeRaw = String(formData.get("locale") ?? "uz");
   const locale = localeRaw === "ru" ? "ru" : "uz";
   const roleRaw = String(formData.get("role") ?? "");
@@ -81,7 +83,7 @@ export async function updateUserProfileAction(
   if (actor.id === userId && role && role !== "super_admin") {
     throw new Error("Cannot change your own super_admin role");
   }
-  await usersRepository.updateProfile(userId, { fullName, locale, role });
+  await usersRepository.updateProfile(userId, { fullName, bio, locale, role });
   await auditRepository.record({
     actorUserId: actor.id,
     action: "user.profile_update",
@@ -89,6 +91,44 @@ export async function updateUserProfileAction(
     entityId: userId,
     meta: { fullName, locale, role },
   });
+  revalidatePath(`/admin/users/${userId}`);
+}
+
+/** Activate / deactivate a user account (super_admin). Self-lockout blocked. Audited. */
+export async function setUserActiveAction(
+  userId: string,
+  isActive: boolean,
+): Promise<void> {
+  const actor = await requireRole("super_admin");
+  if (actor.id === userId && !isActive) {
+    throw new Error("Cannot deactivate your own account");
+  }
+  await usersRepository.setActive(userId, isActive);
+  await auditRepository.record({
+    actorUserId: actor.id,
+    action: isActive ? "user.activate" : "user.deactivate",
+    entityType: "user",
+    entityId: userId,
+  });
+  revalidatePath(`/admin/users/${userId}`);
+}
+
+/** Grant a retry: void the user's latest attempt for an assessment (super_admin). Audited. */
+export async function grantRetryAction(
+  userId: string,
+  assessmentId: string,
+): Promise<void> {
+  const actor = await requireRole("super_admin");
+  const ok = await attemptsRepository.voidLatestAttempt(userId, assessmentId);
+  if (ok) {
+    await auditRepository.record({
+      actorUserId: actor.id,
+      action: "attempt.grant_retry",
+      entityType: "assessment",
+      entityId: assessmentId,
+      meta: { userId },
+    });
+  }
   revalidatePath(`/admin/users/${userId}`);
 }
 

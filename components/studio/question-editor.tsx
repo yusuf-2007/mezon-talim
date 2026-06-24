@@ -18,6 +18,7 @@ type QuestionLike = {
   type: QType;
   prompt: LocalizedText;
   explanation: LocalizedText | null;
+  points?: number;
   options: { label: LocalizedText; isCorrect: boolean }[];
 };
 type Action = (prev: AssessFormState, fd: FormData) => Promise<AssessFormState>;
@@ -80,9 +81,20 @@ export function QuestionEditor({
           <Input name="promptUz" defaultValue={question?.prompt.uz} required />
         </Field>
       </div>
-      <Field label={t("promptRu")}>
-        <Input name="promptRu" defaultValue={question?.prompt.ru ?? ""} />
-      </Field>
+      <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+        <Field label={t("promptRu")}>
+          <Input name="promptRu" defaultValue={question?.prompt.ru ?? ""} />
+        </Field>
+        <Field label={t("points")}>
+          <Input
+            name="points"
+            type="number"
+            min={1}
+            defaultValue={question?.points ?? 1}
+            className="tabular-nums"
+          />
+        </Field>
+      </div>
 
       {/* Options */}
       <div className="space-y-2">

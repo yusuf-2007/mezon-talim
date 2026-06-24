@@ -140,7 +140,8 @@
     "isPreview": "Бесплатный просмотр (preview)",
     "previewBadge": "Бесплатно",
     "lessons": "ур.",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "category": "Категория"
   },
   "Catalog": {
     "title": "Курсы",
@@ -244,7 +245,10 @@
     "addOption": "Добавить вариант",
     "cancel": "Отмена",
     "confirmDelete": "Вы уверены?",
-    "questionsCount": "{count} вопросов"
+    "questionsCount": "{count} вопросов",
+    "isPublished": "Опубликован (виден студентам)",
+    "questionsToServe": "Сколько вопросов выдавать (пусто = все)",
+    "points": "Баллы"
   },
   "Exam": {
     "start": "Начать",
@@ -278,7 +282,8 @@
     "retry": "Повторить",
     "backToCourse": "Вернуться к курсу",
     "takeExam": "Сдать экзамен",
-    "takeQuiz": "Пройти тест"
+    "takeQuiz": "Пройти тест",
+    "blocked_unpublished": "Этот тест ещё не опубликован."
   },
   "Dashboard": {
     "title": "Мои курсы",
@@ -451,6 +456,13 @@
     "pay_refunded": "Возврат",
     "colRef": "Транзакция",
     "colPayStatus": "Статус",
-    "noPayments": "Платежи не найдены."
+    "noPayments": "Платежи не найдены.",
+    "profileBio": "Био",
+    "accountStatus": "Статус аккаунта",
+    "statusActive": "Активен",
+    "statusInactive": "Заблокирован",
+    "activate": "Активировать",
+    "deactivate": "Заблокировать",
+    "grantRetry": "Дать пересдачу"
   }
 }

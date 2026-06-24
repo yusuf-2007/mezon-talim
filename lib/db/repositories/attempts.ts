@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../client";
 import { assessments, attemptAnswers, attempts } from "../schema";
 
@@ -75,6 +75,32 @@ export const attemptsRepository = {
       .values({ userId, assessmentId, attemptNo: next })
       .returning();
     return row;
+  },
+
+  /**
+   * Void the latest non-voided submitted attempt for (user, assessment) — the
+   * "grant retry" admin action. Returns false if there was none to void.
+   */
+  async voidLatestAttempt(userId: string, assessmentId: string) {
+    const [latest] = await db
+      .select({ id: attempts.id })
+      .from(attempts)
+      .where(
+        and(
+          eq(attempts.userId, userId),
+          eq(attempts.assessmentId, assessmentId),
+          isNotNull(attempts.submittedAt),
+          eq(attempts.voided, false),
+        ),
+      )
+      .orderBy(desc(attempts.attemptNo))
+      .limit(1);
+    if (!latest) return false;
+    await db
+      .update(attempts)
+      .set({ voided: true })
+      .where(eq(attempts.id, latest.id));
+    return true;
   },
 
   async submit(attemptId: string, scorePct: number, passed: boolean) {

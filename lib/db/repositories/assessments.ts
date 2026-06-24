@@ -18,6 +18,8 @@ export type AssessmentInsert = {
   attemptCooldownHours?: number | null;
   isScored: boolean;
   randomize: boolean;
+  isPublished?: boolean;
+  questionsToServe?: number | null;
 };
 
 export const assessmentsRepository = {

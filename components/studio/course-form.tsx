@@ -17,6 +17,7 @@ type CourseLike = {
   summary?: { uz: string; ru?: string } | null;
   description?: { uz: string; ru?: string } | null;
   coverUrl?: string | null;
+  category?: string | null;
   priceTiyin: number;
   accessDurationDays: number;
   passThresholdPct: number;
@@ -81,9 +82,14 @@ export function CourseForm({
         </Field>
       </div>
 
-      <Field label={t("coverUrl")} htmlFor="coverUrl" errors={state.fieldErrors?.coverUrl}>
-        <Input id="coverUrl" name="coverUrl" type="url" defaultValue={course?.coverUrl ?? ""} />
-      </Field>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label={t("coverUrl")} htmlFor="coverUrl" errors={state.fieldErrors?.coverUrl}>
+          <Input id="coverUrl" name="coverUrl" type="url" defaultValue={course?.coverUrl ?? ""} />
+        </Field>
+        <Field label={t("category")} htmlFor="category">
+          <Input id="category" name="category" defaultValue={course?.category ?? ""} />
+        </Field>
+      </div>
 
       <div className="grid gap-5 sm:grid-cols-3">
         <Field label={t("priceSom")} htmlFor="priceSom" errors={state.fieldErrors?.priceSom}>

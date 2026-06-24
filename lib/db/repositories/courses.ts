@@ -17,6 +17,7 @@ export type CourseInsert = {
   summary?: LocalizedText | null;
   description?: LocalizedText | null;
   coverUrl?: string | null;
+  category?: string | null;
   priceTiyin: number;
   accessDurationDays: number;
   passThresholdPct: number;

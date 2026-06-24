@@ -15,6 +15,7 @@ export type QuestionInput = {
   type: QuestionType;
   prompt: LocalizedText;
   explanation?: LocalizedText | null;
+  points?: number;
   options: QuestionOptionInput[];
 };
 
@@ -74,6 +75,7 @@ export const questionsRepository = {
           type: input.type,
           prompt: input.prompt,
           explanation: input.explanation ?? null,
+          points: input.points ?? 1,
         })
         .returning();
       await tx.insert(questionOptions).values(
@@ -96,6 +98,7 @@ export const questionsRepository = {
           type: input.type,
           prompt: input.prompt,
           explanation: input.explanation ?? null,
+          points: input.points ?? 1,
           updatedAt: sql`now()`,
         })
         .where(eq(questions.id, questionId));

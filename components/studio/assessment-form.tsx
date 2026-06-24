@@ -23,6 +23,8 @@ type AssessmentLike = {
   attemptCooldownHours: number | null;
   isScored: boolean;
   randomize: boolean;
+  isPublished?: boolean;
+  questionsToServe?: number | null;
 };
 
 const TYPES = ["lesson_quiz", "module_test", "final_exam", "mock_exam"] as const;
@@ -143,6 +145,16 @@ export function AssessmentForm({
             className="tabular-nums"
           />
         </Field>
+        <Field label={t("questionsToServe")}>
+          <Input
+            name="questionsToServe"
+            type="number"
+            min={1}
+            placeholder="∞"
+            defaultValue={assessment?.questionsToServe ?? ""}
+            className="tabular-nums"
+          />
+        </Field>
       </div>
 
       <div className="flex flex-wrap gap-6">
@@ -153,6 +165,10 @@ export function AssessmentForm({
         <label className="flex items-center gap-3">
           <Switch name="randomize" value="true" defaultChecked={assessment?.randomize ?? false} />
           <span className="text-sm">{t("randomize")}</span>
+        </label>
+        <label className="flex items-center gap-3">
+          <Switch name="isPublished" value="true" defaultChecked={assessment?.isPublished ?? true} />
+          <span className="text-sm">{t("isPublished")}</span>
         </label>
       </div>
 
