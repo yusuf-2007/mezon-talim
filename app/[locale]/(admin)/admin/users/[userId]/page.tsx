@@ -6,6 +6,7 @@ import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { coursesRepository } from "@/lib/db/repositories/courses";
+import { userAvatarsRepository } from "@/lib/db/repositories/user-avatars";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import {
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/tabs";
 import { ConfirmSubmit } from "@/components/studio/confirm-submit";
 import { CoursePicker } from "@/components/admin/course-picker";
+import { UserAvatar } from "@/components/admin/user-avatar";
 import type { Locale } from "@/lib/i18n/routing";
 import type { Role } from "@/lib/auth/types";
 
@@ -49,11 +51,12 @@ export default async function AdminUserDetailPage({
   const user = await usersRepository.findById(userId);
   if (!user) notFound();
 
-  const [enrollments, attempts, certs, allCourses] = await Promise.all([
+  const [enrollments, attempts, certs, allCourses, hasAvatar] = await Promise.all([
     enrollmentsRepository.listForUserWithCourse(userId),
     attemptsRepository.listForUserAll(userId),
     certificatesRepository.listForUserAll(userId),
     coursesRepository.listAll(),
+    userAvatarsRepository.exists(userId),
   ]);
 
   // Progress per enrollment.
@@ -115,11 +118,19 @@ export default async function AdminUserDetailPage({
       <Link href="/admin/users" className="text-sm text-navy-600 hover:underline">
         ← {t("usersTitle")}
       </Link>
-      <div>
-        <h1 className="font-heading text-2xl font-semibold text-navy-800">
-          {displayName}
-        </h1>
-        <p className="text-sm text-slate-500">{user.email || user.phone}</p>
+      <div className="flex items-center gap-3">
+        <UserAvatar
+          name={user.fullName}
+          email={user.email}
+          src={hasAvatar ? `/api/avatars/${user.id}` : null}
+          className="size-12"
+        />
+        <div>
+          <h1 className="font-heading text-2xl font-semibold text-navy-800">
+            {displayName}
+          </h1>
+          <p className="text-sm text-slate-500">{user.email || user.phone}</p>
+        </div>
       </div>
 
       <Tabs defaultValue="profile">

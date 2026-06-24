@@ -76,7 +76,11 @@ export default async function AdminUsersPage({
                 <tr key={u.id}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <UserAvatar name={u.fullName} email={u.email} />
+                      <UserAvatar
+                        name={u.fullName}
+                        email={u.email}
+                        src={u.hasAvatar ? `/api/avatars/${u.id}` : null}
+                      />
                       <div className="min-w-0">
                         <Link
                           href={`/admin/users/${u.id}`}

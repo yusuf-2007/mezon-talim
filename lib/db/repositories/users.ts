@@ -1,7 +1,7 @@
 import "server-only";
 import { desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../client";
-import { enrollments, users } from "../schema";
+import { enrollments, userAvatars, users } from "../schema";
 import type { Role } from "@/lib/auth/types";
 
 type NewUserWithPassword = {
@@ -99,9 +99,11 @@ export const usersRepository = {
         isActive: users.isActive,
         createdAt: users.createdAt,
         enrollmentCount: sql<number>`count(${enrollments.id})`,
+        hasAvatar: sql<boolean>`bool_or(${userAvatars.userId} is not null)`,
       })
       .from(users)
       .leftJoin(enrollments, eq(enrollments.userId, users.id))
+      .leftJoin(userAvatars, eq(userAvatars.userId, users.id))
       .where(
         q
           ? or(

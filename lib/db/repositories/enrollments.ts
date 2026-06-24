@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, gt, isNull, or, sql } from "drizzle-orm";
 import { db } from "../client";
-import { courses, enrollments, users } from "../schema";
+import { courses, enrollments, userAvatars, users } from "../schema";
 
 /**
  * Enrollment repository. An enrollment is normally created on a verified `paid`
@@ -62,9 +62,11 @@ export const enrollmentsRepository = {
           email: users.email,
           phone: users.phone,
         },
+        hasAvatar: sql<boolean>`${userAvatars.userId} is not null`,
       })
       .from(enrollments)
       .innerJoin(users, eq(users.id, enrollments.userId))
+      .leftJoin(userAvatars, eq(userAvatars.userId, users.id))
       .where(eq(enrollments.courseId, courseId))
       .orderBy(desc(enrollments.startedAt));
   },

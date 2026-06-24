@@ -134,7 +134,7 @@ async function CourseRoster({
                 </td>
               </tr>
             ) : (
-              roster.map(({ enrollment, user }) => {
+              roster.map(({ enrollment, user, hasAvatar }) => {
                 const completed = completedByUser.get(user.id) ?? 0;
                 const pct =
                   totalLessons > 0
@@ -150,7 +150,11 @@ async function CourseRoster({
                   <tr key={enrollment.id}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <UserAvatar name={user.fullName} email={user.email} />
+                        <UserAvatar
+                          name={user.fullName}
+                          email={user.email}
+                          src={hasAvatar ? `/api/avatars/${user.id}` : null}
+                        />
                         <div className="min-w-0">
                           <Link
                             href={`/admin/users/${user.id}`}
