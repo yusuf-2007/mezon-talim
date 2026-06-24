@@ -183,6 +183,11 @@ Matches the proposal's phasing: design/review → MVP build → production build
 - **Secrets:** env vars only; never commit keys. Provide `.env.example`.
 - **Migrations:** Drizzle Kit migration files in the repo — never edit schema via a GUI.
 - **Commits:** small, module-scoped, conventional commits.
+- **Code review:** before committing a phase, run the **`code-reviewer`** skill
+  (`.claude/skills/code-reviewer/`). At minimum: `typecheck` + `lint` + `build`,
+  then `python3 .claude/skills/code-reviewer/scripts/code_quality_checker.py . --changed`,
+  then apply `references/code_review_checklist.md` to the touched risk areas.
+  Green gates are necessary but not sufficient — verify behaviour for logic-heavy changes.
 
 ---
 

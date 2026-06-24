@@ -40,3 +40,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+__pycache__/
+*.pyc
+
+# Claude Code / agents: ignore vendored skill bundles, but keep the
+# project-specific code-reviewer skill (and its .agents mirror) tracked.
+.claude/*
+!.claude/skills
+.claude/skills/*
+!.claude/skills/code-reviewer
+.agents/*
+!.agents/skills
+.agents/skills/*
+!.agents/skills/code-reviewer

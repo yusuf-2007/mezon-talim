@@ -23,6 +23,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "drizzle/**",
+    // Vendored Claude Code skill bundles + agent tooling — not project source.
+    ".claude/**",
+    ".agents/**",
   ]),
 ]);
 
