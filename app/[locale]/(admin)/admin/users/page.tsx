@@ -7,15 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RoleSelect } from "@/components/admin/role-select";
 import { StatCard } from "@/components/admin/stat-card";
+import { UserAvatar } from "@/components/admin/user-avatar";
 import type { Locale } from "@/lib/i18n/routing";
-
-function initials(name: string | null, email: string | null): string {
-  const s = (name || email || "?").trim();
-  const parts = s.split(/\s+/);
-  if (parts.length >= 2 && parts[0] && parts[1])
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  return s.slice(0, 2).toUpperCase();
-}
 
 export default async function AdminUsersPage({
   searchParams,
@@ -83,9 +76,7 @@ export default async function AdminUsersPage({
                 <tr key={u.id}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-navy-100 text-xs font-semibold text-navy-800">
-                        {initials(u.fullName, u.email)}
-                      </span>
+                      <UserAvatar name={u.fullName} email={u.email} />
                       <div className="min-w-0">
                         <Link
                           href={`/admin/users/${u.id}`}

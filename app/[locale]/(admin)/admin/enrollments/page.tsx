@@ -5,10 +5,13 @@ import { usersRepository } from "@/lib/db/repositories/users";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
+import { Pencil } from "lucide-react";
 import { removeEnrollmentAction } from "@/lib/admin/actions";
 import { pickLocale } from "@/lib/i18n/localized";
+import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/admin/stat-card";
+import { UserAvatar } from "@/components/admin/user-avatar";
 import { ConfirmSubmit } from "@/components/studio/confirm-submit";
 import { AddStudentForm } from "@/components/admin/add-student-form";
 import type { Locale } from "@/lib/i18n/routing";
@@ -120,7 +123,7 @@ async function CourseRoster({
               <th className="px-4 py-3 font-medium">{t("colStudent")}</th>
               <th className="px-4 py-3 font-medium">{t("colProgress")}</th>
               <th className="px-4 py-3 font-medium">{t("colEnrollStatus")}</th>
-              <th className="px-4 py-3 font-medium" />
+              <th className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -146,8 +149,18 @@ async function CourseRoster({
                 return (
                   <tr key={enrollment.id}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-ink">{user.fullName}</p>
-                      <p className="text-xs text-slate-500">{user.email}</p>
+                      <div className="flex items-center gap-3">
+                        <UserAvatar name={user.fullName} email={user.email} />
+                        <div className="min-w-0">
+                          <Link
+                            href={`/admin/users/${user.id}`}
+                            className="block truncate font-medium text-ink hover:text-navy-600"
+                          >
+                            {user.fullName || "—"}
+                          </Link>
+                          <p className="truncate text-xs text-slate-500">{user.email}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -168,16 +181,23 @@ async function CourseRoster({
                         ({enrollment.status})
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <form
-                        action={removeEnrollmentAction.bind(
-                          null,
-                          user.id,
-                          courseId,
-                        )}
-                      >
-                        <ConfirmSubmit label={t("remove")} />
-                      </form>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          render={<Link href={`/admin/users/${user.id}`} />}
+                          variant="ghost"
+                          size="sm"
+                          className="text-navy-600"
+                        >
+                          <Pencil className="size-3.5" />
+                          {t("edit")}
+                        </Button>
+                        <form
+                          action={removeEnrollmentAction.bind(null, user.id, courseId)}
+                        >
+                          <ConfirmSubmit label={t("remove")} />
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 );
