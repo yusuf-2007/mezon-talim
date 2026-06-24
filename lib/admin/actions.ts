@@ -58,3 +58,19 @@ export async function setCourseStatusAdminAction(
   });
   revalidatePath("/admin/courses");
 }
+
+/** Soft-delete a course from the admin courses list (super_admin only). Audited. */
+export async function deleteCourseAdminAction(courseId: string): Promise<void> {
+  const actor = await requireRole("super_admin");
+  const before = await coursesRepository.findById(courseId);
+  if (!before) return;
+  await coursesRepository.softDelete(courseId);
+  await auditRepository.record({
+    actorUserId: actor.id,
+    action: "course.delete",
+    entityType: "course",
+    entityId: courseId,
+    meta: { slug: before.slug },
+  });
+  revalidatePath("/admin/courses");
+}

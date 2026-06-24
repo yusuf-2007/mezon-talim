@@ -349,6 +349,27 @@
     "colDate": "Дата",
     "colBuyer": "Покупатель",
     "colProvider": "Платёжная система",
-    "colAmount": "Сумма"
+    "colAmount": "Сумма",
+    "navEnrollments": "Записи",
+    "navPayments": "Платежи",
+    "navQuizzes": "Экзамены",
+    "navModuleTests": "Модульные тесты",
+    "navCertificates": "Сертификаты",
+    "navAnalytics": "Аналитика",
+    "newCourse": "Новый курс",
+    "searchCourses": "Название курса или slug...",
+    "statusAll": "Все статусы",
+    "filter": "Фильтр",
+    "colActions": "Действия",
+    "edit": "Редактировать",
+    "preview": "Просмотр",
+    "delete": "Удалить",
+    "comingSoon": "Этот раздел скоро появится.",
+    "comingSoonQuizzes": "Экзамены и тесты пока редактируются внутри курса (Курсы -> курс -> экзамены).",
+    "enrollmentsTitle": "Записи",
+    "quizzesTitle": "Экзамены",
+    "moduleTestsTitle": "Модульные тесты",
+    "certificatesTitle": "Сертификаты",
+    "analyticsTitle": "Аналитика"
   }
 }

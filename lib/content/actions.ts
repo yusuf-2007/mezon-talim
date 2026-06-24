@@ -41,6 +41,7 @@ function optionalLoc(uz?: string, ru?: string): LocalizedText | null {
 // ── Course ───────────────────────────────────────────────────────────────────
 
 export async function createCourseAction(
+  basePath: string,
   _prev: ContentFormState,
   formData: FormData,
 ): Promise<ContentFormState> {
@@ -69,8 +70,9 @@ export async function createCourseAction(
     createdBy: user.id,
   });
 
-  revalidatePath("/studio");
-  return redirectLocalized(`/studio/courses/${course.id}`);
+  // basePath is "/studio" or "/admin" — both surfaces reuse this create form.
+  revalidatePath(basePath);
+  return redirectLocalized(`${basePath}/courses/${course.id}`);
 }
 
 export async function updateCourseAction(

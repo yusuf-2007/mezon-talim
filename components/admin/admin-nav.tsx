@@ -14,9 +14,14 @@ export function AdminNav({ canManage }: { canManage: boolean }) {
 
   const items = [
     { href: "/admin", label: t("navDashboard"), show: true },
-    { href: "/admin/users", label: t("navUsers"), show: canManage },
     { href: "/admin/courses", label: t("navCourses"), show: canManage },
-    { href: "/admin/finance", label: t("navFinance"), show: true },
+    { href: "/admin/users", label: t("navUsers"), show: canManage },
+    { href: "/admin/enrollments", label: t("navEnrollments"), show: canManage },
+    { href: "/admin/payments", label: t("navPayments"), show: true },
+    { href: "/admin/quizzes", label: t("navQuizzes"), show: canManage },
+    { href: "/admin/module-tests", label: t("navModuleTests"), show: canManage },
+    { href: "/admin/certificates", label: t("navCertificates"), show: canManage },
+    { href: "/admin/analytics", label: t("navAnalytics"), show: true },
   ].filter((i) => i.show);
 
   return (

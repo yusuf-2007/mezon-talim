@@ -349,6 +349,27 @@
     "colDate": "Sana",
     "colBuyer": "Xaridor",
     "colProvider": "To'lov tizimi",
-    "colAmount": "Summa"
+    "colAmount": "Summa",
+    "navEnrollments": "Yozilishlar",
+    "navPayments": "To'lovlar",
+    "navQuizzes": "Imtihonlar",
+    "navModuleTests": "Modul testlari",
+    "navCertificates": "Sertifikatlar",
+    "navAnalytics": "Tahlil",
+    "newCourse": "Yangi kurs",
+    "searchCourses": "Kurs nomi yoki slug...",
+    "statusAll": "Barcha holatlar",
+    "filter": "Filtrlash",
+    "colActions": "Amallar",
+    "edit": "Tahrirlash",
+    "preview": "Ko'rish",
+    "delete": "O'chirish",
+    "comingSoon": "Bu bo'lim tez orada qo'shiladi.",
+    "comingSoonQuizzes": "Imtihon va testlar hozircha kurs ichida (Kurslar -> kurs -> imtihonlar) tahrirlanadi.",
+    "enrollmentsTitle": "Yozilishlar",
+    "quizzesTitle": "Imtihonlar",
+    "moduleTestsTitle": "Modul testlari",
+    "certificatesTitle": "Sertifikatlar",
+    "analyticsTitle": "Tahlil"
   }
 }

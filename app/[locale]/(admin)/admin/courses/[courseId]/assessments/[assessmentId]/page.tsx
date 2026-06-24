@@ -1,7 +1,7 @@
 import { requireCourseEditor } from "@/lib/content/access";
 import { AssessmentEditor } from "@/components/studio/assessment-editor";
 
-export default async function AssessmentEditorPage({
+export default async function AdminAssessmentEditorPage({
   params,
 }: {
   params: Promise<{ courseId: string; assessmentId: string }>;
@@ -9,12 +9,12 @@ export default async function AssessmentEditorPage({
   const { courseId, assessmentId } = await params;
   await requireCourseEditor(courseId);
   return (
-    <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-4xl">
       <AssessmentEditor
         courseId={courseId}
         assessmentId={assessmentId}
-        basePath="/studio"
+        basePath="/admin"
       />
-    </section>
+    </div>
   );
 }

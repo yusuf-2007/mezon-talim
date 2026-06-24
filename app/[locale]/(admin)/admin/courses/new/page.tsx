@@ -10,31 +10,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default async function NewCoursePage() {
-  await requireRole("teacher", "super_admin");
-  const t = await getTranslations("Studio");
+/** Admin create-course — reuses the Studio CourseForm; redirects within /admin. */
+export default async function AdminNewCoursePage() {
+  await requireRole("super_admin");
+  const tS = await getTranslations("Studio");
+  const tA = await getTranslations("Admin");
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <Link
-        href="/studio"
-        className="text-sm text-navy-600 hover:underline"
-      >
-        ← {t("backToStudio")}
+    <div className="mx-auto max-w-3xl">
+      <Link href="/admin/courses" className="text-sm text-navy-600 hover:underline">
+        ← {tA("coursesTitle")}
       </Link>
       <Card className="mt-4">
         <CardHeader>
           <CardTitle className="font-heading text-2xl text-navy-800">
-            {t("createCourseTitle")}
+            {tS("createCourseTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <CourseForm
-            action={createCourseAction.bind(null, "/studio")}
-            submitLabel={t("create")}
+            action={createCourseAction.bind(null, "/admin")}
+            submitLabel={tS("create")}
           />
         </CardContent>
       </Card>
-    </section>
+    </div>
   );
 }

@@ -34,6 +34,7 @@ function optLoc(uz?: string, ru?: string): LocalizedText | null {
 // ── Assessment ───────────────────────────────────────────────────────────────
 
 export async function createAssessmentAction(
+  basePath: string,
   courseId: string,
   _prev: AssessFormState,
   formData: FormData,
@@ -56,9 +57,10 @@ export async function createAssessmentAction(
     isScored: d.isScored,
     randomize: d.randomize,
   });
-  revalidatePath(`/studio/courses/${courseId}/assessments`);
+  // basePath is "/studio" or "/admin" — both surfaces reuse this editor.
+  revalidatePath(`${basePath}/courses/${courseId}/assessments`);
   return redirectLocalized(
-    `/studio/courses/${courseId}/assessments/${created.id}`,
+    `${basePath}/courses/${courseId}/assessments/${created.id}`,
   );
 }
 
@@ -90,13 +92,14 @@ export async function updateAssessmentAction(
 }
 
 export async function deleteAssessmentAction(
+  basePath: string,
   courseId: string,
   assessmentId: string,
 ): Promise<void> {
   await requireCourseEditor(courseId);
   await assessmentsRepository.remove(assessmentId);
-  revalidatePath(`/studio/courses/${courseId}/assessments`);
-  return redirectLocalized(`/studio/courses/${courseId}/assessments`);
+  revalidatePath(`${basePath}/courses/${courseId}/assessments`);
+  return redirectLocalized(`${basePath}/courses/${courseId}/assessments`);
 }
 
 // ── Questions ────────────────────────────────────────────────────────────────

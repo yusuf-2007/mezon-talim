@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import { db } from "../client";
 import {
   certificates,
@@ -144,6 +144,7 @@ export const analyticsRepository = {
     const rows = await db
       .select({
         courseId: courses.id,
+        slug: courses.slug,
         title: courses.title,
         status: courses.status,
         priceTiyin: courses.priceTiyin,
@@ -151,9 +152,11 @@ export const analyticsRepository = {
         revenueTiyin: sql<number>`(select coalesce(sum(p.amount_tiyin), 0) from ${payments} p where p.course_id = ${courses.id} and p.status = 'paid')`,
       })
       .from(courses)
+      .where(isNull(courses.deletedAt))
       .orderBy(desc(sql`(select count(*) from ${enrollments} e where e.course_id = ${courses.id})`));
     return rows.map((r) => ({
       courseId: r.courseId,
+      slug: r.slug,
       title: r.title as LocalizedText,
       status: r.status,
       priceTiyin: Number(r.priceTiyin),
