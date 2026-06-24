@@ -92,14 +92,20 @@ export const attempts = pgTable(
   ],
 );
 
-export const attemptAnswers = pgTable("attempt_answers", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  attemptId: uuid("attempt_id")
-    .notNull()
-    .references(() => attempts.id, { onDelete: "cascade" }),
-  questionId: uuid("question_id")
-    .notNull()
-    .references(() => questions.id, { onDelete: "cascade" }),
-  selectedOptionIds: jsonb("selected_option_ids").$type<string[]>().notNull(),
-  isCorrect: boolean("is_correct"),
-});
+export const attemptAnswers = pgTable(
+  "attempt_answers",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    attemptId: uuid("attempt_id")
+      .notNull()
+      .references(() => attempts.id, { onDelete: "cascade" }),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    selectedOptionIds: jsonb("selected_option_ids").$type<string[]>().notNull(),
+    isCorrect: boolean("is_correct"),
+  },
+  // One saved answer per (attempt, question) — enables upsert as the student
+  // navigates the runner.
+  (t) => [unique("attempt_answers_attempt_question_uq").on(t.attemptId, t.questionId)],
+);
