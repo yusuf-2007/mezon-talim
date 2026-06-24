@@ -1,9 +1,21 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Pencil } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { Link } from "@/lib/i18n/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { RoleSelect } from "@/components/admin/role-select";
 import { StatCard } from "@/components/admin/stat-card";
+import type { Locale } from "@/lib/i18n/routing";
+
+function initials(name: string | null, email: string | null): string {
+  const s = (name || email || "?").trim();
+  const parts = s.split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1])
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  return s.slice(0, 2).toUpperCase();
+}
 
 export default async function AdminUsersPage({
   searchParams,
@@ -12,6 +24,7 @@ export default async function AdminUsersPage({
 }) {
   const actor = await requireRole("super_admin");
   const t = await getTranslations("Admin");
+  const locale = (await getLocale()) as Locale;
   const { q } = await searchParams;
 
   const [users, roleCounts] = await Promise.all([
@@ -20,6 +33,8 @@ export default async function AdminUsersPage({
   ]);
   const countFor = (...roles: string[]) =>
     roleCounts.filter((r) => roles.includes(r.role)).reduce((n, r) => n + r.count, 0);
+  const fmtDate = (d: Date) =>
+    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ");
 
   return (
     <div className="space-y-6">
@@ -49,14 +64,17 @@ export default async function AdminUsersPage({
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
               <th className="px-4 py-3 font-medium">{t("colName")}</th>
-              <th className="px-4 py-3 font-medium">{t("colContact")}</th>
               <th className="px-4 py-3 font-medium">{t("colRole")}</th>
+              <th className="px-4 py-3 font-medium">{t("colCourses")}</th>
+              <th className="px-4 py-3 font-medium">{t("colRegistered")}</th>
+              <th className="px-4 py-3 font-medium">{t("colStatus")}</th>
+              <th className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                   {t("noUsers")}
                 </td>
               </tr>
@@ -64,22 +82,49 @@ export default async function AdminUsersPage({
               users.map((u) => (
                 <tr key={u.id}>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/users/${u.id}`}
-                      className="font-medium text-ink hover:text-navy-600"
-                    >
-                      {u.fullName || "—"}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {u.email || u.phone || "—"}
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-navy-100 text-xs font-semibold text-navy-800">
+                        {initials(u.fullName, u.email)}
+                      </span>
+                      <div className="min-w-0">
+                        <Link
+                          href={`/admin/users/${u.id}`}
+                          className="block truncate font-medium text-ink hover:text-navy-600"
+                        >
+                          {u.fullName || "—"}
+                        </Link>
+                        <p className="truncate text-xs text-slate-500">
+                          {u.email || u.phone || "—"}
+                        </p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <RoleSelect
-                      userId={u.id}
-                      role={u.role}
-                      disabled={u.id === actor.id}
-                    />
+                    <RoleSelect userId={u.id} role={u.role} disabled={u.id === actor.id} />
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-slate-600">
+                    {t("coursesCount", { count: u.enrollmentCount })}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-slate-500">
+                    {fmtDate(u.createdAt)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.isActive ? (
+                      <Badge className="bg-success/10 text-success">{t("statusActive")}</Badge>
+                    ) : (
+                      <Badge className="bg-line text-slate-500">{t("statusInactive")}</Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      render={<Link href={`/admin/users/${u.id}`} />}
+                      variant="ghost"
+                      size="sm"
+                      className="text-navy-600"
+                    >
+                      <Pencil className="size-3.5" />
+                      {t("edit")}
+                    </Button>
                   </td>
                 </tr>
               ))

@@ -483,6 +483,9 @@
     "colEntity": "Obyekt",
     "noAudit": "Yozuvlar yo'q.",
     "statEnrolled": "Yozilganlar",
-    "statLessons": "Darslar"
+    "statLessons": "Darslar",
+    "colCourses": "Kurslar",
+    "colRegistered": "Roʼyxatdan oʼtgan",
+    "coursesCount": "{count} ta kurs"
   }
 }

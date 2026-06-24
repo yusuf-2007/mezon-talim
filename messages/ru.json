@@ -483,6 +483,9 @@
     "colEntity": "Объект",
     "noAudit": "Записей нет.",
     "statEnrolled": "Записано",
-    "statLessons": "Уроки"
+    "statLessons": "Уроки",
+    "colCourses": "Курсы",
+    "colRegistered": "Дата регистрации",
+    "coursesCount": "{count} курса"
   }
 }

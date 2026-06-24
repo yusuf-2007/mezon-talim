@@ -1,7 +1,7 @@
 import "server-only";
 import { desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../client";
-import { users } from "../schema";
+import { enrollments, users } from "../schema";
 import type { Role } from "@/lib/auth/types";
 
 type NewUserWithPassword = {
@@ -87,6 +87,7 @@ export const usersRepository = {
   async listAll(opts: { search?: string; limit?: number } = {}) {
     const limit = opts.limit ?? 100;
     const q = opts.search?.trim();
+    // LEFT JOIN + GROUP BY for the enrollment count (single join, no fan-out).
     const rows = await db
       .select({
         id: users.id,
@@ -95,9 +96,12 @@ export const usersRepository = {
         phone: users.phone,
         role: users.role,
         locale: users.locale,
+        isActive: users.isActive,
         createdAt: users.createdAt,
+        enrollmentCount: sql<number>`count(${enrollments.id})`,
       })
       .from(users)
+      .leftJoin(enrollments, eq(enrollments.userId, users.id))
       .where(
         q
           ? or(
@@ -107,9 +111,10 @@ export const usersRepository = {
             )
           : undefined,
       )
+      .groupBy(users.id)
       .orderBy(desc(users.createdAt))
       .limit(limit);
-    return rows;
+    return rows.map((r) => ({ ...r, enrollmentCount: Number(r.enrollmentCount) }));
   },
 
   async countByRole() {

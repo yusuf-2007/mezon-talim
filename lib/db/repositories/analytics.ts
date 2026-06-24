@@ -137,32 +137,52 @@ export const analyticsRepository = {
 
   /**
    * Every course with enrollment + paid-revenue stats (admin courses table).
-   * Uses correlated subqueries — joining both enrollments and payments would
-   * fan out and inflate the revenue sum.
+   * Computed via two grouped aggregates merged in JS — joining enrollments and
+   * payments together in one query would fan out and inflate the revenue sum.
    */
   async allCoursesWithStats() {
-    const rows = await db
-      .select({
-        courseId: courses.id,
-        slug: courses.slug,
-        title: courses.title,
-        status: courses.status,
-        priceTiyin: courses.priceTiyin,
-        enrollments: sql<number>`(select count(*) from ${enrollments} e where e.course_id = ${courses.id})`,
-        revenueTiyin: sql<number>`(select coalesce(sum(p.amount_tiyin), 0) from ${payments} p where p.course_id = ${courses.id} and p.status = 'paid')`,
-      })
-      .from(courses)
-      .where(isNull(courses.deletedAt))
-      .orderBy(desc(sql`(select count(*) from ${enrollments} e where e.course_id = ${courses.id})`));
-    return rows.map((r) => ({
-      courseId: r.courseId,
-      slug: r.slug,
-      title: r.title as LocalizedText,
-      status: r.status,
-      priceTiyin: Number(r.priceTiyin),
-      enrollments: Number(r.enrollments),
-      revenueTiyin: Number(r.revenueTiyin),
-    }));
+    const [courseRows, enrollAgg, payAgg] = await Promise.all([
+      db
+        .select({
+          courseId: courses.id,
+          slug: courses.slug,
+          title: courses.title,
+          status: courses.status,
+          priceTiyin: courses.priceTiyin,
+        })
+        .from(courses)
+        .where(isNull(courses.deletedAt)),
+      db
+        .select({
+          courseId: enrollments.courseId,
+          count: sql<number>`count(*)`,
+        })
+        .from(enrollments)
+        .groupBy(enrollments.courseId),
+      db
+        .select({
+          courseId: payments.courseId,
+          total: sql<number>`coalesce(sum(${payments.amountTiyin}), 0)`,
+        })
+        .from(payments)
+        .where(eq(payments.status, "paid"))
+        .groupBy(payments.courseId),
+    ]);
+
+    const enrollMap = new Map(enrollAgg.map((r) => [r.courseId, Number(r.count)]));
+    const payMap = new Map(payAgg.map((r) => [r.courseId, Number(r.total)]));
+
+    return courseRows
+      .map((r) => ({
+        courseId: r.courseId,
+        slug: r.slug,
+        title: r.title as LocalizedText,
+        status: r.status,
+        priceTiyin: Number(r.priceTiyin),
+        enrollments: enrollMap.get(r.courseId) ?? 0,
+        revenueTiyin: payMap.get(r.courseId) ?? 0,
+      }))
+      .sort((a, b) => b.enrollments - a.enrollments);
   },
 
   /** Courses ranked by enrollment count. */
