@@ -3,7 +3,6 @@
 import { requireUser } from "@/lib/auth";
 import { redirectLocalized } from "@/lib/i18n/redirect";
 import {
-  getExamOverview,
   saveAnswer,
   startOrResumeAttempt,
   submitAttempt,
@@ -39,5 +38,3 @@ export async function submitExamAction(attemptId: string): Promise<void> {
   await submitAttempt(attemptId, user.id);
   return redirectLocalized(`/exam/attempt/${attemptId}/result`);
 }
-
-export { getExamOverview };
