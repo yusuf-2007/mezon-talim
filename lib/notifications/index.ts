@@ -1,5 +1,6 @@
 import "server-only";
 import { resolveSmsSender } from "./eskiz";
+import { resolveEmailSender } from "./resend";
 
 /**
  * Transactional notifications. Email via Resend (external delivery is allowed —
@@ -29,12 +30,10 @@ export interface SmsSender {
   send(message: SmsMessage): Promise<{ id: string }>;
 }
 
-const NOT_IMPLEMENTED =
-  "lib/notifications: senders not implemented until Phase 8.";
-
 export function getEmailSender(): EmailSender {
-  // TODO(phase-8): Resend client.
-  throw new Error(NOT_IMPLEMENTED);
+  // Resend (with dev-console fallback). Email delivery is an allowed off-shore
+  // service — transport only, no personal data stored abroad.
+  return resolveEmailSender();
 }
 
 export function getSmsSender(): SmsSender {

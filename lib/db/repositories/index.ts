@@ -23,3 +23,4 @@ export { usersRepository } from "./users";
 export { phoneOtpsRepository } from "./phone-otps";
 export { verificationTokensRepository } from "./verification-tokens";
 export { certificatesRepository } from "./certificates";
+export { notificationsRepository } from "./notifications";
