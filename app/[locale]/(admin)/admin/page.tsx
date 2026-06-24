@@ -6,22 +6,44 @@ import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { StatCard } from "@/components/admin/stat-card";
 import { RevenueBars } from "@/components/admin/revenue-bars";
+import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/routing";
 
 export default async function AdminDashboardPage() {
-  await requireRole("super_admin", "accountant");
+  const me = await requireRole("super_admin", "accountant");
   const t = await getTranslations("Admin");
   const locale = (await getLocale()) as Locale;
+  const canManage = me.role === "super_admin";
 
-  const [overview, revenueByDay, recentSales, topCourses] = await Promise.all([
-    analyticsRepository.overview(),
-    analyticsRepository.revenueByDay(30),
-    analyticsRepository.recentSales(8),
-    analyticsRepository.topCourses(5),
-  ]);
+  const [overview, revenueByDay, recentSales, topCourses, recentEnrollments] =
+    await Promise.all([
+      analyticsRepository.overview(),
+      analyticsRepository.revenueByDay(30),
+      analyticsRepository.recentSales(8),
+      analyticsRepository.topCourses(5),
+      analyticsRepository.recentEnrollments(7),
+    ]);
+
+  const fmtDate = (d: Date) =>
+    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ");
 
   return (
     <div className="space-y-10">
+      {/* Quick actions */}
+      {canManage && (
+        <div className="flex flex-wrap gap-2">
+          <Button render={<Link href="/admin/courses/new" />} size="sm">
+            {t("qaCreateCourse")}
+          </Button>
+          <Button render={<Link href="/admin/users" />} size="sm" variant="outline">
+            {t("qaViewUsers")}
+          </Button>
+          <Button render={<Link href="/catalog" />} size="sm" variant="outline">
+            {t("qaCatalog")}
+          </Button>
+        </div>
+      )}
+
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -111,6 +133,42 @@ export default async function AdminDashboardPage() {
           )}
         </section>
       </div>
+
+      {/* Recent enrollments */}
+      <section className="rounded-xl border border-line bg-surface p-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="font-heading text-lg font-semibold text-navy-800">
+            {t("recentEnrollmentsTitle")}
+          </h2>
+          <Link
+            href="/admin/enrollments"
+            className="text-sm text-navy-600 hover:underline"
+          >
+            {t("viewAll")}
+          </Link>
+        </div>
+        {recentEnrollments.length === 0 ? (
+          <p className="mt-4 text-sm text-slate-500">{t("noData")}</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-line text-sm">
+            {recentEnrollments.map((e) => (
+              <li key={e.id} className="flex items-center justify-between gap-3 py-2">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-ink">
+                    {e.userName || e.userEmail || "—"}
+                  </p>
+                  <p className="truncate text-xs text-slate-500">
+                    {pickLocale(e.courseTitle, locale)}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs text-slate-500 tabular-nums">
+                  {fmtDate(e.startedAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
