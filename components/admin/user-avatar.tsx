@@ -9,16 +9,31 @@ export function initials(name: string | null, email: string | null): string {
   return s.slice(0, 2).toUpperCase();
 }
 
-/** Initials avatar circle used across the admin user/roster tables. */
+/**
+ * Avatar circle: renders the uploaded image when `src` is given, otherwise an
+ * initials fallback. Used across admin tables and the student dashboard.
+ */
 export function UserAvatar({
   name,
   email,
+  src,
   className,
 }: {
   name: string | null;
   email: string | null;
+  src?: string | null;
   className?: string;
 }) {
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- dynamic DB-served avatar route, not a static asset
+      <img
+        src={src}
+        alt={name ?? email ?? ""}
+        className={cn("size-9 shrink-0 rounded-full object-cover", className)}
+      />
+    );
+  }
   return (
     <span
       className={cn(

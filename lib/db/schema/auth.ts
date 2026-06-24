@@ -101,3 +101,17 @@ export const phoneOtps = pgTable("phone_otps", {
   consumedAt: timestamptz("consumed_at"),
   createdAt: createdAt(),
 });
+
+/**
+ * Student avatar image, stored in-country in the DB (resized to a small square
+ * webp on upload). Served via /api/avatars/[userId]. Separate table so the hot
+ * users.findById path never pulls image bytes.
+ */
+export const userAvatars = pgTable("user_avatars", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  dataBase64: text("data_base64").notNull(),
+  contentType: text("content_type").notNull(),
+  updatedAt: updatedAt(),
+});

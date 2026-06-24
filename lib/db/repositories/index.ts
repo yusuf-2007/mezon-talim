@@ -26,3 +26,4 @@ export { certificatesRepository } from "./certificates";
 export { notificationsRepository } from "./notifications";
 export { analyticsRepository } from "./analytics";
 export { auditRepository } from "./audit";
+export { userAvatarsRepository } from "./user-avatars";

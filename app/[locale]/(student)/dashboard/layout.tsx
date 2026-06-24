@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
+import { userAvatarsRepository } from "@/lib/db/repositories/user-avatars";
 import { DashboardNav } from "@/components/student/dashboard-nav";
 import { DashboardTabs } from "@/components/student/dashboard-tabs";
 
@@ -15,6 +16,7 @@ export default async function DashboardLayout({
 }) {
   const user = await requireUser();
   const t = await getTranslations("Student");
+  const hasAvatar = await userAvatarsRepository.exists(user.id);
 
   const staff =
     user.role === "super_admin" || user.role === "accountant"
@@ -26,7 +28,12 @@ export default async function DashboardLayout({
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-4 sm:px-6 sm:pb-8">
-      <DashboardNav userName={name} staff={staff} />
+      <DashboardNav
+        userId={user.id}
+        userName={name}
+        hasAvatar={hasAvatar}
+        staff={staff}
+      />
       <div className="mt-8">{children}</div>
       <DashboardTabs />
     </div>

@@ -6,6 +6,7 @@ import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import { certificatesRepository } from "@/lib/db/repositories/certificates";
+import { userAvatarsRepository } from "@/lib/db/repositories/user-avatars";
 import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +18,11 @@ export default async function StudentProfilePage() {
   const t = await getTranslations("Student");
   const locale = (await getLocale()) as Locale;
 
-  const [user, enrolled, certs] = await Promise.all([
+  const [user, enrolled, certs, hasAvatar] = await Promise.all([
     usersRepository.findById(sessionUser.id),
     enrollmentsRepository.listActiveWithCourse(sessionUser.id),
     certificatesRepository.listForUserAll(sessionUser.id),
+    userAvatarsRepository.exists(sessionUser.id),
   ]);
   if (!user) notFound();
 
@@ -47,7 +49,12 @@ export default async function StudentProfilePage() {
     <div className="space-y-8">
       {/* Identity */}
       <div className="flex flex-wrap items-center gap-4">
-        <UserAvatar name={user.fullName} email={user.email} className="size-16 text-lg" />
+        <UserAvatar
+          name={user.fullName}
+          email={user.email}
+          src={hasAvatar ? `/api/avatars/${user.id}` : null}
+          className="size-16 text-lg"
+        />
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-2xl font-semibold text-navy-800">{name}</h1>

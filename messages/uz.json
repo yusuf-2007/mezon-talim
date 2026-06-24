@@ -557,6 +557,13 @@
     "notifyEmail": "Email orqali bildirishnomalar",
     "notifySms": "SMS orqali bildirishnomalar",
     "saveSettings": "Saqlash",
-    "settingsSaved": "Sozlamalar saqlandi."
+    "settingsSaved": "Sozlamalar saqlandi.",
+    "uploadAvatar": "Rasm yuklash",
+    "removeAvatar": "Rasmni olib tashlash",
+    "avatarHint": "JPEG, PNG, WebP yoki GIF. Eng koʻpi 2MB.",
+    "avatarMissing": "Rasm tanlanmadi.",
+    "avatarBadType": "Faqat rasm fayllari (JPEG, PNG, WebP, GIF).",
+    "avatarTooBig": "Rasm hajmi 2MB dan oshmasligi kerak.",
+    "avatarFailed": "Rasmni yuklashda xatolik."
   }
 }

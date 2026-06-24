@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Settings } from "lucide-react";
 import { Link, usePathname } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/admin/user-avatar";
 
 /**
  * Student dashboard top nav (desktop). Sits below the shared site header and
@@ -11,10 +12,14 @@ import { cn } from "@/lib/utils";
  * profile + settings (and staff) shortcuts. Mobile uses DashboardTabs instead.
  */
 export function DashboardNav({
+  userId,
   userName,
+  hasAvatar,
   staff,
 }: {
+  userId: string;
   userName: string;
+  hasAvatar: boolean;
   staff: { href: string; label: string } | null;
 }) {
   const t = useTranslations("Student");
@@ -57,9 +62,17 @@ export function DashboardNav({
         )}
         <Link
           href="/dashboard/profile"
-          className="hidden max-w-[12rem] truncate text-sm font-medium text-ink hover:text-navy-600 sm:block"
+          className="hidden max-w-[14rem] items-center gap-2 sm:flex"
         >
-          {userName}
+          <UserAvatar
+            name={userName}
+            email={null}
+            src={hasAvatar ? `/api/avatars/${userId}` : null}
+            className="size-7"
+          />
+          <span className="truncate text-sm font-medium text-ink hover:text-navy-600">
+            {userName}
+          </span>
         </Link>
         <Link
           href="/dashboard/settings"

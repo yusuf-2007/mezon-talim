@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import sharp from "sharp";
 import { requireUser } from "@/lib/auth";
 import { usersRepository } from "@/lib/db/repositories/users";
+import { userAvatarsRepository } from "@/lib/db/repositories/user-avatars";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { redirectLocalized } from "@/lib/i18n/redirect";
 
@@ -78,4 +80,45 @@ export async function updateNotificationPrefsAction(
     notifySms: formData.get("notifySms") === "true",
   });
   revalidatePath("/dashboard/settings");
+}
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
+const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+/** Upload + set own avatar: validate, resize to a small square webp, store in DB. */
+export async function uploadAvatarAction(
+  _prev: AccountFormState,
+  formData: FormData,
+): Promise<AccountFormState> {
+  const user = await requireUser();
+  const t = await getTranslations("Student");
+  const file = formData.get("avatar");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: t("avatarMissing") };
+  }
+  if (!AVATAR_TYPES.includes(file.type)) return { error: t("avatarBadType") };
+  if (file.size > MAX_AVATAR_BYTES) return { error: t("avatarTooBig") };
+
+  try {
+    const input = Buffer.from(await file.arrayBuffer());
+    const webp = await sharp(input)
+      .resize(128, 128, { fit: "cover" })
+      .webp({ quality: 80 })
+      .toBuffer();
+    await userAvatarsRepository.upsert(user.id, webp.toString("base64"), "image/webp");
+  } catch {
+    return { error: t("avatarFailed") };
+  }
+
+  revalidatePath("/dashboard/profile");
+  revalidatePath("/dashboard");
+  return redirectLocalized("/dashboard/profile");
+}
+
+/** Remove own avatar. */
+export async function removeAvatarAction(): Promise<void> {
+  const user = await requireUser();
+  await userAvatarsRepository.remove(user.id);
+  revalidatePath("/dashboard/profile");
+  revalidatePath("/dashboard");
 }

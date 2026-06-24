@@ -557,6 +557,13 @@
     "notifyEmail": "Уведомления по email",
     "notifySms": "Уведомления по SMS",
     "saveSettings": "Сохранить",
-    "settingsSaved": "Настройки сохранены."
+    "settingsSaved": "Настройки сохранены.",
+    "uploadAvatar": "Загрузить фото",
+    "removeAvatar": "Удалить фото",
+    "avatarHint": "JPEG, PNG, WebP или GIF. Максимум 2MB.",
+    "avatarMissing": "Файл не выбран.",
+    "avatarBadType": "Только изображения (JPEG, PNG, WebP, GIF).",
+    "avatarTooBig": "Размер изображения не должен превышать 2MB.",
+    "avatarFailed": "Не удалось загрузить изображение."
   }
 }
