@@ -43,6 +43,15 @@ export default async function EditCoursePage({
         <CourseStatusControls courseId={courseId} status={course.status} />
       </div>
 
+      <div className="mt-4">
+        <Link
+          href={`/studio/courses/${courseId}/assessments`}
+          className="text-sm font-medium text-navy-600 hover:underline"
+        >
+          {t("assessmentsLink")} →
+        </Link>
+      </div>
+
       {/* Course details */}
       <Card className="mt-8">
         <CardHeader>
