@@ -481,6 +481,8 @@
     "colActor": "Kim",
     "colAction": "Amal",
     "colEntity": "Obyekt",
-    "noAudit": "Yozuvlar yo'q."
+    "noAudit": "Yozuvlar yo'q.",
+    "statEnrolled": "Yozilganlar",
+    "statLessons": "Darslar"
   }
 }

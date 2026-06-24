@@ -11,12 +11,12 @@ import type { Locale } from "@/lib/i18n/routing";
 const STATUSES = ["pending", "paid", "failed", "refunded"] as const;
 type PaymentStatus = (typeof STATUSES)[number];
 
-/** Tailwind classes per payment status: paid→success, pending→gold/navy, failed/refunded→danger. */
+/** Design-token classes per payment status: paid→success, pending→gold/navy, failed/refunded→danger. */
 const STATUS_BADGE: Record<PaymentStatus, string> = {
-  paid: "bg-emerald-100 text-emerald-700",
+  paid: "bg-success/10 text-success",
   pending: "bg-gold-100 text-navy-800",
-  failed: "bg-red-100 text-red-700",
-  refunded: "bg-red-100 text-red-700",
+  failed: "bg-danger/10 text-danger",
+  refunded: "bg-danger/10 text-danger",
 };
 
 export default async function AdminPaymentsPage({

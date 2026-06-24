@@ -481,6 +481,8 @@
     "colActor": "Кто",
     "colAction": "Действие",
     "colEntity": "Объект",
-    "noAudit": "Записей нет."
+    "noAudit": "Записей нет.",
+    "statEnrolled": "Записано",
+    "statLessons": "Уроки"
   }
 }

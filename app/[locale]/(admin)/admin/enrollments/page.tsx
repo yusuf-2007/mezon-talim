@@ -101,12 +101,9 @@ async function CourseRoster({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard label={t("enrollmentsSelectCourse")} value={courseTitle} />
-        <StatCard
-          label={t("colStudent")}
-          value={t("enrolledCount", { count: roster.length })}
-        />
-        <StatCard label={t("colProgress")} value={String(totalLessons)} />
+        <StatCard label={t("colCourse")} value={courseTitle} />
+        <StatCard label={t("statEnrolled")} value={String(roster.length)} />
+        <StatCard label={t("statLessons")} value={String(totalLessons)} />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
