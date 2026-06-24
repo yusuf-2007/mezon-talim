@@ -186,4 +186,65 @@ export const analyticsRepository = {
       enrollments: Number(r.enrollments),
     }));
   },
+
+  /** Daily enrollment counts for the last N days (oldest → newest). */
+  async enrollmentsByDay(days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const rows = await db
+      .select({
+        day: sql<string>`to_char(date_trunc('day', ${enrollments.startedAt}), 'YYYY-MM-DD')`,
+        count: sql<number>`count(*)`,
+      })
+      .from(enrollments)
+      .where(gte(enrollments.startedAt, since))
+      .groupBy(sql`date_trunc('day', ${enrollments.startedAt})`)
+      .orderBy(sql`date_trunc('day', ${enrollments.startedAt})`);
+    return rows.map((r) => ({ day: r.day, count: Number(r.count) }));
+  },
+
+  /** Most recent enrollments with student + course (overview / analytics). */
+  async recentEnrollments(limit = 7) {
+    return db
+      .select({
+        id: enrollments.id,
+        startedAt: enrollments.startedAt,
+        userName: users.fullName,
+        userEmail: users.email,
+        courseTitle: courses.title,
+      })
+      .from(enrollments)
+      .innerJoin(users, eq(users.id, enrollments.userId))
+      .innerJoin(courses, eq(courses.id, enrollments.courseId))
+      .orderBy(desc(enrollments.startedAt))
+      .limit(limit);
+  },
+
+  /** Latest signups. */
+  async newUsers(limit = 5) {
+    return db
+      .select({
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+        role: users.role,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .orderBy(desc(users.createdAt))
+      .limit(limit);
+  },
+
+  /** 30-day growth deltas (counts created within the window) for KPI badges. */
+  async growth(days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const [u] = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(users)
+      .where(gte(users.createdAt, since));
+    const [e] = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(enrollments)
+      .where(gte(enrollments.startedAt, since));
+    return { newUsers: Number(u?.n ?? 0), newEnrollments: Number(e?.n ?? 0) };
+  },
 };

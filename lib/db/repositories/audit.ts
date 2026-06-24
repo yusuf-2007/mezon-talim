@@ -1,7 +1,7 @@
 import "server-only";
 import { desc, eq } from "drizzle-orm";
 import { db } from "../client";
-import { auditLog } from "../schema";
+import { auditLog, users } from "../schema";
 
 /**
  * Audit trail for sensitive admin/teacher actions (role changes, publishes,
@@ -28,6 +28,25 @@ export const auditRepository = {
     return db
       .select()
       .from(auditLog)
+      .orderBy(desc(auditLog.createdAt))
+      .limit(limit);
+  },
+
+  /** Recent audit entries with the acting admin's name (for the viewer page). */
+  async recentWithActor(limit = 100) {
+    return db
+      .select({
+        id: auditLog.id,
+        action: auditLog.action,
+        entityType: auditLog.entityType,
+        entityId: auditLog.entityId,
+        meta: auditLog.meta,
+        createdAt: auditLog.createdAt,
+        actorName: users.fullName,
+        actorEmail: users.email,
+      })
+      .from(auditLog)
+      .leftJoin(users, eq(users.id, auditLog.actorUserId))
       .orderBy(desc(auditLog.createdAt))
       .limit(limit);
   },

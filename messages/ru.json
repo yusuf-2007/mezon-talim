@@ -463,6 +463,24 @@
     "statusInactive": "Заблокирован",
     "activate": "Активировать",
     "deactivate": "Заблокировать",
-    "grantRetry": "Дать пересдачу"
+    "grantRetry": "Дать пересдачу",
+    "new30d": "+{count} (30 дней)",
+    "enrollments30d": "Записи (30 дней)",
+    "newUsersTitle": "Новые пользователи",
+    "recentEnrollmentsTitle": "Последние записи",
+    "publishedCoursesLabel": "Опубликованные курсы",
+    "quickActions": "Быстрые действия",
+    "qaCreateCourse": "Создать курс",
+    "qaViewUsers": "Пользователи",
+    "qaCatalog": "Каталог",
+    "viewAll": "Смотреть все",
+    "recentCoursesTitle": "Последние курсы",
+    "auditTitle": "Журнал аудита",
+    "navAudit": "Журнал",
+    "colWhen": "Время",
+    "colActor": "Кто",
+    "colAction": "Действие",
+    "colEntity": "Объект",
+    "noAudit": "Записей нет."
   }
 }

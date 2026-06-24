@@ -463,6 +463,24 @@
     "statusInactive": "Bloklangan",
     "activate": "Faollashtirish",
     "deactivate": "Bloklash",
-    "grantRetry": "Qayta urinish berish"
+    "grantRetry": "Qayta urinish berish",
+    "new30d": "+{count} (30 kun)",
+    "enrollments30d": "Yozilishlar (30 kun)",
+    "newUsersTitle": "Yangi foydalanuvchilar",
+    "recentEnrollmentsTitle": "So'nggi yozilishlar",
+    "publishedCoursesLabel": "Chop etilgan kurslar",
+    "quickActions": "Tezkor amallar",
+    "qaCreateCourse": "Kurs yaratish",
+    "qaViewUsers": "Foydalanuvchilar",
+    "qaCatalog": "Katalog",
+    "viewAll": "Barchasini ko'rish",
+    "recentCoursesTitle": "So'nggi kurslar",
+    "auditTitle": "Audit jurnali",
+    "navAudit": "Jurnal",
+    "colWhen": "Vaqt",
+    "colActor": "Kim",
+    "colAction": "Amal",
+    "colEntity": "Obyekt",
+    "noAudit": "Yozuvlar yo'q."
   }
 }
