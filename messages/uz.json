@@ -565,5 +565,70 @@
     "avatarBadType": "Faqat rasm fayllari (JPEG, PNG, WebP, GIF).",
     "avatarTooBig": "Rasm hajmi 2MB dan oshmasligi kerak.",
     "avatarFailed": "Rasmni yuklashda xatolik."
+  },
+  "About": {
+    "heroBadge": "AAOIFI bilan rasmiy hamkorlikda",
+    "heroTitle": "Mezon Ta'lim haqida",
+    "heroSubtitle": "AAOIFI Shariat standartlarini o'zbek tilida, video darslar ko'rinishida o'rgatuvchi onlayn ta'lim platformasi.",
+    "missionTitle": "Bizning maqsadimiz",
+    "missionBody": "Mezon Ta'lim Islom moliyasi sohasidagi xalqaro AAOIFI standartlarini O'zbekiston mutaxassislari va talabalari uchun tushunarli, tizimli va zamonaviy shaklda yetkazib berishni maqsad qilgan. Biz murakkab standartlarni izchil video kurslarga aylantiramiz — har kim o'z sur'atida o'rganishi mumkin.",
+    "aaoifiTitle": "AAOIFI nima?",
+    "aaoifiBody": "AAOIFI (Accounting and Auditing Organization for Islamic Financial Institutions) — Islom moliya institutlari uchun buxgalteriya, audit, boshqaruv va Shariat standartlarini ishlab chiquvchi xalqaro nodavlat tashkilot. Uning standartlari dunyo bo'ylab Islom banklari va moliya muassasalari tomonidan qo'llaniladi.",
+    "affiliationTitle": "Rasmiy hamkorlik",
+    "affiliationBody": "Mezon Ta'lim AAOIFI bilan rasmiy hamkorlikka ega. Bu bizning o'quv dasturlarimiz manbaga sodiq va ishonchli ekanligini kafolatlaydi.",
+    "howTitle": "Qanday ishlaydi",
+    "step1Title": "Ro'yxatdan o'ting",
+    "step1Body": "Bir necha daqiqada hisob yarating va katalogdan kursni tanlang.",
+    "step2Title": "Video darslarni ko'ring",
+    "step2Body": "Modullar va darslar ketma-ket ochiladi — o'z sur'atingizda o'rganing.",
+    "step3Title": "Baholashdan o'ting",
+    "step3Body": "Har dars testi, modul testlari va yakuniy imtihon bilimingizni mustahkamlaydi.",
+    "step4Title": "Sertifikat oling",
+    "step4Body": "Yakuniy imtihondan 70%+ ball to'plab, PDF sertifikatni qo'lga kiriting.",
+    "ctaTitle": "O'rganishni boshlashga tayyormisiz?",
+    "ctaButton": "Kurslarni ko'rish"
+  },
+  "Faq": {
+    "heroTitle": "Savol-javob",
+    "heroSubtitle": "Eng ko'p beriladigan savollarga javoblar.",
+    "contactNote": "Savolingizga javob topmadingizmi? Biz bilan bog'laning.",
+    "items": [
+      {
+        "q": "Kurslarga qanday yozilaman?",
+        "a": "Ro'yxatdan o'ting, katalogdan kursni tanlang va Click yoki Payme orqali to'lov qiling. To'lov tasdiqlangach kurs avtomatik ochiladi."
+      },
+      {
+        "q": "Qaysi to'lov tizimlari qo'llab-quvvatlanadi?",
+        "a": "Hozircha Click va Payme to'lov tizimlari qo'llab-quvvatlanadi."
+      },
+      {
+        "q": "Kursni tugatgach sertifikat beriladimi?",
+        "a": "Ha. Kursni yakunlab, yakuniy imtihondan kamida 70% ball to'plasangiz, avtomatik PDF sertifikat beriladi. Har bir sertifikatni omma oldida tekshirish sahifasi orqali tasdiqlash mumkin."
+      },
+      {
+        "q": "Kurslar qaysi tillarda?",
+        "a": "Hozircha kurslar o'zbek tilida. Rus tili tez orada qo'shiladi."
+      },
+      {
+        "q": "Video darslarni yuklab olsa bo'ladimi?",
+        "a": "Yo'q. Videolar faqat ko'rish uchun mo'ljallangan va yuklab olish imkoni yo'q."
+      },
+      {
+        "q": "Yakuniy imtihonni necha marta topshirish mumkin?",
+        "a": "Yakuniy imtihonni 3 martagacha topshirish mumkin. Har urinish orasida 24 soat kutish talab etiladi. Bundan tashqari, bir marta sinov (mock) imtihoni mavjud."
+      },
+      {
+        "q": "Darslar ketma-ket ochiladimi?",
+        "a": "Ha. Har bir dars oldingisini yakunlagandan so'ng ochiladi. Bu materialni izchil o'zlashtirishga yordam beradi."
+      },
+      {
+        "q": "Shaxsiy ma'lumotlarim qayerda saqlanadi?",
+        "a": "Barcha shaxsiy ma'lumotlaringiz O'zbekiston hududidagi serverlarda saqlanadi — bu ZRU-547 «Shaxsiy ma'lumotlar to'g'risida»gi qonun talabiga muvofiq."
+      },
+      {
+        "q": "AAOIFI'ning rasmiy guvohnomasini olamanmi?",
+        "a": "Mezon Ta'lim o'zining kurs yakunlash sertifikatini beradi. AAOIFI'ning rasmiy kasbiy guvohnomasi esa AAOIFI'ning o'z imtihoni orqali olinadi — biz ro'yxatdan o'tishda yordam berishimiz mumkin."
+      }
+    ]
   }
 }

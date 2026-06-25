@@ -37,7 +37,7 @@ export default async function LandingPage({
               {t("browseCourses")}
             </Button>
             <Button
-              render={<Link href="/" />}
+              render={<Link href="/about" />}
               size="lg"
               variant="outline"
               className="border-navy-100/40 bg-transparent text-white hover:bg-navy-800 hover:text-white"

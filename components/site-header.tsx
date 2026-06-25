@@ -9,7 +9,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 
 /**
  * Light top bar that sits above the navy hero. Shows auth actions based on the
- * current session. Catalog/about/faq targets are still placeholders.
+ * current session.
  */
 export async function SiteHeader() {
   const [t, user] = await Promise.all([
@@ -28,10 +28,10 @@ export async function SiteHeader() {
           <Link href="/catalog" className="transition-colors hover:text-navy-800">
             {t("courses")}
           </Link>
-          <Link href="/" className="transition-colors hover:text-navy-800">
+          <Link href="/about" className="transition-colors hover:text-navy-800">
             {t("about")}
           </Link>
-          <Link href="/" className="transition-colors hover:text-navy-800">
+          <Link href="/faq" className="transition-colors hover:text-navy-800">
             {t("faq")}
           </Link>
         </nav>
