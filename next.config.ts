@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/certificates/**": ["./lib/certificates/assets/*.ttf"],
   },
+
+  // Static landing-page mockups live in public/preview/*.html. Serve them at
+  // clean, extensionless URLs (/preview, /preview/1a …) so clients can compare
+  // directions. These are throwaway design previews, not app routes — no i18n.
+  async rewrites() {
+    return [
+      { source: "/preview", destination: "/preview/index.html" },
+      { source: "/preview/:variant", destination: "/preview/:variant.html" },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

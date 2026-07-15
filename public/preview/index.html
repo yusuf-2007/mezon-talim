@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landing variantlari — Mezon Ta'lim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#011E38;color:#C6D6E6;font-family:'Manrope',system-ui,sans-serif;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2246%22 height=%2246%22><path d=%22M23 1 L45 23 L23 45 L1 23 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.04%22 stroke-width=%221%22/></svg>');background-size:46px 46px}
+  .wrap{max-width:1040px;margin:0 auto;padding:64px 24px 80px}
+  .brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:28px}
+  .mark{width:30px;height:24px;position:relative;display:inline-block}
+  .mark span{position:absolute;top:0;width:13px;height:24px}
+  .mark .l{left:0;background:#9BB8D4;border-radius:3px 0 0 7px;transform:skewX(-6deg)}
+  .mark .r{right:0;background:#F8B801;border-radius:0 3px 7px 0;transform:skewX(6deg)}
+  .brand b{font-family:'Spectral',serif;font-weight:600;font-size:1.25rem}
+  .brand b .w{color:#fff}.brand b .g{color:#F8B801}
+  h1{font-family:'Spectral',serif;font-weight:600;font-size:2.4rem;line-height:1.1;color:#fff;letter-spacing:-.02em;margin:0 0 12px}
+  .lead{font-size:1.02rem;line-height:1.6;color:#8FA8C0;max-width:60ch;margin:0 0 44px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .card{display:block;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:22px;text-decoration:none;color:inherit;transition:transform .2s,border-color .2s,background .2s}
+  .card:hover{transform:translateY(-3px);border-color:rgba(248,184,1,.5);background:rgba(255,255,255,.07)}
+  .id{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:30px;padding:0 10px;background:#F8B801;color:#011E38;font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:.9rem;border-radius:7px;margin-bottom:14px}
+  .name{font-family:'Spectral',serif;font-weight:600;font-size:1.3rem;color:#fff;margin:0 0 8px}
+  .desc{font-size:.9rem;line-height:1.55;color:#8FA8C0;margin:0}
+  .go{display:inline-block;margin-top:16px;font-size:.86rem;font-weight:700;color:#F8B801}
+  .grp{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#5E7A96;margin:40px 0 14px}
+  .grp:first-of-type{margin-top:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span class="mark"><span class="l"></span><span class="r"></span></span><b><span class="w">Mezon</span> <span class="g">Ta&rsquo;lim</span></b></div>
+  <h1>Landing sahifa variantlari</h1>
+  <p class="lead">Bosh sahifa uchun beshta yo&rsquo;nalish. Har birini ochib, taqqoslang &mdash; navy + oltin, Spectral / Manrope. Kerakli variantni tanlaganingizdan so&rsquo;ng, uni haqiqiy i18n (UZ/RU) va havolalar bilan to&rsquo;liq integratsiya qilamiz.</p>
+
+  <div class="grp">To&rsquo;plam 1 &mdash; Landing Variants</div>
+  <div class="grid">
+    <a class="card" href="/preview/1a"><span class="id">1a</span><h2 class="name">Editorial Classic</h2><p class="desc">Joriy sahifaning sayqallangan varianti: navy split hero, tartibli karta panjaralari.</p><span class="go">Ko&rsquo;rish &rarr;</span></a>
+    <a class="card" href="/preview/1b"><span class="id">1b</span><h2 class="name">Immersive Split</h2><p class="desc">Katta shrift, to&rsquo;liq navy hero, raqamlangan bosqichlar va kurslar tasmasi.</p><span class="go">Ko&rsquo;rish &rarr;</span></a>
+    <a class="card" href="/preview/1c"><span class="id">1c</span><h2 class="name">Warm Academic</h2><p class="desc">Yorug&rsquo; iliq hero, almashinuvchi bo&rsquo;limlar va oltin CTA lahzasi.</p><span class="go">Ko&rsquo;rish &rarr;</span></a>
+  </div>
+
+  <div class="grp">To&rsquo;plam 2 &mdash; Landing Options v2</div>
+  <div class="grid">
+    <a class="card" href="/preview/2a"><span class="id">2a</span><h2 class="name">Editorial Institution</h2><p class="desc">Navy/yorug&rsquo; ritm, katta serif, raqamlangan dastur yo&rsquo;nalishlari, o&rsquo;quv dasturi ko&rsquo;rinishi.</p><span class="go">Ko&rsquo;rish &rarr;</span></a>
+    <a class="card" href="/preview/2b"><span class="id">2b</span><h2 class="name">Structured Platform</h2><p class="desc">Yorug&rsquo; va aniq: statistika paneli, boy kurs kartalari, gorizontal katalog tasmasi.</p><span class="go">Ko&rsquo;rish &rarr;</span></a>
+  </div>
+</div>
+</body>
+</html>
