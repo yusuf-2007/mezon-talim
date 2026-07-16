@@ -11,11 +11,13 @@ export async function PlayerSidebar({
   curriculum,
   activeLessonId,
   examBox,
+  examActive = false,
 }: {
   courseId: string;
   curriculum: Curriculum;
   activeLessonId: string;
   examBox: FinalExamBox | null;
+  examActive?: boolean;
 }) {
   const locale = await getLocale();
   const t = await getTranslations("Course");
@@ -85,77 +87,132 @@ export async function PlayerSidebar({
           </div>
         ))}
 
-        {/* Terminal final-exam box (spec 3.2) — the last item after all modules. */}
+        {/* Terminal final-exam box (spec 3.2) — the last item after all modules.
+            The whole card links to the exam page in every state except `locked`
+            (the student genuinely can't enter it yet). */}
         {examBox && (
           <div className="p-4">
-            <div
-              className={cn(
-                "relative rounded-xl border p-4",
-                examBox.state === "locked" || examBox.state === "needs_approval"
-                  ? "border-line bg-bg"
-                  : "border-gold-400 bg-gold-100/50",
-              )}
-            >
-              <span className="absolute right-3 top-3 text-[9px] font-bold uppercase tracking-wider text-gold-500">
-                {tExam("finalStep")}
-              </span>
-              <div className="flex items-start gap-3">
-                <span
-                  className={cn(
-                    "flex size-9 shrink-0 items-center justify-center rounded-lg font-heading text-sm font-bold",
-                    examBox.state === "locked" ||
-                      examBox.state === "needs_approval"
-                      ? "bg-line text-slate-500"
-                      : "bg-navy-900 text-gold-100",
-                  )}
-                  aria-hidden
-                >
-                  Q
-                </span>
-                <div className="min-w-0">
-                  <p className="font-heading text-sm font-semibold text-navy-800">
-                    {pickLocale(examBox.title, locale)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    {tExam("questionsCount", { count: examBox.questionCount })} ·{" "}
-                    {tExam("threshold", { pct: examBox.passThresholdPct })}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 text-sm">
-                {examBox.state === "ready" && (
-                  <Link
-                    href={`/exam/${examBox.assessmentId}`}
-                    className="inline-flex items-center gap-1.5 font-semibold text-gold-500 hover:underline"
-                  >
-                    ▷ {tExam("startFinalExam")}
-                  </Link>
-                )}
-                {examBox.state === "passed" && (
-                  <span className="inline-flex items-center gap-1.5 font-semibold text-success">
-                    ✓ {tExam("examPassed")}
-                  </span>
-                )}
-                {examBox.state === "locked" && (
-                  <span className="inline-flex items-center gap-1.5 text-slate-500">
-                    🔒{" "}
-                    {tExam("unlockHint", {
-                      done: examBox.lessonsDone,
-                      total: examBox.lessonsTotal,
-                    })}
-                  </span>
-                )}
-                {examBox.state === "needs_approval" && (
-                  <span className="inline-flex items-center gap-1.5 text-slate-500">
-                    🔒 {tExam("retryNeedsApproval")}
-                  </span>
-                )}
-              </div>
-            </div>
+            <ExamBoxCard
+              examBox={examBox}
+              locale={locale}
+              tExam={tExam}
+              active={examActive}
+            />
           </div>
         )}
       </div>
     </nav>
+  );
+}
+
+/**
+ * Terminal final-exam card. Clickable (links to the exam page) in every state
+ * except `locked`, where it stays greyed and inert because the student can't
+ * enter the exam yet. The status row communicates: passed / not passed /
+ * not taken / retry-needs-approval / locked-with-lesson-hint.
+ */
+function ExamBoxCard({
+  examBox,
+  locale,
+  tExam,
+  active = false,
+}: {
+  examBox: FinalExamBox;
+  locale: string;
+  tExam: Awaited<ReturnType<typeof getTranslations<"Exam">>>;
+  active?: boolean;
+}) {
+  const locked = examBox.state === "locked";
+  // "Live" = clickable + gold-accented; locked = muted + inert.
+  const accent = !locked;
+
+  const statusRow = (() => {
+    switch (examBox.state) {
+      case "passed":
+        return (
+          <span className="inline-flex items-center gap-1.5 font-semibold text-success">
+            ✓ {tExam("examPassed")}
+            {examBox.bestScorePct != null && (
+              <span className="tabular-nums opacity-80">· {examBox.bestScorePct}%</span>
+            )}
+          </span>
+        );
+      case "needs_approval":
+        // Took it, failed, out of attempts → still clickable to request access.
+        return (
+          <span className="inline-flex items-center gap-1.5 font-medium text-danger">
+            ✗ {tExam("examNotPassed")}
+          </span>
+        );
+      case "ready":
+        return examBox.attempted ? (
+          // Failed but has attempts left → retry.
+          <span className="inline-flex items-center gap-1.5 font-semibold text-gold-500">
+            ↻ {tExam("examRetry")}
+            {examBox.bestScorePct != null && (
+              <span className="tabular-nums opacity-80">· {examBox.bestScorePct}%</span>
+            )}
+          </span>
+        ) : (
+          // Never taken → start.
+          <span className="inline-flex items-center gap-1.5 font-semibold text-gold-500">
+            ▷ {tExam("startFinalExam")}
+          </span>
+        );
+      case "locked":
+        return (
+          <span className="inline-flex items-center gap-1.5 text-slate-500">
+            🔒{" "}
+            {tExam("unlockHint", {
+              done: examBox.lessonsDone,
+              total: examBox.lessonsTotal,
+            })}
+          </span>
+        );
+    }
+  })();
+
+  const inner = (
+    <div
+      className={cn(
+        "relative rounded-xl border p-4 transition-colors",
+        accent
+          ? "border-gold-400 bg-gold-100/50 hover:bg-gold-100"
+          : "border-line bg-bg",
+        active && "ring-2 ring-navy-800 ring-offset-1",
+      )}
+    >
+      <span className="absolute right-3 top-3 text-[9px] font-bold uppercase tracking-wider text-gold-500">
+        {tExam("finalStep")}
+      </span>
+      <div className="flex items-start gap-3">
+        <span
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-lg font-heading text-sm font-bold",
+            accent ? "bg-navy-900 text-gold-100" : "bg-line text-slate-500",
+          )}
+          aria-hidden
+        >
+          Q
+        </span>
+        <div className="min-w-0">
+          <p className="font-heading text-sm font-semibold text-navy-800">
+            {pickLocale(examBox.title, locale)}
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {tExam("questionsCount", { count: examBox.questionCount })} ·{" "}
+            {tExam("threshold", { pct: examBox.passThresholdPct })}
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 text-sm">{statusRow}</div>
+    </div>
+  );
+
+  if (locked) return inner;
+  return (
+    <Link href={`/exam/${examBox.assessmentId}`} className="block">
+      {inner}
+    </Link>
   );
 }

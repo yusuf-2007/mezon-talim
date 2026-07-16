@@ -341,7 +341,9 @@
     "qType_single": "Один ответ",
     "qType_multiple": "Несколько ответов",
     "qType_true_false": "Верно / Неверно",
-    "points": "Баллы"
+    "points": "Баллы",
+    "examNotPassed": "Не пройден",
+    "examRetry": "Повторить"
   },
   "Dashboard": {
     "title": "Мои курсы",

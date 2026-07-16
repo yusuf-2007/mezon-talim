@@ -7,6 +7,7 @@ import { issueIfEligible } from "@/lib/certificates/service";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Button } from "@/components/ui/button";
+import { CoursePlayerShell } from "@/components/player/course-player-shell";
 import { cn } from "@/lib/utils";
 
 function fmtDuration(total: number): string {
@@ -35,8 +36,8 @@ export default async function ExamResultPage({
     ? await issueIfEligible(user.id, result.assessment.courseId)
     : null;
 
-  return (
-    <section className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+  const body = (
+    <section className="mx-auto max-w-2xl">
       <div
         className={cn(
           "rounded-xl border p-8 text-center",
@@ -185,4 +186,19 @@ export default async function ExamResultPage({
       </div>
     </section>
   );
+
+  // Final-exam results stay inside the course-player shell (sidebar visible).
+  if (result.assessment.type === "final_exam" && course) {
+    return (
+      <CoursePlayerShell
+        courseId={result.assessment.courseId}
+        courseSlug={course.slug}
+        userId={user.id}
+        activeLessonId="exam"
+      >
+        {body}
+      </CoursePlayerShell>
+    );
+  }
+  return <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">{body}</div>;
 }

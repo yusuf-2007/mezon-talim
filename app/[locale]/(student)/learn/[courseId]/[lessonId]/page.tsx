@@ -10,7 +10,6 @@ import { glossaryRepository } from "@/lib/db/repositories/glossary";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
 import { getCurriculum, locateLesson } from "@/lib/learning/curriculum";
-import { getFinalExamBox } from "@/lib/assessments/service";
 import {
   addBookmarkAction,
   addNoteAction,
@@ -25,7 +24,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlayerSidebar } from "@/components/player/player-sidebar";
+import { CoursePlayerShell } from "@/components/player/course-player-shell";
 import { VideoFrame } from "@/components/player/video-frame";
 import { CompleteControls } from "@/components/player/complete-controls";
 import { AddNoteForm } from "@/components/player/add-note-form";
@@ -45,33 +44,28 @@ export default async function PlayerPage({
   const course = await coursesRepository.findById(courseId);
   if (!course) notFound();
 
-  const [curriculum, examBox] = await Promise.all([
-    getCurriculum(courseId, user.id),
-    getFinalExamBox(courseId, user.id),
-  ]);
+  const curriculum = await getCurriculum(courseId, user.id);
   const { lesson, prevId, nextId } = locateLesson(curriculum, lessonId);
   if (!lesson) notFound();
 
-  const sidebar = (
-    <PlayerSidebar
-      courseId={courseId}
-      curriculum={curriculum}
-      activeLessonId={lessonId}
-      examBox={examBox}
-    />
-  );
+  const shellProps = {
+    courseId,
+    courseSlug: course.slug,
+    userId: user.id,
+    activeLessonId: lessonId,
+  };
 
   // Locked / not-enrolled lesson → message instead of the video.
   if (!lesson.accessible) {
     return (
-      <PlayerShell courseSlug={course.slug} sidebar={sidebar}>
+      <CoursePlayerShell {...shellProps}>
         <div className="rounded-xl border border-line bg-surface p-10 text-center">
           <p className="text-4xl">🔒</p>
           <p className="mt-4 text-slate-500">
             {curriculum.enrolled ? t("locked") : t("notEnrolled")}
           </p>
         </div>
-      </PlayerShell>
+      </CoursePlayerShell>
     );
   }
 
@@ -87,7 +81,7 @@ export default async function PlayerPage({
   const bodyText = pickLocale(full?.body, locale);
 
   return (
-    <PlayerShell courseSlug={course.slug} sidebar={sidebar}>
+    <CoursePlayerShell {...shellProps}>
       <h1 className="font-heading text-2xl font-semibold text-navy-800">
         {lessonTitle}
       </h1>
@@ -205,7 +199,7 @@ export default async function PlayerPage({
           </TabsContent>
         </Tabs>
       </div>
-    </PlayerShell>
+    </CoursePlayerShell>
   );
 }
 
@@ -213,29 +207,4 @@ function formatTimestamp(s: number): string {
   const m = Math.floor(s / 60);
   const sec = s % 60;
   return `${m}:${String(sec).padStart(2, "0")}`;
-}
-
-async function PlayerShell({
-  courseSlug,
-  sidebar,
-  children,
-}: {
-  courseSlug: string;
-  sidebar: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const t = await getTranslations("Player");
-  return (
-    <div className="mx-auto grid max-w-7xl gap-0 lg:grid-cols-[20rem_1fr]">
-      <aside className="hidden border-r border-line bg-surface lg:block lg:min-h-[calc(100vh-4rem)]">
-        <div className="border-b border-line p-4">
-          <Link href={`/courses/${courseSlug}`} className="text-sm text-navy-600 hover:underline">
-            ← {t("backToCourse")}
-          </Link>
-        </div>
-        {sidebar}
-      </aside>
-      <main className="px-4 py-8 sm:px-6">{children}</main>
-    </div>
-  );
 }

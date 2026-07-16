@@ -341,7 +341,9 @@
     "qType_single": "Bitta javob",
     "qType_multiple": "Bir nechta javob",
     "qType_true_false": "To‘g‘ri / Noto‘g‘ri",
-    "points": "Ball"
+    "points": "Ball",
+    "examNotPassed": "O‘tilmadi",
+    "examRetry": "Qayta urinish"
   },
   "Dashboard": {
     "title": "Mening kurslarim",

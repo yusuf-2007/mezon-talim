@@ -157,6 +157,10 @@ export type FinalExamBox = {
   questionCount: number;
   passThresholdPct: number;
   state: "ready" | "passed" | "locked" | "needs_approval";
+  /** Whether the student has any submitted attempt (distinguishes "not taken" from "failed"). */
+  attempted: boolean;
+  /** Best score so far, or null if never taken. */
+  bestScorePct: number | null;
   /** Lessons progress for the lock hint (spec 3.2). */
   lessonsDone: number;
   lessonsTotal: number;
@@ -197,6 +201,8 @@ export async function getFinalExamBox(
     questionCount: overview.questionCount,
     passThresholdPct: finalExam.passThresholdPct,
     state,
+    attempted: overview.attemptsUsed > 0,
+    bestScorePct: overview.bestScorePct,
     lessonsDone: overview.prereq?.lessons.completed ?? 0,
     lessonsTotal: overview.prereq?.lessons.total ?? 0,
   };

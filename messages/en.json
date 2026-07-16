@@ -341,7 +341,9 @@
     "qType_single": "Single answer",
     "qType_multiple": "Multiple answers",
     "qType_true_false": "True / False",
-    "points": "Points"
+    "points": "Points",
+    "examNotPassed": "Not passed",
+    "examRetry": "Retry exam"
   },
   "Dashboard": {
     "title": "My courses",

@@ -4,8 +4,10 @@ import { requireUser } from "@/lib/auth";
 import { getExamOverview } from "@/lib/assessments/service";
 import { startExamAction } from "@/lib/assessments/actions";
 import { modulesRepository } from "@/lib/db/repositories/modules";
+import { coursesRepository } from "@/lib/db/repositories/courses";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Button } from "@/components/ui/button";
+import { CoursePlayerShell } from "@/components/player/course-player-shell";
 import { RequestAccessButton } from "@/components/exam/request-access-button";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -22,7 +24,11 @@ export default async function PreExamPage({
   const o = await getExamOverview(assessmentId, user.id);
   if (!o) notFound();
   const a = o.assessment;
-  const moduleCount = (await modulesRepository.listByCourse(a.courseId)).length;
+  const [modules, course] = await Promise.all([
+    modulesRepository.listByCourse(a.courseId),
+    coursesRepository.findById(a.courseId),
+  ]);
+  const moduleCount = modules.length;
 
   const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ";
   const fmtDate = (ms: number) => new Date(ms).toLocaleDateString(dateLocale);
@@ -45,8 +51,8 @@ export default async function PreExamPage({
     { label: t("statModules"), value: String(moduleCount) },
   ];
 
-  return (
-    <section className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+  const body = (
+    <section className="mx-auto max-w-2xl">
       <p className="text-sm text-slate-500">{t("examTitle")}</p>
       <h1 className="mt-1 font-heading text-3xl font-semibold text-navy-800">
         {pickLocale(a.title, locale)}
@@ -167,6 +173,22 @@ export default async function PreExamPage({
       </div>
     </section>
   );
+
+  // Final exams live inside the course-player shell (sidebar stays); other
+  // assessment types render standalone.
+  if (a.type === "final_exam" && course) {
+    return (
+      <CoursePlayerShell
+        courseId={a.courseId}
+        courseSlug={course.slug}
+        userId={user.id}
+        activeLessonId="exam"
+      >
+        {body}
+      </CoursePlayerShell>
+    );
+  }
+  return <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">{body}</div>;
 }
 
 function PrereqRow({
