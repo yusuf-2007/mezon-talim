@@ -48,4 +48,5 @@ export const questionMetaSchema = z.object({
   explanationUz: z.string().trim().optional(),
   explanationRu: z.string().trim().optional(),
   points: z.coerce.number().int().min(1).max(100).catch(1),
+  moduleId: optionalId, // tag to a course module for the breakdown (optional)
 });

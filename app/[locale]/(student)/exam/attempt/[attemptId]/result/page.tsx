@@ -9,6 +9,12 @@ import { pickLocale } from "@/lib/i18n/localized";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+function fmtDuration(total: number): string {
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 export default async function ExamResultPage({
   params,
 }: {
@@ -42,9 +48,28 @@ export default async function ExamResultPage({
           {result.isScored ? (result.passed ? t("passed") : t("failed")) : t("resultTitle")}
         </h1>
         {result.isScored && (
-          <p className="mt-2 text-lg font-medium tabular-nums text-navy-800">
-            {t("yourScore", { pct: result.scorePct })}
-          </p>
+          <>
+            <p className="mt-2 text-lg font-medium tabular-nums text-navy-800">
+              {t("yourScore", { pct: result.scorePct })}
+            </p>
+            <div className="mx-auto mt-3 h-2 max-w-xs overflow-hidden rounded-full bg-navy-100">
+              <div
+                className={cn(
+                  "h-full rounded-full",
+                  result.passed ? "bg-success" : "bg-danger",
+                )}
+                style={{ width: `${result.scorePct}%` }}
+              />
+            </div>
+            <p className="mt-3 text-sm text-slate-500 tabular-nums">
+              {t("correctCount", {
+                correct: result.correctCount,
+                total: result.totalCount,
+              })}
+              {" · "}
+              {t("timeSpent")}: {fmtDuration(result.timeSpentSeconds)}
+            </p>
+          </>
         )}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           {certificate && (
@@ -67,6 +92,49 @@ export default async function ExamResultPage({
           )}
         </div>
       </div>
+
+      {/* Per-module breakdown (informational — overall % decides pass/fail) */}
+      {result.moduleBreakdown.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-heading text-xl font-semibold text-navy-800">
+            {t("moduleBreakdown")}
+          </h2>
+          <ul className="mt-4 space-y-2">
+            {result.moduleBreakdown.map((m, i) => {
+              const pass = m.pct >= result.passThresholdPct;
+              return (
+                <li
+                  key={m.moduleId ?? `none-${i}`}
+                  className="rounded-lg border border-line bg-surface p-3"
+                >
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-ink">
+                      {m.title ? pickLocale(m.title, locale) : "—"}
+                    </span>
+                    <span
+                      className={cn(
+                        "font-medium tabular-nums",
+                        pass ? "text-success" : "text-danger",
+                      )}
+                    >
+                      {m.pct}%
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-navy-100">
+                    <div
+                      className={cn(
+                        "h-full rounded-full",
+                        pass ? "bg-success" : "bg-danger",
+                      )}
+                      style={{ width: `${m.pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Answer review — only after passing (B16) */}
       <div className="mt-8">

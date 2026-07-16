@@ -93,8 +93,10 @@ export async function AssessmentEditor({
                   prompt: q.prompt,
                   explanation: q.explanation,
                   points: q.points,
+                  moduleId: q.moduleId,
                   options: q.options.map((o) => ({ label: o.label, isCorrect: o.isCorrect })),
                 }}
+                modules={modules.map((m) => ({ id: m.id, title: m.title }))}
                 updateAction={updateQuestionAction.bind(null, courseId, assessmentId, q.id)}
                 deleteAction={deleteQuestionAction.bind(null, courseId, assessmentId, q.id)}
               />
@@ -102,7 +104,10 @@ export async function AssessmentEditor({
           </ul>
         )}
         <div className="mt-6">
-          <AddQuestion action={createQuestionAction.bind(null, courseId, assessmentId)} />
+          <AddQuestion
+            action={createQuestionAction.bind(null, courseId, assessmentId)}
+            modules={modules.map((m) => ({ id: m.id, title: m.title }))}
+          />
         </div>
       </div>
     </>

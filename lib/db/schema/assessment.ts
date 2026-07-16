@@ -53,6 +53,11 @@ export const questions = pgTable("questions", {
   assessmentId: uuid("assessment_id")
     .notNull()
     .references(() => assessments.id, { onDelete: "cascade" }),
+  // Optional tag to a course module — powers the final-exam per-module breakdown
+  // on the result screen (informational; the overall % still decides pass/fail).
+  moduleId: uuid("module_id").references(() => modules.id, {
+    onDelete: "set null",
+  }),
   orderIndex: integer("order_index").notNull(),
   type: questionType("type").notNull(),
   prompt: jsonb("prompt").$type<LocalizedText>().notNull(),

@@ -140,6 +140,7 @@ async function buildQuestionInput(formData: FormData) {
       prompt: loc(meta.data.promptUz, meta.data.promptRu),
       explanation: optLoc(meta.data.explanationUz, meta.data.explanationRu),
       points: meta.data.points,
+      moduleId: meta.data.moduleId,
       options,
     },
   };

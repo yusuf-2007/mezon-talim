@@ -253,7 +253,8 @@ export function ExamRunner({
               <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
                 {t("prev")}
               </Button>
-              <Button type="button" onClick={() => submitRef.current?.requestSubmit()}>
+              {/* Native submit tied to the hidden form → fires the server action. */}
+              <Button type="submit" form="exam-submit-form">
                 {t("submit")}
               </Button>
             </div>
@@ -261,8 +262,16 @@ export function ExamRunner({
         </div>
       )}
 
-      {/* Hidden submit form — target for the dialog and time-expiry auto-submit. */}
-      <form ref={submitRef} action={submitExamAction.bind(null, attemptId)} className="hidden" />
+      {/* Hidden submit form — has a submit button so requestSubmit() (time expiry)
+          and the dialog's form-linked button both reliably fire the action. */}
+      <form
+        id="exam-submit-form"
+        ref={submitRef}
+        action={submitExamAction.bind(null, attemptId)}
+        className="hidden"
+      >
+        <button type="submit" aria-hidden tabIndex={-1} />
+      </form>
     </div>
   );
 }

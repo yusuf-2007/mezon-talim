@@ -257,7 +257,9 @@
     "questionsCount": "{count} questions",
     "isPublished": "Published (visible to students)",
     "questionsToServe": "Number of questions to serve (empty = all)",
-    "points": "Points"
+    "points": "Points",
+    "questionModule": "Module",
+    "noModule": "— No module —"
   },
   "Exam": {
     "start": "Start",

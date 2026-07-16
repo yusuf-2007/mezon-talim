@@ -14,11 +14,13 @@ import { FormError } from "@/components/auth/form-bits";
 
 type QType = "single" | "multiple" | "true_false";
 type OptionRow = { uz: string; ru: string; correct: boolean };
+type ModuleOption = { id: string; title: LocalizedText };
 type QuestionLike = {
   type: QType;
   prompt: LocalizedText;
   explanation: LocalizedText | null;
   points?: number;
+  moduleId?: string | null;
   options: { label: LocalizedText; isCorrect: boolean }[];
 };
 type Action = (prev: AssessFormState, fd: FormData) => Promise<AssessFormState>;
@@ -40,14 +42,17 @@ export function QuestionEditor({
   action,
   question,
   mode,
+  modules = [],
   onDone,
 }: {
   action: Action;
   question?: QuestionLike;
   mode: "create" | "edit";
+  modules?: ModuleOption[];
   onDone?: () => void;
 }) {
   const t = useTranslations("Assess");
+  const locale = useLocale();
   const [options, setOptions] = useState<OptionRow[]>(() => initialOptions(question));
   const [state, formAction, pending] = useActionState(
     async (prev: AssessFormState, fd: FormData) => {
@@ -81,9 +86,23 @@ export function QuestionEditor({
           <Input name="promptUz" defaultValue={question?.prompt.uz} required />
         </Field>
       </div>
-      <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+      <div className="grid gap-4 sm:grid-cols-[1fr_10rem_6rem]">
         <Field label={t("promptRu")}>
           <Input name="promptRu" defaultValue={question?.prompt.ru ?? ""} />
+        </Field>
+        <Field label={t("questionModule")}>
+          <select
+            name="moduleId"
+            defaultValue={question?.moduleId ?? ""}
+            className={selectCls}
+          >
+            <option value="">{t("noModule")}</option>
+            {modules.map((m) => (
+              <option key={m.id} value={m.id}>
+                {pickLocale(m.title, locale)}
+              </option>
+            ))}
+          </select>
         </Field>
         <Field label={t("points")}>
           <Input
@@ -165,7 +184,13 @@ export function QuestionEditor({
   );
 }
 
-export function AddQuestion({ action }: { action: Action }) {
+export function AddQuestion({
+  action,
+  modules = [],
+}: {
+  action: Action;
+  modules?: ModuleOption[];
+}) {
   const t = useTranslations("Assess");
   const [open, setOpen] = useState(false);
   if (!open) {
@@ -175,17 +200,26 @@ export function AddQuestion({ action }: { action: Action }) {
       </Button>
     );
   }
-  return <QuestionEditor action={action} mode="create" onDone={() => setOpen(false)} />;
+  return (
+    <QuestionEditor
+      action={action}
+      mode="create"
+      modules={modules}
+      onDone={() => setOpen(false)}
+    />
+  );
 }
 
 export function QuestionRow({
   index,
   question,
+  modules = [],
   updateAction,
   deleteAction,
 }: {
   index: number;
   question: QuestionLike;
+  modules?: ModuleOption[];
   updateAction: Action;
   deleteAction: () => Promise<void>;
 }) {
@@ -200,6 +234,7 @@ export function QuestionRow({
           action={updateAction}
           question={question}
           mode="edit"
+          modules={modules}
           onDone={() => setEditing(false)}
         />
       </li>

@@ -257,7 +257,9 @@
     "questionsCount": "{count} savol",
     "isPublished": "Chop etilgan (talabalarga ko'rinadi)",
     "questionsToServe": "Beriladigan savollar soni (bo'sh = barchasi)",
-    "points": "Ball"
+    "points": "Ball",
+    "questionModule": "Modul",
+    "noModule": "— Modulsiz —"
   },
   "Exam": {
     "start": "Boshlash",

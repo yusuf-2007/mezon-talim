@@ -5,6 +5,7 @@ import type { QuestionWithOptions } from "@/lib/db/repositories/questions";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { auditRepository } from "@/lib/db/repositories/audit";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
+import { modulesRepository } from "@/lib/db/repositories/modules";
 import type { LocalizedText } from "@/lib/db/schema";
 import { grade, orderQuestionsForAttempt } from "./grading";
 import { getExamPrerequisites, type ExamPrerequisites } from "./gating";
@@ -361,6 +362,14 @@ export async function submitAttempt(attemptId: string, userId: string) {
  * Result + answer review. Review (correct answers + explanations) is only
  * exposed once the student has passed (B16) — or for unscored mock exams.
  */
+export type ModuleBreakdownRow = {
+  moduleId: string | null;
+  title: LocalizedText | null;
+  earnedPoints: number;
+  totalPoints: number;
+  pct: number;
+};
+
 export async function getResult(attemptId: string, userId: string) {
   const { attempt, assessment } = await loadOwnedAttempt(attemptId, userId);
   if (!attempt.submittedAt) return null;
@@ -370,12 +379,54 @@ export async function getResult(attemptId: string, userId: string) {
   ).some((a) => a.passed);
   const reviewAllowed = !assessment.isScored || passedSomewhere;
 
+  const qs = await questionsRepository.listByAssessment(assessment.id);
+  const answers = await attemptsRepository.listAnswers(attempt.id);
+  const answerMap = new Map(answers.map((a) => [a.questionId, a.selectedOptionIds]));
+  const served = servedQuestions(qs, attempt, assessment);
+  const graded = grade(served, answerMap);
+
+  // Correct count + time spent (spec 2.4).
+  const correctCount = graded.correctCount;
+  const totalCount = graded.total;
+  const timeSpentSeconds = attempt.submittedAt
+    ? Math.max(0, Math.round((attempt.submittedAt.getTime() - attempt.startedAt.getTime()) / 1000))
+    : 0;
+
+  // Per-module breakdown — informational only (the overall % decides pass/fail).
+  const correctById = new Map(graded.perQuestion.map((p) => [p.questionId, p.correct]));
+  const buckets = new Map<string, { earned: number; total: number }>();
+  for (const q of served) {
+    const key = q.moduleId ?? "__none__";
+    const b = buckets.get(key) ?? { earned: 0, total: 0 };
+    const pts = q.points ?? 1;
+    b.total += pts;
+    if (correctById.get(q.id)) b.earned += pts;
+    buckets.set(key, b);
+  }
+  const hasTaggedModule = served.some((q) => q.moduleId);
+  let moduleBreakdown: ModuleBreakdownRow[] = [];
+  if (hasTaggedModule) {
+    const modules = await modulesRepository.listByCourse(assessment.courseId);
+    const titleById = new Map(modules.map((m) => [m.id, m.title]));
+    moduleBreakdown = [...buckets.entries()].map(([key, b]) => ({
+      moduleId: key === "__none__" ? null : key,
+      title: key === "__none__" ? null : titleById.get(key) ?? null,
+      earnedPoints: b.earned,
+      totalPoints: b.total,
+      pct: b.total === 0 ? 0 : Math.round((b.earned / b.total) * 100),
+    }));
+  }
+
   const result = {
     scorePct: attempt.scorePct ?? 0,
     passed: Boolean(attempt.passed),
     passThresholdPct: assessment.passThresholdPct,
     isScored: assessment.isScored,
     reviewAllowed,
+    correctCount,
+    totalCount,
+    timeSpentSeconds,
+    moduleBreakdown,
     review: null as
       | null
       | {
@@ -388,22 +439,13 @@ export async function getResult(attemptId: string, userId: string) {
   };
 
   if (reviewAllowed) {
-    const qs = await questionsRepository.listByAssessment(assessment.id);
-    const answers = await attemptsRepository.listAnswers(attempt.id);
-    const answerMap = new Map(answers.map((a) => [a.questionId, a.selectedOptionIds]));
-    result.review = servedQuestions(qs, attempt, assessment).map(
-      (q) => ({
-        prompt: q.prompt,
-        explanation: q.explanation,
-        options: q.options.map((o) => ({ id: o.id, label: o.label, isCorrect: o.isCorrect })),
-        selected: answerMap.get(q.id) ?? [],
-        correct: q.options
-          .filter((o) => o.isCorrect)
-          .every((o) => (answerMap.get(q.id) ?? []).includes(o.id)) &&
-          (answerMap.get(q.id) ?? []).length ===
-            q.options.filter((o) => o.isCorrect).length,
-      }),
-    );
+    result.review = served.map((q) => ({
+      prompt: q.prompt,
+      explanation: q.explanation,
+      options: q.options.map((o) => ({ id: o.id, label: o.label, isCorrect: o.isCorrect })),
+      selected: answerMap.get(q.id) ?? [],
+      correct: correctById.get(q.id) ?? false,
+    }));
   }
   return { assessment, ...result };
 }

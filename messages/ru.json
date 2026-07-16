@@ -257,7 +257,9 @@
     "questionsCount": "{count} вопросов",
     "isPublished": "Опубликован (виден студентам)",
     "questionsToServe": "Сколько вопросов выдавать (пусто = все)",
-    "points": "Баллы"
+    "points": "Баллы",
+    "questionModule": "Модуль",
+    "noModule": "— Без модуля —"
   },
   "Exam": {
     "start": "Начать",
