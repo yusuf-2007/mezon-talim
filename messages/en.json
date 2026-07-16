@@ -335,7 +335,11 @@
     "startFinalExam": "Start final exam",
     "examPassed": "Exam passed",
     "unlockHint": "Complete {done}/{total} lessons to unlock",
-    "retryNeedsApproval": "Retry needs admin approval"
+    "retryNeedsApproval": "Retry needs admin approval",
+    "qType_single": "Single answer",
+    "qType_multiple": "Multiple answers",
+    "qType_true_false": "True / False",
+    "points": "Points"
   },
   "Dashboard": {
     "title": "My courses",

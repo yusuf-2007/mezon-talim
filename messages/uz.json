@@ -335,7 +335,11 @@
     "startFinalExam": "Yakuniy imtihonni boshlash",
     "examPassed": "Imtihondan o‘tildi",
     "unlockHint": "Ochish uchun {done}/{total} darsni yakunlang",
-    "retryNeedsApproval": "Qayta urinish uchun admin ruxsati kerak"
+    "retryNeedsApproval": "Qayta urinish uchun admin ruxsati kerak",
+    "qType_single": "Bitta javob",
+    "qType_multiple": "Bir nechta javob",
+    "qType_true_false": "To‘g‘ri / Noto‘g‘ri",
+    "points": "Ball"
   },
   "Dashboard": {
     "title": "Mening kurslarim",

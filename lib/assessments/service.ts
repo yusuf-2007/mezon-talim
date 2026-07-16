@@ -19,6 +19,7 @@ export type RunnerQuestion = {
   id: string;
   type: "single" | "multiple" | "true_false";
   prompt: LocalizedText;
+  points: number;
   options: { id: string; label: LocalizedText }[];
 };
 
@@ -284,6 +285,7 @@ export async function getRunnerState(attemptId: string, userId: string) {
     id: q.id,
     type: q.type,
     prompt: q.prompt,
+    points: q.points ?? 1,
     options: q.options.map((o) => ({ id: o.id, label: o.label })),
   }));
 

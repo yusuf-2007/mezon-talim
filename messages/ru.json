@@ -335,7 +335,11 @@
     "startFinalExam": "Начать финальный экзамен",
     "examPassed": "Экзамен сдан",
     "unlockHint": "Завершите {done}/{total} уроков, чтобы открыть",
-    "retryNeedsApproval": "Для повтора нужно разрешение администратора"
+    "retryNeedsApproval": "Для повтора нужно разрешение администратора",
+    "qType_single": "Один ответ",
+    "qType_multiple": "Несколько ответов",
+    "qType_true_false": "Верно / Неверно",
+    "points": "Баллы"
   },
   "Dashboard": {
     "title": "Мои курсы",
