@@ -35,6 +35,7 @@ export const enrollments = pgTable(
     sourcePaymentId: uuid("source_payment_id").references(() => payments.id),
     startedAt: timestamptz("started_at").defaultNow().notNull(),
     expiresAt: timestamptz("expires_at"),
+    completedAt: timestamptz("completed_at"), // set when the completion certificate is issued
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

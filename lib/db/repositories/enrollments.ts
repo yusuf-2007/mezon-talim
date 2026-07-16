@@ -133,4 +133,18 @@ export const enrollmentsRepository = {
       .returning();
     return row;
   },
+
+  /** Stamp completed_at on first course completion (idempotent — keeps the first). */
+  async markCompleted(userId: string, courseId: string) {
+    await db
+      .update(enrollments)
+      .set({ completedAt: sql`now()`, updatedAt: sql`now()` })
+      .where(
+        and(
+          eq(enrollments.userId, userId),
+          eq(enrollments.courseId, courseId),
+          isNull(enrollments.completedAt),
+        ),
+      );
+  },
 };

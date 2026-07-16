@@ -70,11 +70,18 @@ export const attemptsRepository = {
       .where(
         and(eq(attempts.userId, userId), eq(attempts.assessmentId, assessmentId)),
       );
-    const [row] = await db
-      .insert(attempts)
-      .values({ userId, assessmentId, attemptNo: next })
-      .returning();
-    return row;
+    try {
+      const [row] = await db
+        .insert(attempts)
+        .values({ userId, assessmentId, attemptNo: next })
+        .returning();
+      return row;
+    } catch (err) {
+      // A concurrent start hit attempts_one_in_progress_uq — return the live one.
+      const existing = await this.findInProgress(userId, assessmentId);
+      if (existing) return existing;
+      throw err;
+    }
   },
 
   /**

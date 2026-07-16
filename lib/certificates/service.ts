@@ -5,6 +5,8 @@ import { coursesRepository } from "@/lib/db/repositories/courses";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
+import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
+import { getExamPrerequisites } from "@/lib/assessments/gating";
 import { getStorageClient, isStorageConfigured } from "@/lib/storage";
 import { notifyCertificateIssued } from "@/lib/notifications/service";
 import { generateCertificatePdf } from "./pdf";
@@ -73,9 +75,22 @@ export async function issueIfEligible(userId: string, courseId: string) {
   );
   if (existing) return existing;
 
+  // Full completion chain (spec 1.6): final exam passed AND all lessons
+  // completed AND all published module tests passed. All three must hold.
   if (!(await hasPassedFinalExam(userId, courseId))) return null;
+  const prereq = await getExamPrerequisites(userId, courseId);
+  if (!prereq.unlocked) return null;
 
-  return createAndArchive(userId, courseId, course);
+  const cert = await createAndArchive(userId, courseId, course);
+  // Mark the enrollment complete on first issuance (best-effort).
+  if (cert) {
+    try {
+      await enrollmentsRepository.markCompleted(userId, courseId);
+    } catch (err) {
+      console.error("mark enrollment completed failed (non-fatal):", err);
+    }
+  }
+  return cert;
 }
 
 type CourseRow = NonNullable<

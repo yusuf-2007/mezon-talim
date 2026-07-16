@@ -1,5 +1,5 @@
 import "server-only";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { db } from "../client";
 import { auditLog, users } from "../schema";
 
@@ -57,5 +57,27 @@ export const auditRepository = {
       .from(auditLog)
       .where(eq(auditLog.entityId, entityId))
       .orderBy(desc(auditLog.createdAt));
+  },
+
+  /** True if `actor` logged `action` on `entityId` since `since` (dedup helper). */
+  async existsSince(
+    actorUserId: string,
+    action: string,
+    entityId: string,
+    since: Date,
+  ): Promise<boolean> {
+    const [row] = await db
+      .select({ id: auditLog.id })
+      .from(auditLog)
+      .where(
+        and(
+          eq(auditLog.actorUserId, actorUserId),
+          eq(auditLog.action, action),
+          eq(auditLog.entityId, entityId),
+          gt(auditLog.createdAt, since),
+        ),
+      )
+      .limit(1);
+    return Boolean(row);
   },
 };

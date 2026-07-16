@@ -1,9 +1,11 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   integer,
   jsonb,
   pgTable,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
@@ -93,6 +95,11 @@ export const attempts = pgTable(
       t.assessmentId,
       t.attemptNo,
     ),
+    // Race-safe: at most one in-progress attempt per (user, assessment).
+    // A concurrent double-start hits this instead of creating two live attempts.
+    uniqueIndex("attempts_one_in_progress_uq")
+      .on(t.userId, t.assessmentId)
+      .where(sql`${t.submittedAt} is null`),
   ],
 );
 

@@ -1,0 +1,2 @@
+ALTER TABLE "enrollments" ADD COLUMN "completed_at" timestamp with time zone;--> statement-breakpoint
+CREATE UNIQUE INDEX "attempts_one_in_progress_uq" ON "attempts" USING btree ("user_id","assessment_id") WHERE "attempts"."submitted_at" is null;

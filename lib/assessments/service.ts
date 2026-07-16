@@ -3,9 +3,11 @@ import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
 import type { QuestionWithOptions } from "@/lib/db/repositories/questions";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
+import { auditRepository } from "@/lib/db/repositories/audit";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import type { LocalizedText } from "@/lib/db/schema";
 import { grade, orderQuestionsForAttempt } from "./grading";
+import { getExamPrerequisites, type ExamPrerequisites } from "./gating";
 import { issueIfEligible } from "@/lib/certificates/service";
 
 type Assessment = NonNullable<
@@ -25,7 +27,9 @@ export type BlockReason =
   | "already_passed"
   | "no_attempts_left"
   | "cooldown"
-  | "unpublished";
+  | "unpublished"
+  | "lessons_incomplete"
+  | "module_tests_incomplete";
 
 export type ExamOverview = {
   assessment: Assessment;
@@ -38,6 +42,10 @@ export type ExamOverview = {
   canStart: boolean;
   blockedReason: BlockReason | null;
   cooldownUntil: number | null; // unix ms
+  /** Final-exam prerequisite chain (null for non-final assessments). */
+  prereq: ExamPrerequisites | null;
+  /** Student has already sent a retry-access request since their last attempt. */
+  retryRequested: boolean;
 };
 
 function timeWindow(assessment: Assessment, startedAt: Date) {
@@ -53,10 +61,12 @@ export async function getExamOverview(
   const assessment = await assessmentsRepository.findById(assessmentId);
   if (!assessment) return null;
 
-  const [questionCount, all, enrolled] = await Promise.all([
+  const isFinal = assessment.type === "final_exam";
+  const [questionCount, all, enrolled, prereq] = await Promise.all([
     questionsRepository.countByAssessment(assessmentId),
     attemptsRepository.listForUser(userId, assessmentId),
     enrollmentsRepository.isActive(userId, assessment.courseId),
+    isFinal ? getExamPrerequisites(userId, assessment.courseId) : Promise.resolve(null),
   ]);
 
   // Voided attempts ("grant retry") don't count toward limits or cooldown.
@@ -73,21 +83,40 @@ export async function getExamOverview(
     ? Math.max(0, assessment.maxAttempts - attemptsUsed)
     : null;
 
-  // Cooldown from the most recent submitted attempt.
+  // Most recent submitted attempt (drives cooldown + retry-request dedup).
+  const lastSubmitted =
+    submitted.length > 0
+      ? submitted.reduce((a, b) => (a.submittedAt! > b.submittedAt! ? a : b))
+      : null;
+
   let cooldownUntil: number | null = null;
-  if (assessment.attemptCooldownHours && submitted.length > 0) {
-    const last = submitted.reduce((a, b) =>
-      (a.submittedAt! > b.submittedAt! ? a : b),
-    );
+  if (assessment.attemptCooldownHours && lastSubmitted) {
     cooldownUntil =
-      last.submittedAt!.getTime() + assessment.attemptCooldownHours * 3600_000;
+      lastSubmitted.submittedAt!.getTime() +
+      assessment.attemptCooldownHours * 3600_000;
   }
+
+  // Has the student already asked for access since their last attempt?
+  const retryRequested =
+    attemptsLeft === 0 && !alreadyPassed && lastSubmitted
+      ? await auditRepository.existsSince(
+          userId,
+          "attempt.retry_requested",
+          assessmentId,
+          lastSubmitted.submittedAt!,
+        )
+      : false;
 
   let blockedReason: BlockReason | null = null;
   if (!assessment.isPublished) blockedReason = "unpublished";
   else if (!enrolled) blockedReason = "not_enrolled";
   else if (!inProgress && alreadyPassed && assessment.isScored)
     blockedReason = "already_passed";
+  // Prerequisite chain (final exam only): lessons ✓ + module tests ✓ (spec 1.4).
+  else if (isFinal && !inProgress && prereq && !prereq.unlocked)
+    blockedReason = prereq.lessons.allComplete
+      ? "module_tests_incomplete"
+      : "lessons_incomplete";
   else if (!inProgress && attemptsLeft === 0) blockedReason = "no_attempts_left";
   else if (!inProgress && cooldownUntil && Date.now() < cooldownUntil)
     blockedReason = "cooldown";
@@ -103,6 +132,8 @@ export async function getExamOverview(
     canStart: blockedReason === null || inProgress,
     blockedReason: inProgress ? null : blockedReason,
     cooldownUntil,
+    prereq,
+    retryRequested,
   };
 }
 
@@ -122,6 +153,32 @@ export async function startOrResumeAttempt(
   }
   const attempt = await attemptsRepository.start(userId, assessmentId);
   return attempt.id;
+}
+
+/**
+ * Student "request exam access" (spec 1.5): only meaningful when out of
+ * attempts and not yet passed. Records an admin-visible audit signal. Does not
+ * grant anything — an admin voids an attempt to unlock one more. Idempotent per
+ * (student, assessment) since the last attempt.
+ */
+export async function requestRetryApproval(
+  assessmentId: string,
+  userId: string,
+): Promise<{ ok: boolean; alreadyRequested?: boolean }> {
+  const overview = await getExamOverview(assessmentId, userId);
+  if (!overview) return { ok: false };
+  // Only allow when genuinely exhausted and not passed.
+  if (overview.blockedReason !== "no_attempts_left") return { ok: false };
+  if (overview.retryRequested) return { ok: true, alreadyRequested: true };
+
+  await auditRepository.record({
+    actorUserId: userId,
+    action: "attempt.retry_requested",
+    entityType: "assessment",
+    entityId: assessmentId,
+    meta: { courseId: overview.assessment.courseId },
+  });
+  return { ok: true };
 }
 
 async function loadOwnedAttempt(attemptId: string, userId: string) {
