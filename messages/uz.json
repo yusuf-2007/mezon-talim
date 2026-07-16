@@ -141,7 +141,15 @@
     "previewBadge": "Bepul",
     "lessons": "dars",
     "cancel": "Bekor qilish",
-    "category": "Kategoriya"
+    "category": "Kategoriya",
+    "bunnyChecking": "Video tekshirilmoqda…",
+    "bunnyReady": "Video tayyor",
+    "bunnyProcessing": "Video kodlanmoqda…",
+    "bunnyNotFound": "Bu GUID bo‘yicha video topilmadi",
+    "bunnyError": "Videoni tekshirib bo‘lmadi",
+    "bunnyNotConfigured": "Bunny sozlanmagan",
+    "bunnyPreview": "Ko‘rib chiqish",
+    "bunnyUseDuration": "Davomiylikni qo‘yish ({value})"
   },
   "Catalog": {
     "title": "Kurslar",

@@ -141,7 +141,15 @@
     "previewBadge": "Бесплатно",
     "lessons": "ур.",
     "cancel": "Отмена",
-    "category": "Категория"
+    "category": "Категория",
+    "bunnyChecking": "Проверка видео…",
+    "bunnyReady": "Видео готово",
+    "bunnyProcessing": "Видео обрабатывается…",
+    "bunnyNotFound": "Видео с таким GUID не найдено",
+    "bunnyError": "Не удалось проверить видео",
+    "bunnyNotConfigured": "Bunny не настроен",
+    "bunnyPreview": "Предпросмотр",
+    "bunnyUseDuration": "Подставить длительность ({value})"
   },
   "Catalog": {
     "title": "Курсы",

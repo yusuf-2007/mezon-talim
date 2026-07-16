@@ -121,3 +121,108 @@ export async function createBunnyVideo(
     uploadUrl: `${BUNNY_API}/library/${libraryId}/videos/${json.guid}`,
   };
 }
+
+/** True when the management API can be called (library + API key present). */
+export function isBunnyManagementConfigured(): boolean {
+  return Boolean(env.BUNNY_STREAM_LIBRARY_ID && env.BUNNY_STREAM_API_KEY);
+}
+
+/** Deterministic thumbnail URL for a video (works from the CDN host alone). */
+export function bunnyThumbnailUrl(guid: string, file = "thumbnail.jpg"): string {
+  const cdn = env.BUNNY_STREAM_CDN_HOSTNAME;
+  return cdn ? `https://${cdn}/${guid}/${file}` : "";
+}
+
+/** Unsigned embed URL — fine for the authenticated Studio preview. */
+export function bunnyEmbedUrl(guid: string): string {
+  const lib = env.BUNNY_STREAM_LIBRARY_ID ?? "0";
+  return `https://iframe.mediadelivery.net/embed/${lib}/${guid}`;
+}
+
+export type BunnyVideoStatus =
+  | "created"
+  | "uploaded"
+  | "processing"
+  | "transcoding"
+  | "finished"
+  | "error"
+  | "failed"
+  | "unknown";
+
+// Bunny Stream numeric status codes → our labels.
+const STATUS_MAP: Record<number, BunnyVideoStatus> = {
+  0: "created",
+  1: "uploaded",
+  2: "processing",
+  3: "transcoding",
+  4: "finished",
+  5: "error",
+  6: "failed",
+};
+
+export interface BunnyVideoInfo {
+  guid: string;
+  title: string;
+  durationSeconds: number;
+  status: BunnyVideoStatus;
+  ready: boolean; // playable (encoding finished)
+  thumbnailUrl: string;
+  embedUrl: string;
+}
+
+/**
+ * Fetch one video's metadata from the Bunny library (Studio helper): validates a
+ * pasted GUID and reads duration + encoding status + thumbnail. Returns null when
+ * the GUID doesn't exist (404); throws only on unexpected API failures.
+ */
+export async function getBunnyVideo(
+  guid: string,
+): Promise<BunnyVideoInfo | null> {
+  const libraryId = env.BUNNY_STREAM_LIBRARY_ID;
+  const apiKey = env.BUNNY_STREAM_API_KEY;
+  if (!libraryId || !apiKey) {
+    throw new Error("Bunny Stream is not configured (BUNNY_STREAM_*).");
+  }
+
+  const res = await fetch(
+    `${BUNNY_API}/library/${libraryId}/videos/${encodeURIComponent(guid)}`,
+    { headers: { AccessKey: apiKey, Accept: "application/json" }, cache: "no-store" },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Bunny get video failed: ${res.status}`);
+
+  const v = (await res.json()) as {
+    guid: string;
+    title?: string;
+    length?: number;
+    status?: number;
+    thumbnailFileName?: string;
+  };
+  const status = STATUS_MAP[v.status ?? -1] ?? "unknown";
+  return {
+    guid: v.guid,
+    title: v.title ?? "",
+    durationSeconds: v.length ?? 0,
+    status,
+    ready: status === "finished",
+    thumbnailUrl: bunnyThumbnailUrl(v.guid, v.thumbnailFileName || "thumbnail.jpg"),
+    embedUrl: bunnyEmbedUrl(v.guid),
+  };
+}
+
+/** Serializable result of a Studio GUID lookup (shared by the server action + form). */
+export type VideoLookupResult =
+  | { state: "not_configured" }
+  | { state: "empty" }
+  | { state: "not_found" }
+  | { state: "error"; message: string }
+  | {
+      state: "ok";
+      guid: string;
+      title: string;
+      durationSeconds: number;
+      status: BunnyVideoStatus;
+      ready: boolean;
+      thumbnailUrl: string;
+      embedUrl: string;
+    };
