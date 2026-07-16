@@ -46,6 +46,8 @@ export type ExamOverview = {
   prereq: ExamPrerequisites | null;
   /** Student has already sent a retry-access request since their last attempt. */
   retryRequested: boolean;
+  /** Recent submitted attempts, newest first (for the history block). */
+  history: { attemptNo: number; scorePct: number | null; passed: boolean; submittedAt: number }[];
 };
 
 function timeWindow(assessment: Assessment, startedAt: Date) {
@@ -134,6 +136,67 @@ export async function getExamOverview(
     cooldownUntil,
     prereq,
     retryRequested,
+    history: submitted
+      .slice()
+      .sort((a, b) => b.submittedAt!.getTime() - a.submittedAt!.getTime())
+      .slice(0, 5)
+      .map((a) => ({
+        attemptNo: a.attemptNo,
+        scorePct: a.scorePct,
+        passed: Boolean(a.passed),
+        submittedAt: a.submittedAt!.getTime(),
+      })),
+  };
+}
+
+export type FinalExamBox = {
+  assessmentId: string;
+  title: LocalizedText;
+  questionCount: number;
+  passThresholdPct: number;
+  state: "ready" | "passed" | "locked" | "needs_approval";
+  /** Lessons progress for the lock hint (spec 3.2). */
+  lessonsDone: number;
+  lessonsTotal: number;
+};
+
+/**
+ * Compact state for the player sidebar's terminal "final exam" box (spec 3.2).
+ * Returns null when the course has no final exam. Fully server-computed so the
+ * locked state can't be revealed client-side.
+ */
+export async function getFinalExamBox(
+  courseId: string,
+  userId: string,
+): Promise<FinalExamBox | null> {
+  const finalExam = await assessmentsRepository.findByTypeForCourse(
+    courseId,
+    "final_exam",
+  );
+  if (!finalExam || !finalExam.isPublished) return null;
+
+  const overview = await getExamOverview(finalExam.id, userId);
+  if (!overview) return null;
+
+  let state: FinalExamBox["state"];
+  if (overview.alreadyPassed) state = "passed";
+  else if (
+    overview.blockedReason === "lessons_incomplete" ||
+    overview.blockedReason === "module_tests_incomplete"
+  )
+    state = "locked";
+  else if (overview.blockedReason === "no_attempts_left")
+    state = "needs_approval";
+  else state = "ready";
+
+  return {
+    assessmentId: finalExam.id,
+    title: finalExam.title,
+    questionCount: overview.questionCount,
+    passThresholdPct: finalExam.passThresholdPct,
+    state,
+    lessonsDone: overview.prereq?.lessons.completed ?? 0,
+    lessonsTotal: overview.prereq?.lessons.total ?? 0,
   };
 }
 

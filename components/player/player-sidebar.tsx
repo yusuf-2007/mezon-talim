@@ -3,19 +3,23 @@ import { Link } from "@/lib/i18n/navigation";
 import { pickLocale } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import type { Curriculum } from "@/lib/learning/curriculum";
+import type { FinalExamBox } from "@/lib/assessments/service";
 
 /** Curriculum rail with progress checkmarks + sequential lock (Coursera-style). */
 export async function PlayerSidebar({
   courseId,
   curriculum,
   activeLessonId,
+  examBox,
 }: {
   courseId: string;
   curriculum: Curriculum;
   activeLessonId: string;
+  examBox: FinalExamBox | null;
 }) {
   const locale = await getLocale();
   const t = await getTranslations("Course");
+  const tExam = await getTranslations("Exam");
   const pct =
     curriculum.lessonCount > 0
       ? Math.round((curriculum.completedCount / curriculum.lessonCount) * 100)
@@ -80,6 +84,77 @@ export async function PlayerSidebar({
             </ul>
           </div>
         ))}
+
+        {/* Terminal final-exam box (spec 3.2) — the last item after all modules. */}
+        {examBox && (
+          <div className="p-4">
+            <div
+              className={cn(
+                "relative rounded-xl border p-4",
+                examBox.state === "locked" || examBox.state === "needs_approval"
+                  ? "border-line bg-bg"
+                  : "border-gold-400 bg-gold-100/50",
+              )}
+            >
+              <span className="absolute right-3 top-3 text-[9px] font-bold uppercase tracking-wider text-gold-500">
+                {tExam("finalStep")}
+              </span>
+              <div className="flex items-start gap-3">
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg font-heading text-sm font-bold",
+                    examBox.state === "locked" ||
+                      examBox.state === "needs_approval"
+                      ? "bg-line text-slate-500"
+                      : "bg-navy-900 text-gold-100",
+                  )}
+                  aria-hidden
+                >
+                  Q
+                </span>
+                <div className="min-w-0">
+                  <p className="font-heading text-sm font-semibold text-navy-800">
+                    {pickLocale(examBox.title, locale)}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {tExam("questionsCount", { count: examBox.questionCount })} ·{" "}
+                    {tExam("threshold", { pct: examBox.passThresholdPct })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 text-sm">
+                {examBox.state === "ready" && (
+                  <Link
+                    href={`/exam/${examBox.assessmentId}`}
+                    className="inline-flex items-center gap-1.5 font-semibold text-gold-500 hover:underline"
+                  >
+                    ▷ {tExam("startFinalExam")}
+                  </Link>
+                )}
+                {examBox.state === "passed" && (
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-success">
+                    ✓ {tExam("examPassed")}
+                  </span>
+                )}
+                {examBox.state === "locked" && (
+                  <span className="inline-flex items-center gap-1.5 text-slate-500">
+                    🔒{" "}
+                    {tExam("unlockHint", {
+                      done: examBox.lessonsDone,
+                      total: examBox.lessonsTotal,
+                    })}
+                  </span>
+                )}
+                {examBox.state === "needs_approval" && (
+                  <span className="inline-flex items-center gap-1.5 text-slate-500">
+                    🔒 {tExam("retryNeedsApproval")}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

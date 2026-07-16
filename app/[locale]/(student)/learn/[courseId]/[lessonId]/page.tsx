@@ -10,6 +10,7 @@ import { glossaryRepository } from "@/lib/db/repositories/glossary";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
 import { getCurriculum, locateLesson } from "@/lib/learning/curriculum";
+import { getFinalExamBox } from "@/lib/assessments/service";
 import {
   addBookmarkAction,
   addNoteAction,
@@ -44,12 +45,20 @@ export default async function PlayerPage({
   const course = await coursesRepository.findById(courseId);
   if (!course) notFound();
 
-  const curriculum = await getCurriculum(courseId, user.id);
+  const [curriculum, examBox] = await Promise.all([
+    getCurriculum(courseId, user.id),
+    getFinalExamBox(courseId, user.id),
+  ]);
   const { lesson, prevId, nextId } = locateLesson(curriculum, lessonId);
   if (!lesson) notFound();
 
   const sidebar = (
-    <PlayerSidebar courseId={courseId} curriculum={curriculum} activeLessonId={lessonId} />
+    <PlayerSidebar
+      courseId={courseId}
+      curriculum={curriculum}
+      activeLessonId={lessonId}
+      examBox={examBox}
+    />
   );
 
   // Locked / not-enrolled lesson → message instead of the video.
