@@ -22,7 +22,7 @@ export default async function PreExamPage({
   const a = o.assessment;
 
   const cooldownText = o.cooldownUntil
-    ? new Date(o.cooldownUntil).toLocaleString(locale === "ru" ? "ru-RU" : "uz-UZ")
+    ? new Date(o.cooldownUntil).toLocaleString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ")
     : "";
 
   return (

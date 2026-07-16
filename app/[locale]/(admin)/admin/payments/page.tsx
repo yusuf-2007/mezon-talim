@@ -112,7 +112,7 @@ export default async function AdminPaymentsPage({
                 <tr key={p.id}>
                   <td className="px-4 py-3 tabular-nums text-slate-500">
                     {new Date(p.createdAt).toLocaleDateString(
-                      locale === "ru" ? "ru-RU" : "uz-UZ",
+                      locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ",
                     )}
                   </td>
                   <td className="px-4 py-3 font-mono tabular-nums text-xs text-slate-600">

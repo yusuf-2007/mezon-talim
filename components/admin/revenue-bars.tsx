@@ -10,7 +10,7 @@ export function RevenueBars({
   emptyLabel,
 }: {
   data: { day: string; totalTiyin: number; count: number }[];
-  locale: "uz" | "ru";
+  locale: "uz" | "ru" | "en";
   emptyLabel: string;
 }) {
   if (data.length === 0) {

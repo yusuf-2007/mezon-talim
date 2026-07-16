@@ -129,7 +129,7 @@ export default async function DashboardHomePage() {
                 key={c.id}
                 code={c.verificationCode}
                 title={pickLocale(c.courseTitle, locale)}
-                issued={new Date(c.issuedAt).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ")}
+                issued={new Date(c.issuedAt).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ")}
                 labels={{ download: t("download"), verify: t("verify") }}
               />
             ))}

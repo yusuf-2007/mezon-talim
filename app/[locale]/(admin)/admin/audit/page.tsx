@@ -10,7 +10,7 @@ export default async function AdminAuditPage() {
   const locale = (await getLocale()) as Locale;
 
   const entries = await auditRepository.recentWithActor(100);
-  const dateLocale = locale === "ru" ? "ru-RU" : "uz-UZ";
+  const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ";
 
   return (
     <div className="space-y-6">

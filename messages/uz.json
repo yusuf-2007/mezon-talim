@@ -13,7 +13,8 @@
   "LanguageSwitcher": {
     "label": "Til",
     "uz": "O'zbekcha",
-    "ru": "Ruscha"
+    "ru": "Ruscha",
+    "en": "Inglizcha"
   },
   "Landing": {
     "heroTitle": "AAOIFI Shariat standartlarini o'zbek tilida o'rganing",
@@ -494,7 +495,8 @@
     "statLessons": "Darslar",
     "colCourses": "Kurslar",
     "colRegistered": "Roʼyxatdan oʼtgan",
-    "coursesCount": "{count} ta kurs"
+    "coursesCount": "{count} ta kurs",
+    "localeEn": "Inglizcha"
   },
   "Student": {
     "navHome": "Asosiy",

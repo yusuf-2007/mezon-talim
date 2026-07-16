@@ -32,10 +32,11 @@ export function checkoutUrlFor(
 /** Integer-tiyin money formatter for display. Never used for arithmetic. */
 export function formatTiyin(
   amountTiyin: number,
-  locale: "uz" | "ru" = "uz",
+  locale: "uz" | "ru" | "en" = "uz",
 ): string {
   const som = amountTiyin / 100;
-  const intlLocale = locale === "ru" ? "ru-UZ" : "uz-UZ";
+  const intlLocale =
+    locale === "ru" ? "ru-UZ" : locale === "en" ? "en-US" : "uz-UZ";
   return new Intl.NumberFormat(intlLocale, {
     style: "currency",
     currency: "UZS",

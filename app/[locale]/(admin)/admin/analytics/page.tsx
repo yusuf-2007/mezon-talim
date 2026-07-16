@@ -13,7 +13,7 @@ export default async function AdminAnalyticsPage() {
   const locale = (await getLocale()) as Locale;
 
   const fmtDate = (d: Date | string) =>
-    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ");
+    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
 
   const [overview, growth, enrollmentsByDay, topCourses, newUsers, recentEnrollments] =
     await Promise.all([

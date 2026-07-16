@@ -34,6 +34,7 @@ function button(href: string, label: string): string {
 const FOOTER: Record<Locale, string> = {
   uz: "Mezon Ta'lim — AAOIFI shariah standartlari bo'yicha onlayn ta'lim.",
   ru: "Mezon Ta'lim — онлайн-обучение по шариатским стандартам AAOIFI.",
+  en: "Mezon Ta'lim — online learning for AAOIFI Shariah Standards.",
 };
 
 export type EmailTemplate = { subject: string; html: string; text: string };

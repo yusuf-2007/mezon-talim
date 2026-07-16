@@ -27,7 +27,7 @@ export default async function AdminUsersPage({
   const countFor = (...roles: string[]) =>
     roleCounts.filter((r) => roles.includes(r.role)).reduce((n, r) => n + r.count, 0);
   const fmtDate = (d: Date) =>
-    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ");
+    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
 
   return (
     <div className="space-y-6">

@@ -43,7 +43,7 @@ export default async function StudentProfilePage() {
   ];
   const name = user.fullName || user.email || "—";
   const fmtDate = (d: Date) =>
-    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ");
+    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
 
   return (
     <div className="space-y-8">

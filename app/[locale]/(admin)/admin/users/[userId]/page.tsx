@@ -110,7 +110,7 @@ export default async function AdminUserDetailPage({
   const certCandidates = allCourses.filter((c) => !activeCertIds.has(c.id)).map(toLabel);
 
   const fmtDate = (d: Date) =>
-    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : "uz-UZ");
+    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
   const displayName = user.fullName || user.email || user.phone || "—";
 
   return (
@@ -205,6 +205,7 @@ export default async function AdminUserDetailPage({
                 >
                   <option value="uz">{t("localeUz")}</option>
                   <option value="ru">{t("localeRu")}</option>
+                  <option value="en">{t("localeEn")}</option>
                 </select>
               </div>
             </div>

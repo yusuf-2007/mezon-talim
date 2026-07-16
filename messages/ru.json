@@ -13,7 +13,8 @@
   "LanguageSwitcher": {
     "label": "Язык",
     "uz": "Узбекский",
-    "ru": "Русский"
+    "ru": "Русский",
+    "en": "Английский"
   },
   "Landing": {
     "heroTitle": "Изучайте шариатские стандарты AAOIFI на узбекском языке",
@@ -494,7 +495,8 @@
     "statLessons": "Уроки",
     "colCourses": "Курсы",
     "colRegistered": "Дата регистрации",
-    "coursesCount": "{count} курса"
+    "coursesCount": "{count} курса",
+    "localeEn": "Английский"
   },
   "Student": {
     "navHome": "Главная",

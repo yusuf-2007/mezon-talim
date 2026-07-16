@@ -65,6 +65,16 @@ const LABELS: Record<Locale, Record<string, string>> = {
     code: "Код проверки",
     verify: "Проверьте подлинность",
   },
+  en: {
+    org: "MEZON TA'LIM",
+    title: "CERTIFICATE",
+    subtitle: "Of course completion",
+    certifies: "This certificate is awarded to",
+    completed: "for successfully completing the course",
+    issued: "Date issued",
+    code: "Verification code",
+    verify: "Verify authenticity",
+  },
 };
 
 function formatDate(d: Date): string {
