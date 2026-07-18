@@ -547,7 +547,20 @@
     "colCourses": "Kurslar",
     "colRegistered": "Roʼyxatdan oʼtgan",
     "coursesCount": "{count} ta kurs",
-    "localeEn": "Inglizcha"
+    "localeEn": "Inglizcha",
+    "navAudience": "Auditoriya",
+    "audienceTitle": "Auditoriya",
+    "audienceSubtitle": "Saytga kirganlar kimlar — ro‘yxatdan o‘tganlar va o‘tmaganlar.",
+    "audVisitors": "Anonim tashrifchilar",
+    "audVisitorsSub": "Kirish so‘rovnomasiga javob berganlar",
+    "audRegistrants": "Ro‘yxatdan o‘tganlar",
+    "audRegistrantsSub": "Ro‘yxatdan o‘tishda ko‘rsatganlar",
+    "audResponses": "So‘rovnoma javoblari",
+    "audResponseRate": "Javob berish darajasi",
+    "audAnswered": "Javob berildi",
+    "audSkipped": "O‘tkazib yuborildi",
+    "audRecent": "So‘nggi 30 kun",
+    "audNoData": "Hali ma’lumot yo‘q."
   },
   "Student": {
     "navHome": "Asosiy",
@@ -691,5 +704,17 @@
         "a": "Mezon Ta'lim o'zining kurs yakunlash sertifikatini beradi. AAOIFI'ning rasmiy kasbiy guvohnomasi esa AAOIFI'ning o'z imtihoni orqali olinadi — biz ro'yxatdan o'tishda yordam berishimiz mumkin."
       }
     ]
+  },
+  "Audience": {
+    "title": "Siz kim bo‘lib ishlaysiz?",
+    "subtitle": "Bir marta bosing — bu bizga platformani yaxshilashga yordam beradi.",
+    "skip": "O‘tkazib yuborish",
+    "fieldLabel": "Kasbingiz (ixtiyoriy)",
+    "fieldPlaceholder": "Tanlang…",
+    "occ_student": "Talaba",
+    "occ_business_owner": "Biznes egasi",
+    "occ_corporate_employee": "Korporativ xodim",
+    "occ_educator": "O‘qituvchi",
+    "occ_other": "Boshqa"
   }
 }

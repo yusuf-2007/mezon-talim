@@ -52,6 +52,18 @@ export const userRole = pgEnum("user_role", [
   "accountant",
 ]);
 
+/**
+ * Self-declared visitor/registrant occupation — powers the "who is our audience"
+ * analytics (both the anonymous entry poll and the registration field).
+ */
+export const occupation = pgEnum("occupation", [
+  "student",
+  "business_owner",
+  "corporate_employee",
+  "educator",
+  "other",
+]);
+
 export const courseStatus = pgEnum("course_status", [
   "draft",
   "published",

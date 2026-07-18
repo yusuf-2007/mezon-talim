@@ -8,7 +8,7 @@
 
 ```
 You are building Mezon Ta'lim, an LMS for AAOIFI Shari'ah Standards courses in Uzbek.
-
+   
 FIRST: read CLAUDE.md and everything in /docs (data-model.md, design-system.md) in full.
 That is the source of truth. Follow its non-negotiables exactly:
 - Plain PostgreSQL + Auth.js (v5) + Drizzle ORM. NO Supabase.

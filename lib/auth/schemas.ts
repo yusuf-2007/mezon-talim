@@ -18,10 +18,16 @@ export const passwordSchema = z
   .min(8, "Parol kamida 8 ta belgidan iborat bo'lishi kerak")
   .max(200);
 
+export const occupationSchema = z
+  .enum(["student", "business_owner", "corporate_employee", "educator", "other"])
+  .optional()
+  .or(z.literal("").transform(() => undefined));
+
 export const signUpSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
   email: emailSchema,
   password: passwordSchema,
+  occupation: occupationSchema,
 });
 export type SignUpInput = z.infer<typeof signUpSchema>;
 

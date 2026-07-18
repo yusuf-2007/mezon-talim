@@ -42,6 +42,7 @@ export async function signUpAction(
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     password: formData.get("password"),
+    occupation: formData.get("occupation") ?? undefined,
   });
   if (!parsed.success) return fieldErrors(parsed.error);
 
@@ -53,6 +54,7 @@ export async function signUpAction(
     fullName: parsed.data.fullName,
     passwordHash: await hashPassword(parsed.data.password),
     role: "student",
+    occupation: parsed.data.occupation ?? null,
   });
 
   // Welcome email (best-effort; never blocks signup).

@@ -4,12 +4,20 @@ import { db } from "../client";
 import { enrollments, userAvatars, users } from "../schema";
 import type { Role } from "@/lib/auth/types";
 
+type OccupationValue =
+  | "student"
+  | "business_owner"
+  | "corporate_employee"
+  | "educator"
+  | "other";
+
 type NewUserWithPassword = {
   email: string;
   passwordHash: string;
   fullName?: string | null;
   role?: Role;
   locale?: "uz" | "ru";
+  occupation?: OccupationValue | null;
 };
 
 /**
@@ -51,6 +59,7 @@ export const usersRepository = {
         passwordHash: input.passwordHash,
         role: input.role ?? "student",
         locale: input.locale ?? "uz",
+        occupation: input.occupation ?? null,
       })
       .returning();
     return row;

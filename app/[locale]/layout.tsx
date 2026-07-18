@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { routing, type Locale } from "@/lib/i18n/routing";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { OccupationPoll } from "@/components/audience/occupation-poll";
 import "../globals.css";
 
 // Inter for body/UI, Source Serif 4 for headings. Both carry Latin-extended
@@ -65,6 +66,7 @@ export default async function LocaleLayout({
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />
+          <OccupationPoll />
         </NextIntlClientProvider>
         <Analytics />
       </body>

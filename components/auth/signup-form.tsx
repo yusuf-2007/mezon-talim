@@ -10,8 +10,17 @@ import { FieldError, FormError } from "./form-bits";
 
 const initial: AuthFormState = {};
 
+const OCCUPATIONS = [
+  "student",
+  "business_owner",
+  "corporate_employee",
+  "educator",
+  "other",
+] as const;
+
 export function SignupForm() {
   const t = useTranslations("Auth");
+  const tAud = useTranslations("Audience");
   const [state, action, pending] = useActionState(signUpAction, initial);
 
   return (
@@ -37,6 +46,22 @@ export function SignupForm() {
           required
         />
         <FieldError errors={state.fieldErrors?.password} />
+      </div>
+      <div>
+        <Label htmlFor="occupation">{tAud("fieldLabel")}</Label>
+        <select
+          id="occupation"
+          name="occupation"
+          defaultValue=""
+          className="mt-1 h-9 w-full rounded-md border border-line bg-surface px-3 text-sm text-ink"
+        >
+          <option value="">{tAud("fieldPlaceholder")}</option>
+          {OCCUPATIONS.map((o) => (
+            <option key={o} value={o}>
+              {tAud(`occ_${o}`)}
+            </option>
+          ))}
+        </select>
       </div>
       <Button type="submit" className="w-full" disabled={pending}>
         {t("submitSignup")}

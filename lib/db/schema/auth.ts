@@ -10,6 +10,7 @@ import {
 import {
   citext,
   createdAt,
+  occupation,
   timestamptz,
   updatedAt,
   userRole,
@@ -39,6 +40,7 @@ export const users = pgTable("users", {
 
   isActive: boolean("is_active").notNull().default(true), // admin can deactivate an account
   bio: text("bio"), // short profile bio (admin-editable)
+  occupation: occupation("occupation"), // self-declared at signup (audience analytics)
 
   notifyEmail: boolean("notify_email").notNull().default(true),
   notifySms: boolean("notify_sms").notNull().default(true),

@@ -12,3 +12,4 @@ export * from "./assessment";
 export * from "./payment";
 export * from "./certificate";
 export * from "./system";
+export * from "./audience";

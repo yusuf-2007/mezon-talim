@@ -547,7 +547,20 @@
     "colCourses": "Курсы",
     "colRegistered": "Дата регистрации",
     "coursesCount": "{count} курса",
-    "localeEn": "Английский"
+    "localeEn": "Английский",
+    "navAudience": "Аудитория",
+    "audienceTitle": "Аудитория",
+    "audienceSubtitle": "Кто заходит на сайт — зарегистрированные и нет.",
+    "audVisitors": "Анонимные посетители",
+    "audVisitorsSub": "Ответили на опрос при входе",
+    "audRegistrants": "Зарегистрированные",
+    "audRegistrantsSub": "Указали при регистрации",
+    "audResponses": "Ответов на опрос",
+    "audResponseRate": "Доля ответивших",
+    "audAnswered": "Ответили",
+    "audSkipped": "Пропустили",
+    "audRecent": "Последние 30 дней",
+    "audNoData": "Пока нет данных."
   },
   "Student": {
     "navHome": "Главная",
@@ -691,5 +704,17 @@
         "a": "Mezon Ta'lim выдаёт собственный сертификат о прохождении курса. Официальное профессиональное удостоверение AAOIFI выдаётся по результатам собственного экзамена AAOIFI — мы можем помочь с регистрацией."
       }
     ]
+  },
+  "Audience": {
+    "title": "Кем вы работаете?",
+    "subtitle": "Один клик — это поможет нам улучшить платформу.",
+    "skip": "Пропустить",
+    "fieldLabel": "Ваша профессия (необязательно)",
+    "fieldPlaceholder": "Выберите…",
+    "occ_student": "Студент",
+    "occ_business_owner": "Владелец бизнеса",
+    "occ_corporate_employee": "Корпоративный сотрудник",
+    "occ_educator": "Преподаватель",
+    "occ_other": "Другое"
   }
 }

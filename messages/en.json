@@ -547,7 +547,20 @@
     "statLessons": "Lessons",
     "colCourses": "Courses",
     "colRegistered": "Registered",
-    "coursesCount": "{count} courses"
+    "coursesCount": "{count} courses",
+    "navAudience": "Audience",
+    "audienceTitle": "Audience",
+    "audienceSubtitle": "Who visits the site — registered and not.",
+    "audVisitors": "Anonymous visitors",
+    "audVisitorsSub": "Answered the entry poll",
+    "audRegistrants": "Registered users",
+    "audRegistrantsSub": "Declared at sign-up",
+    "audResponses": "Poll responses",
+    "audResponseRate": "Response rate",
+    "audAnswered": "Answered",
+    "audSkipped": "Skipped",
+    "audRecent": "Last 30 days",
+    "audNoData": "No data yet."
   },
   "Student": {
     "navHome": "Home",
@@ -691,5 +704,17 @@
         "a": "Mezon Ta'lim issues its own course-completion certificate. AAOIFI's official professional credential is obtained through AAOIFI's own exam — we can help with registration."
       }
     ]
+  },
+  "Audience": {
+    "title": "What best describes you?",
+    "subtitle": "One tap — it helps us build a better platform.",
+    "skip": "Skip",
+    "fieldLabel": "Your occupation (optional)",
+    "fieldPlaceholder": "Select…",
+    "occ_student": "Student",
+    "occ_business_owner": "Business owner",
+    "occ_corporate_employee": "Corporate employee",
+    "occ_educator": "Educator",
+    "occ_other": "Other"
   }
 }
