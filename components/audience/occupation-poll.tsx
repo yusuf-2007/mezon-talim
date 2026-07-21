@@ -6,6 +6,15 @@ import { usePathname } from "@/lib/i18n/navigation";
 
 const VID_KEY = "mezon_vid";
 const DONE_KEY = "mezon_occ";
+const T0_KEY = "mezon_t0";
+
+// Engagement gate: never ask before the visitor has had a chance to learn what
+// the site is. Fires on whichever lands first — half the page read, or a full
+// minute on site — but never inside the first 20s, so a fast thumb-flick to the
+// footer doesn't trigger it instantly.
+const MIN_DWELL_MS = 20_000;
+const DWELL_MS = 60_000;
+const SCROLL_RATIO = 0.5;
 
 const OPTIONS = [
   "student",
@@ -36,6 +45,10 @@ function getVisitorId(): string {
  * One-tap anonymous "what best describes you?" prompt (spec: learn who visits
  * but doesn't register). Shown once per browser — a localStorage flag gates it,
  * not a cookie or IP. The answer is stored anonymously in the in-country DB.
+ *
+ * Deliberately *not* shown on arrival: asking a stranger their profession
+ * before they know what Mezon is reads as a data grab and skews the sample
+ * toward people who click anything to dismiss it. See the engagement gate above.
  */
 export function OccupationPoll() {
   const t = useTranslations("Audience");
@@ -46,16 +59,53 @@ export function OccupationPoll() {
 
   useEffect(() => {
     if (!isPublicPath(pathname)) return;
-    let already = false;
+
+    let t0: number;
     try {
-      already = localStorage.getItem(DONE_KEY) === "1";
+      if (localStorage.getItem(DONE_KEY) === "1") return;
+      // Session-wide clock: reading the landing page then clicking through to
+      // /about is one continuous visit, so the dwell timer must not reset per
+      // page. Cleared by the browser when the tab closes.
+      const stored = Number(sessionStorage.getItem(T0_KEY));
+      t0 = stored > 0 ? stored : Date.now();
+      sessionStorage.setItem(T0_KEY, String(t0));
     } catch {
-      return; // storage blocked → don't prompt
+      return; // storage blocked → don't prompt at all
     }
-    if (already) return;
-    // Small delay so it doesn't slam the visitor on first paint.
-    const id = setTimeout(() => setShow(true), 2500);
-    return () => clearTimeout(id);
+
+    let fired = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const elapsed = () => Date.now() - t0;
+
+    const cleanup = () => {
+      window.removeEventListener("scroll", onScroll);
+      timers.forEach(clearTimeout);
+    };
+
+    function fire() {
+      if (fired) return;
+      fired = true;
+      cleanup();
+      setShow(true);
+    }
+
+    function scrolledEnough(): boolean {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max <= 0) return false; // page too short to measure — fall back to dwell
+      return window.scrollY / max >= SCROLL_RATIO;
+    }
+
+    function onScroll() {
+      if (elapsed() < MIN_DWELL_MS) return;
+      if (scrolledEnough()) fire();
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    // Re-check once the floor lifts, in case they were already past 50% by then.
+    timers.push(setTimeout(onScroll, Math.max(0, MIN_DWELL_MS - elapsed())));
+    timers.push(setTimeout(fire, Math.max(0, DWELL_MS - elapsed())));
+
+    return cleanup;
   }, [pathname]);
 
   function finish(occupation: (typeof OPTIONS)[number] | null) {
@@ -86,39 +136,48 @@ export function OccupationPoll() {
   return (
     <div
       role="dialog"
+      aria-modal="true"
       aria-label={t("title")}
       data-closing={closing ? "" : undefined}
-      className="fixed inset-x-0 bottom-0 z-[60] p-3 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:p-0 motion-safe:animate-[occ-in_.25s_ease]"
+      onClick={() => finish(null)}
+      className="occ-scrim fixed inset-0 z-[60] grid place-items-center bg-navy-900/50 p-4"
     >
       <style>{`
-        @keyframes occ-in { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
+        @keyframes occ-fade { from { opacity:0; } to { opacity:1; } }
+        @keyframes occ-pop { from { opacity:0; transform: translateY(8px) scale(.97); } to { opacity:1; transform:none; } }
+        @media (prefers-reduced-motion: no-preference) {
+          .occ-scrim { animation: occ-fade .2s ease; }
+          .occ-card { animation: occ-pop .28s cubic-bezier(.2,.7,.2,1); }
+        }
         [data-closing] { opacity:0; transition: opacity .2s ease; }
       `}</style>
-      <div className="mx-auto w-full max-w-sm rounded-2xl border border-line bg-surface p-5 shadow-xl">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-heading text-base font-semibold text-navy-800">
-              {t("title")}
-            </p>
-            <p className="mt-0.5 text-xs text-slate-500">{t("subtitle")}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => finish(null)}
-            aria-label={t("skip")}
-            className="-mr-1 -mt-1 rounded-md p-1 text-slate-400 hover:bg-bg hover:text-slate-600"
-          >
-            ✕
-          </button>
-        </div>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="occ-card relative w-full max-w-md rounded-2xl border border-line bg-surface p-7 text-center shadow-2xl"
+      >
+        <button
+          type="button"
+          onClick={() => finish(null)}
+          aria-label={t("skip")}
+          className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:bg-bg hover:text-slate-600"
+        >
+          ✕
+        </button>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <p className="font-heading text-xl font-semibold text-navy-800">
+          {t("title")}
+        </p>
+        <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500">
+          {t("subtitle")}
+        </p>
+
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
           {OPTIONS.map((o) => (
             <button
               key={o}
               type="button"
               onClick={() => finish(o)}
-              className="rounded-lg border border-line bg-bg px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-navy-600 hover:bg-navy-100/40"
+              className="rounded-lg border border-line bg-bg px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:border-navy-600 hover:bg-navy-100/40"
             >
               {t(`occ_${o}`)}
             </button>
@@ -128,7 +187,7 @@ export function OccupationPoll() {
         <button
           type="button"
           onClick={() => finish(null)}
-          className="mt-3 text-xs text-slate-400 hover:text-slate-600 hover:underline"
+          className="mt-5 text-xs text-slate-400 hover:text-slate-600 hover:underline"
         >
           {t("skip")}
         </button>
