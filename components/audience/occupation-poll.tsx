@@ -108,6 +108,11 @@ export function OccupationPoll() {
     return cleanup;
   }, [pathname]);
 
+  /**
+   * Answer (`occupation`) or dismiss (`null`). Both retire the prompt for good
+   * — deliberate: one ask per browser, never a second. A dismissal is recorded
+   * as a null-occupation signal so the admin panel can show the response rate.
+   */
   function finish(occupation: (typeof OPTIONS)[number] | null) {
     try {
       localStorage.setItem(DONE_KEY, "1");
