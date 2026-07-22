@@ -50,6 +50,13 @@
       "when": 1784362446491,
       "tag": "0006_youthful_harrier",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784699342028,
+      "tag": "0007_lazy_maverick",
+      "breakpoints": true
     }
   ]
 }

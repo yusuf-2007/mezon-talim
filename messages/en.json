@@ -560,7 +560,18 @@
     "audAnswered": "Answered",
     "audSkipped": "Skipped",
     "audRecent": "Last 30 days",
-    "audNoData": "No data yet."
+    "audNoData": "No data yet.",
+    "pollAppearanceTitle": "Poll appearance",
+    "pollAppearanceSub": "Choose how the entry poll appears to visitors. Changes take effect within a minute.",
+    "pollSaved": "Saved",
+    "pollSaving": "Saving…",
+    "pollSaveError": "Not saved",
+    "pollModalClear": "Centered modal",
+    "pollModalClearSub": "A card centered over a dimmed backdrop.",
+    "pollModalBlur": "Centered modal (blurred)",
+    "pollModalBlurSub": "The same, but the backdrop is lightly blurred.",
+    "pollCorner": "Corner card",
+    "pollCornerSub": "A small, unobtrusive card in the bottom-right."
   },
   "Student": {
     "navHome": "Home",

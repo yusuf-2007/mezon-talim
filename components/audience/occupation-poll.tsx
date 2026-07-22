@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/lib/i18n/navigation";
+import { cn } from "@/lib/utils";
 
 const VID_KEY = "mezon_vid";
 const DONE_KEY = "mezon_occ";
@@ -23,6 +24,14 @@ const OPTIONS = [
   "educator",
   "other",
 ] as const;
+
+// Admin-selectable visual treatment (see settingsRepository.POLL_VARIANTS).
+// Kept in sync with that server-side list.
+type Variant = "corner" | "modal_blur" | "modal_clear";
+const DEFAULT_VARIANT: Variant = "modal_clear";
+function isVariant(v: unknown): v is Variant {
+  return v === "corner" || v === "modal_blur" || v === "modal_clear";
+}
 
 // Only surface on public marketing surfaces — never inside auth, dashboard,
 // studio, player, or admin flows.
@@ -49,6 +58,9 @@ function getVisitorId(): string {
  * Deliberately *not* shown on arrival: asking a stranger their profession
  * before they know what Mezon is reads as a data grab and skews the sample
  * toward people who click anything to dismiss it. See the engagement gate above.
+ *
+ * Presentation is admin-controlled: `corner` toast, or a centered modal with or
+ * without a blurred scrim. The gating/recording logic is identical across all.
  */
 export function OccupationPoll() {
   const t = useTranslations("Audience");
@@ -56,6 +68,22 @@ export function OccupationPoll() {
   const pathname = usePathname();
   const [show, setShow] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [variant, setVariant] = useState<Variant>(DEFAULT_VARIANT);
+
+  // Fetch the admin-selected treatment once. Best-effort — the default stands
+  // if it fails, and this never blocks the gate below.
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/audience/poll-config")
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive && isVariant(d?.variant)) setVariant(d.variant);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isPublicPath(pathname)) return;
@@ -138,6 +166,76 @@ export function OccupationPoll() {
 
   if (!show) return null;
 
+  const keyframes = (
+    <style>{`
+      @keyframes occ-fade { from { opacity:0; } to { opacity:1; } }
+      @keyframes occ-pop { from { opacity:0; transform: translateY(8px) scale(.97); } to { opacity:1; transform:none; } }
+      @keyframes occ-slide { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform:none; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .occ-scrim { animation: occ-fade .2s ease; }
+        .occ-card { animation: occ-pop .28s cubic-bezier(.2,.7,.2,1); }
+        .occ-corner { animation: occ-slide .3s cubic-bezier(.2,.7,.2,1); }
+      }
+      [data-closing] { opacity:0; transition: opacity .2s ease; }
+    `}</style>
+  );
+
+  // Shared card body — identical across every variant.
+  const card = (
+    <>
+      <button
+        type="button"
+        onClick={() => finish(null)}
+        aria-label={t("skip")}
+        className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:bg-bg hover:text-slate-600"
+      >
+        ✕
+      </button>
+
+      <p className="font-heading text-xl font-semibold text-navy-800">{t("title")}</p>
+      <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500">{t("subtitle")}</p>
+
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {OPTIONS.map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => finish(o)}
+            className="rounded-lg border border-line bg-bg px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:border-navy-600 hover:bg-navy-100/40"
+          >
+            {t(`occ_${o}`)}
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => finish(null)}
+        className="mt-5 text-xs text-slate-400 hover:text-slate-600 hover:underline"
+      >
+        {t("skip")}
+      </button>
+    </>
+  );
+
+  // Corner toast: no scrim, anchored bottom-right, non-modal.
+  if (variant === "corner") {
+    return (
+      <div
+        role="dialog"
+        aria-label={t("title")}
+        data-closing={closing ? "" : undefined}
+        className="occ-corner fixed bottom-4 right-4 z-[60] w-[calc(100%-2rem)] max-w-sm sm:bottom-6 sm:right-6"
+      >
+        {keyframes}
+        <div className="relative rounded-2xl border border-line bg-surface p-6 text-center shadow-2xl">
+          {card}
+        </div>
+      </div>
+    );
+  }
+
+  // Centered modal, with or without a blurred scrim. Backdrop click dismisses.
   return (
     <div
       role="dialog"
@@ -145,57 +243,17 @@ export function OccupationPoll() {
       aria-label={t("title")}
       data-closing={closing ? "" : undefined}
       onClick={() => finish(null)}
-      className="occ-scrim fixed inset-0 z-[60] grid place-items-center bg-navy-900/50 p-4"
+      className={cn(
+        "occ-scrim fixed inset-0 z-[60] grid place-items-center bg-navy-900/50 p-4",
+        variant === "modal_blur" && "backdrop-blur-sm",
+      )}
     >
-      <style>{`
-        @keyframes occ-fade { from { opacity:0; } to { opacity:1; } }
-        @keyframes occ-pop { from { opacity:0; transform: translateY(8px) scale(.97); } to { opacity:1; transform:none; } }
-        @media (prefers-reduced-motion: no-preference) {
-          .occ-scrim { animation: occ-fade .2s ease; }
-          .occ-card { animation: occ-pop .28s cubic-bezier(.2,.7,.2,1); }
-        }
-        [data-closing] { opacity:0; transition: opacity .2s ease; }
-      `}</style>
+      {keyframes}
       <div
         onClick={(e) => e.stopPropagation()}
         className="occ-card relative w-full max-w-md rounded-2xl border border-line bg-surface p-7 text-center shadow-2xl"
       >
-        <button
-          type="button"
-          onClick={() => finish(null)}
-          aria-label={t("skip")}
-          className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:bg-bg hover:text-slate-600"
-        >
-          ✕
-        </button>
-
-        <p className="font-heading text-xl font-semibold text-navy-800">
-          {t("title")}
-        </p>
-        <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500">
-          {t("subtitle")}
-        </p>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          {OPTIONS.map((o) => (
-            <button
-              key={o}
-              type="button"
-              onClick={() => finish(o)}
-              className="rounded-lg border border-line bg-bg px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:border-navy-600 hover:bg-navy-100/40"
-            >
-              {t(`occ_${o}`)}
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => finish(null)}
-          className="mt-5 text-xs text-slate-400 hover:text-slate-600 hover:underline"
-        >
-          {t("skip")}
-        </button>
+        {card}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import {
   notificationChannel,
   notificationStatus,
   timestamptz,
+  updatedAt,
 } from "./_shared";
 
 /**
@@ -22,6 +23,21 @@ export const notifications = pgTable("notifications", {
   payload: jsonb("payload"),
   sentAt: timestamptz("sent_at"),
   createdAt: createdAt(),
+});
+
+/**
+ * Generic key-value application settings — admin-tunable knobs that shouldn't
+ * require a redeploy (e.g. the audience poll's visual variant). One row per
+ * setting; `value` is JSONB so a setting can be a string, flag, or object.
+ * Read through settingsRepository, never inline.
+ */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedByUserId: uuid("updated_by_user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  updatedAt: updatedAt(),
 });
 
 /**

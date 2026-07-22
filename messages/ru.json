@@ -560,7 +560,18 @@
     "audAnswered": "Ответили",
     "audSkipped": "Пропустили",
     "audRecent": "Последние 30 дней",
-    "audNoData": "Пока нет данных."
+    "audNoData": "Пока нет данных.",
+    "pollAppearanceTitle": "Вид опроса",
+    "pollAppearanceSub": "Выберите, как входной опрос показывается посетителям. Изменение вступит в силу в течение минуты.",
+    "pollSaved": "Сохранено",
+    "pollSaving": "Сохранение…",
+    "pollSaveError": "Не сохранено",
+    "pollModalClear": "Центральное окно",
+    "pollModalClearSub": "Окно по центру поверх затемнённого фона.",
+    "pollModalBlur": "Центральное окно (размытие)",
+    "pollModalBlurSub": "То же, но фон слегка размывается.",
+    "pollCorner": "Угловое окно",
+    "pollCornerSub": "Небольшое ненавязчивое окно в правом нижнем углу."
   },
   "Student": {
     "navHome": "Главная",

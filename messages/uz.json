@@ -560,7 +560,18 @@
     "audAnswered": "Javob berildi",
     "audSkipped": "O‘tkazib yuborildi",
     "audRecent": "So‘nggi 30 kun",
-    "audNoData": "Hali ma’lumot yo‘q."
+    "audNoData": "Hali ma’lumot yo‘q.",
+    "pollAppearanceTitle": "So‘rovnoma ko‘rinishi",
+    "pollAppearanceSub": "Kirish so‘rovnomasi tashrifchilarga qanday ko‘rsatilishini tanlang. O‘zgarish bir daqiqa ichida kuchga kiradi.",
+    "pollSaved": "Saqlandi",
+    "pollSaving": "Saqlanmoqda…",
+    "pollSaveError": "Saqlanmadi",
+    "pollModalClear": "Markaziy oyna",
+    "pollModalClearSub": "Xiralashtirilgan fon ustida markazda joylashgan oyna.",
+    "pollModalBlur": "Markaziy oyna (xira fon)",
+    "pollModalBlurSub": "Xuddi shu, lekin fon biroz xiralashtiriladi.",
+    "pollCorner": "Burchak oynasi",
+    "pollCornerSub": "Pastki o‘ng burchakda kichik, xalaqit bermaydigan oyna."
   },
   "Student": {
     "navHome": "Asosiy",

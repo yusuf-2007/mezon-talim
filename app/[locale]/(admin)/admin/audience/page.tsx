@@ -4,7 +4,9 @@ import {
   audienceRepository,
   type OccupationBreakdown,
 } from "@/lib/db/repositories/audience";
+import { settingsRepository } from "@/lib/db/repositories/settings";
 import { StatCard } from "@/components/admin/stat-card";
+import { PollVariantControl } from "@/components/admin/poll-variant-control";
 
 const OCC_ORDER = [
   "student",
@@ -23,17 +25,18 @@ const OCC_COLORS: Record<string, string> = {
 };
 
 export default async function AdminAudiencePage() {
-  await requireRole("super_admin", "accountant");
+  const viewer = await requireRole("super_admin", "accountant");
   const [t, tAud] = await Promise.all([
     getTranslations("Admin"),
     getTranslations("Audience"),
   ]);
 
-  const [visitors, registrants, totals, recent] = await Promise.all([
+  const [visitors, registrants, totals, recent, pollVariant] = await Promise.all([
     audienceRepository.visitorBreakdown(),
     audienceRepository.registrantBreakdown(),
     audienceRepository.pollTotals(),
     audienceRepository.signalsSince(30),
+    settingsRepository.getPollVariant(),
   ]);
 
   const responseRate =
@@ -67,6 +70,10 @@ export default async function AdminAudiencePage() {
           sub={t("audRegistrantsSub")}
         />
       </div>
+
+      {viewer.role === "super_admin" && (
+        <PollVariantControl current={pollVariant} />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <BreakdownCard
