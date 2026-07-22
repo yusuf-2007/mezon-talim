@@ -13,7 +13,7 @@ export { lessonsRepository } from "./lessons";
 export { enrollmentsRepository } from "./enrollments";
 export { lessonProgressRepository } from "./lesson-progress";
 export { notesRepository } from "./notes";
-export { bookmarksRepository } from "./bookmarks";
+export { commentsRepository } from "./comments";
 export { glossaryRepository } from "./glossary";
 export { assessmentsRepository } from "./assessments";
 export { questionsRepository } from "./questions";

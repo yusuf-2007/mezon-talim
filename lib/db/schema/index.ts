@@ -1,7 +1,7 @@
 /**
  * Mezon Ta'lim — MVP database schema (Drizzle).
- * Source of truth: /docs/data-model.md. "Later"-feature tables (community,
- * gamification, referrals, subscriptions) are intentionally NOT created yet;
+ * Source of truth: /docs/data-model.md. Remaining "Later"-feature tables
+ * (gamification, referrals, subscriptions) are intentionally NOT created yet;
  * the schema above is designed so they slot in without a rewrite.
  */
 export * from "./_shared";
@@ -13,3 +13,5 @@ export * from "./payment";
 export * from "./certificate";
 export * from "./system";
 export * from "./audience";
+export * from "./community";
+

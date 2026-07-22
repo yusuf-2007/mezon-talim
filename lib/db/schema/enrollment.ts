@@ -61,21 +61,12 @@ export const lessonProgress = pgTable(
   (t) => [unique("lesson_progress_user_lesson_uq").on(t.userId, t.lessonId)],
 );
 
-/** Student bookmarks within a lesson (B8). */
-export const bookmarks = pgTable("bookmarks", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  lessonId: uuid("lesson_id")
-    .notNull()
-    .references(() => lessons.id, { onDelete: "cascade" }),
-  label: text("label"),
-  timestampSeconds: integer("timestamp_seconds"),
-  createdAt: createdAt(),
-});
-
-/** Private student notes per lesson (B7). */
+/**
+ * Private student notes per lesson (B7 + B8 merged). A note may optionally be
+ * pinned to a video position (`timestampSeconds`) — the old separate bookmarks
+ * table was folded in here (migration 0008): a bookmark is just a note at a
+ * timestamp.
+ */
 export const notes = pgTable("notes", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -85,6 +76,7 @@ export const notes = pgTable("notes", {
     .notNull()
     .references(() => lessons.id, { onDelete: "cascade" }),
   body: text("body").notNull(),
+  timestampSeconds: integer("timestamp_seconds"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });

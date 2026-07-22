@@ -57,6 +57,20 @@
       "when": 1784699342028,
       "tag": "0007_lazy_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784701289862,
+      "tag": "0008_long_paibok",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784701331997,
+      "tag": "0009_simple_red_shift",
+      "breakpoints": true
     }
   ]
 }
