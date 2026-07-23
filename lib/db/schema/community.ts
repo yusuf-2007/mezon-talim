@@ -30,3 +30,31 @@ export const lessonComments = pgTable(
   },
   (t) => [index("lesson_comments_lesson_idx").on(t.lessonId, t.createdAt)],
 );
+
+/**
+ * Private student→instructor messages, per lesson. A thread is identified by
+ * (lessonId, studentId): the student who asked, regardless of who sent each
+ * message (`senderId` distinguishes the two sides). Visible ONLY to that
+ * student, the course's owning teacher (`courses.createdBy`), and super
+ * admins — enforced in the app layer (actions + page fetch), like all authz.
+ */
+export const lessonMessages = pgTable(
+  "lesson_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    lessonId: uuid("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    senderId: uuid("sender_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("lesson_messages_thread_idx").on(t.lessonId, t.studentId, t.createdAt),
+  ],
+);

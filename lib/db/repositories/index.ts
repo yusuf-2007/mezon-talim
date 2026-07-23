@@ -14,6 +14,7 @@ export { enrollmentsRepository } from "./enrollments";
 export { lessonProgressRepository } from "./lesson-progress";
 export { notesRepository } from "./notes";
 export { commentsRepository } from "./comments";
+export { messagesRepository } from "./messages";
 export { glossaryRepository } from "./glossary";
 export { assessmentsRepository } from "./assessments";
 export { questionsRepository } from "./questions";

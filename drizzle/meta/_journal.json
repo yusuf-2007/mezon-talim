@@ -71,6 +71,13 @@
       "when": 1784701331997,
       "tag": "0009_simple_red_shift",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784836118193,
+      "tag": "0010_broken_snowbird",
+      "breakpoints": true
     }
   ]
 }

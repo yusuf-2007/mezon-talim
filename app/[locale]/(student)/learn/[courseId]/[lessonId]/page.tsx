@@ -6,6 +6,7 @@ import { coursesRepository } from "@/lib/db/repositories/courses";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { notesRepository } from "@/lib/db/repositories/notes";
 import { commentsRepository } from "@/lib/db/repositories/comments";
+import { messagesRepository } from "@/lib/db/repositories/messages";
 import { glossaryRepository } from "@/lib/db/repositories/glossary";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
@@ -24,6 +25,7 @@ import { VideoFrame } from "@/components/player/video-frame";
 import { CompleteControls } from "@/components/player/complete-controls";
 import { AddNoteForm } from "@/components/player/add-note-form";
 import { DiscussionPanel } from "@/components/player/discussion-panel";
+import { AuthorMessagesPanel } from "@/components/player/author-messages-panel";
 
 export default async function PlayerPage({
   params,
@@ -50,8 +52,15 @@ export default async function PlayerPage({
     activeLessonId: lessonId,
   };
 
+  // The course owner (and super admins) bypass the sequential lock: they must
+  // be able to open any of their lessons — to check content and, crucially, to
+  // read and answer private student questions on non-preview lessons.
+  const isInstructor =
+    user.role === "super_admin" ||
+    (user.role === "teacher" && course.createdBy === user.id);
+
   // Locked / not-enrolled lesson → message instead of the video.
-  if (!lesson.accessible) {
+  if (!lesson.accessible && !isInstructor) {
     return (
       <CoursePlayerShell {...shellProps}>
         <div className="rounded-xl border border-line bg-surface p-10 text-center">
@@ -64,13 +73,21 @@ export default async function PlayerPage({
     );
   }
 
-  const [full, notes, comments, glossary, quiz] = await Promise.all([
-    lessonsRepository.findById(lessonId),
-    notesRepository.listForLesson(user.id, lessonId),
-    commentsRepository.listForLesson(lessonId),
-    glossaryRepository.listForCourse(courseId),
-    assessmentsRepository.findForLesson(lessonId),
-  ]);
+  // Private messaging: instructors see every student's thread; everyone else
+  // fetches only their own thread. Privacy is enforced here at fetch time —
+  // the panel never receives other students' messages.
+
+  const [full, notes, comments, privateMessages, glossary, quiz] =
+    await Promise.all([
+      lessonsRepository.findById(lessonId),
+      notesRepository.listForLesson(user.id, lessonId),
+      commentsRepository.listForLesson(lessonId),
+      isInstructor
+        ? messagesRepository.listThreadsForLesson(lessonId)
+        : messagesRepository.listThread(lessonId, user.id),
+      glossaryRepository.listForCourse(courseId),
+      assessmentsRepository.findForLesson(lessonId),
+    ]);
   const quizCount = quiz ? await questionsRepository.countByAssessment(quiz.id) : 0;
   const lessonTitle = pickLocale(lesson.title, locale);
   const bodyText = pickLocale(full?.body, locale);
@@ -107,6 +124,7 @@ export default async function PlayerPage({
           <TabsList>
             <TabsTrigger value="notes">{t("notes")}</TabsTrigger>
             <TabsTrigger value="discussion">{t("discussion")}</TabsTrigger>
+            <TabsTrigger value="ask">{t("askAuthor")}</TabsTrigger>
             <TabsTrigger value="glossary">{t("glossary")}</TabsTrigger>
             <TabsTrigger value="text">{t("lessonText")}</TabsTrigger>
           </TabsList>
@@ -152,6 +170,19 @@ export default async function PlayerPage({
               }))}
               currentUserId={user.id}
               canModerate={user.role === "teacher" || user.role === "super_admin"}
+            />
+          </TabsContent>
+
+          {/* Private student→instructor questions (not public) */}
+          <TabsContent value="ask" className="pt-4">
+            <AuthorMessagesPanel
+              lessonId={lessonId}
+              messages={privateMessages.map((m) => ({
+                ...m,
+                createdAt: m.createdAt.toISOString(),
+              }))}
+              currentUserId={user.id}
+              isInstructor={isInstructor}
             />
           </TabsContent>
 
