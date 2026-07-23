@@ -20,6 +20,19 @@ function formatSeconds(total: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
 }
 
+/** "111130" → "11:11:30", "130" → "1:30" — digits grouped in twos from the right. */
+function maskTime(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 6);
+  const groups: string[] = [];
+  let rest = digits;
+  while (rest.length > 2) {
+    groups.unshift(rest.slice(-2));
+    rest = rest.slice(0, -2);
+  }
+  if (rest) groups.unshift(rest);
+  return groups.join(":");
+}
+
 /**
  * Merged note form (B7 + B8): a note with an optional video timestamp. The
  * time is typed as mm:ss / hh:mm:ss (parsed server-side), or captured from
@@ -55,7 +68,7 @@ export function AddNoteForm({ action }: { action: Action }) {
         <Input
           name="timestamp"
           value={time}
-          onChange={(e) => setTime(e.target.value)}
+          onChange={(e) => setTime(maskTime(e.target.value))}
           placeholder="00:00:00"
           aria-label={t("noteTimestamp")}
           pattern="^\d{1,4}(:[0-5]?\d){0,2}$"
