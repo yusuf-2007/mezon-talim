@@ -192,7 +192,7 @@
     "lessonText": "Lesson text",
     "addNote": "Add note",
     "notePlaceholder": "Write your note...",
-    "noteTimestamp": "Video time, sec (optional)",
+    "noteTimestamp": "Video time (optional)",
     "noNotes": "No notes yet.",
     "discCount": "{count, plural, one {# comment} other {# comments}}",
     "discPlaceholder": "Write a comment...",
@@ -212,7 +212,8 @@
     "noVideo": "The video hasn't been uploaded yet.",
     "selfAssessment": "How well did you understand the topic?",
     "delete": "Delete",
-    "save": "Save"
+    "save": "Save",
+    "useCurrentTime": "Current video time"
   },
   "Assess": {
     "tab": "Tests",

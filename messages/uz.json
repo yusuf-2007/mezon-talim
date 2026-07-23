@@ -192,7 +192,7 @@
     "lessonText": "Dars matni",
     "addNote": "Eslatma qo'shish",
     "notePlaceholder": "Eslatmangizni yozing...",
-    "noteTimestamp": "Video vaqti, soniya (ixtiyoriy)",
+    "noteTimestamp": "Video vaqti (ixtiyoriy)",
     "noNotes": "Hali eslatmalar yo'q.",
     "discCount": "{count} ta izoh",
     "discPlaceholder": "Izoh yozing...",
@@ -212,7 +212,8 @@
     "noVideo": "Video hali yuklanmagan.",
     "selfAssessment": "Mavzuni qanchalik tushundingiz?",
     "delete": "O'chirish",
-    "save": "Saqlash"
+    "save": "Saqlash",
+    "useCurrentTime": "Joriy video vaqti"
   },
   "Assess": {
     "tab": "Testlar",

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { signPlaybackToken } from "@/lib/video";
+import { VideoEmbed } from "./video-embed";
 
 /**
  * Bunny Stream iframe with a signed, expiring playback URL (view-only, no
@@ -28,14 +29,7 @@ export async function VideoFrame({
 
   return (
     <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
-      <iframe
-        src={playback.url}
-        title={title}
-        loading="lazy"
-        allow="accelerated-2d-canvas; fullscreen; picture-in-picture"
-        allowFullScreen
-        className="h-full w-full border-0"
-      />
+      <VideoEmbed src={playback.url} title={title} />
     </div>
   );
 }

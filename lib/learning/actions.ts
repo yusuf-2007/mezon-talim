@@ -88,6 +88,15 @@ export async function completeLessonAction(
 
 // ── Notes (B7 + B8 merged: a note may pin a video timestamp) ─────────────────
 
+/** "90" → 90, "1:30" → 90, "01:30:05" → 5405; null for empty/invalid. */
+function parseTimestamp(raw: string): number | null {
+  if (!raw) return null;
+  if (!/^\d{1,4}(:[0-5]?\d){0,2}$/.test(raw)) return null;
+  return raw
+    .split(":")
+    .reduce((total, part) => total * 60 + parseInt(part, 10), 0);
+}
+
 export async function addNoteAction(
   lessonId: string,
   _prev: unknown,
@@ -96,8 +105,9 @@ export async function addNoteAction(
   const user = await requireUser();
   const body = String(formData.get("body") ?? "").trim();
   if (!body) return { ok: false };
-  const tsRaw = String(formData.get("timestampSeconds") ?? "").trim();
-  const timestampSeconds = tsRaw ? Math.max(0, parseInt(tsRaw, 10) || 0) : null;
+  const timestampSeconds = parseTimestamp(
+    String(formData.get("timestamp") ?? "").trim(),
+  );
   const { enrolled, courseId } = await assertLessonEnrollment(user.id, lessonId);
   if (!enrolled) return { ok: false };
   await notesRepository.create(user.id, lessonId, body, timestampSeconds);
