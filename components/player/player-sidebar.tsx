@@ -28,7 +28,7 @@ export async function PlayerSidebar({
       : 0;
 
   return (
-    <nav className="flex h-full flex-col">
+    <nav>
       <div className="border-b border-line p-4">
         <div className="h-2 w-full overflow-hidden rounded-full bg-navy-100">
           <div className="h-full rounded-full bg-success" style={{ width: `${pct}%` }} />
@@ -38,9 +38,9 @@ export async function PlayerSidebar({
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div>
         {curriculum.modules.map((m, i) => (
-          <div key={m.id} className="border-b border-line">
+          <div key={m.id} className="border-b border-line last:border-b-0">
             <p className="px-4 pt-4 pb-1 font-heading text-sm font-semibold text-navy-800">
               <span className="mr-1.5 tabular-nums text-slate-500">{i + 1}.</span>
               {pickLocale(m.title, locale)}

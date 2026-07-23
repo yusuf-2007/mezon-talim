@@ -32,25 +32,29 @@ export async function CoursePlayerShell({
   ]);
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-0 lg:grid-cols-[20rem_1fr]">
-      <aside className="hidden border-r border-line bg-surface lg:block lg:min-h-[calc(100vh-4rem)]">
-        <div className="border-b border-line p-4">
-          <Link
-            href={`/courses/${courseSlug}`}
-            className="text-sm text-navy-600 hover:underline"
-          >
-            ← {t("backToCourse")}
-          </Link>
+    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[20rem_1fr]">
+      {/* Floating curriculum card: sticks below the 4rem site header and
+          scrolls internally, matching the rounded compartments on the right. */}
+      <aside className="hidden lg:block">
+        <div className="sticky top-[5.5rem] max-h-[calc(100vh-7rem)] overflow-y-auto rounded-xl border border-line bg-surface shadow-sm">
+          <div className="border-b border-line p-4">
+            <Link
+              href={`/courses/${courseSlug}`}
+              className="text-sm text-navy-600 hover:underline"
+            >
+              ← {t("backToCourse")}
+            </Link>
+          </div>
+          <PlayerSidebar
+            courseId={courseId}
+            curriculum={curriculum}
+            activeLessonId={activeLessonId}
+            examBox={examBox}
+            examActive={activeLessonId === "exam"}
+          />
         </div>
-        <PlayerSidebar
-          courseId={courseId}
-          curriculum={curriculum}
-          activeLessonId={activeLessonId}
-          examBox={examBox}
-          examActive={activeLessonId === "exam"}
-        />
       </aside>
-      <main className="px-4 py-8 sm:px-6">{children}</main>
+      <main className="min-w-0">{children}</main>
     </div>
   );
 }
