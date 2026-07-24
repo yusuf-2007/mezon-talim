@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -124,4 +125,46 @@ export const attemptAnswers = pgTable(
   // One saved answer per (attempt, question) — enables upsert as the student
   // navigates the runner.
   (t) => [unique("attempt_answers_attempt_question_uq").on(t.attemptId, t.questionId)],
+);
+
+/**
+ * In-video popup questions (Coursera-style): at `timestampSeconds` the player
+ * pauses and shows the question over the video. Ungraded knowledge checks —
+ * deliberately outside the assessments/attempts machinery (no attempts,
+ * limits, or scores). Options are a localized-string array; `correctIndex`
+ * points into it and never leaves the server until the student answers.
+ */
+export const videoQuestions = pgTable(
+  "video_questions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    lessonId: uuid("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    timestampSeconds: integer("timestamp_seconds").notNull(),
+    prompt: jsonb("prompt").$type<LocalizedText>().notNull(),
+    options: jsonb("options").$type<LocalizedText[]>().notNull(),
+    correctIndex: integer("correct_index").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("video_questions_lesson_idx").on(t.lessonId, t.timestampSeconds)],
+);
+
+/** Latest answer per (question, student) — upserted; powers "already answered". */
+export const videoQuestionResponses = pgTable(
+  "video_question_responses",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => videoQuestions.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    selectedIndex: integer("selected_index").notNull(),
+    isCorrect: boolean("is_correct").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [unique("video_question_responses_uq").on(t.questionId, t.userId)],
 );

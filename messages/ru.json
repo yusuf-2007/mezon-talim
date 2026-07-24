@@ -150,7 +150,18 @@
     "bunnyError": "Не удалось проверить видео",
     "bunnyNotConfigured": "Bunny не настроен",
     "bunnyPreview": "Предпросмотр",
-    "bunnyUseDuration": "Подставить длительность ({value})"
+    "bunnyUseDuration": "Подставить длительность ({value})",
+    "vqButton": "Вопросы",
+    "vqTitle": "Вопросы внутри видео",
+    "vqNone": "Пока нет вопросов. Вопрос появится, когда видео дойдёт до отмеченного времени.",
+    "vqAdd": "Добавить вопрос",
+    "vqTime": "Время видео",
+    "vqPromptUz": "Вопрос (UZ)",
+    "vqPromptRu": "Вопрос (RU)",
+    "vqOption": "Вариант",
+    "vqCorrectHint": "Отметьте правильный вариант:",
+    "vqDelete": "Удалить",
+    "vqError": "Не сохранено — проверьте поля (минимум 2 варианта)."
   },
   "Catalog": {
     "title": "Курсы",
@@ -223,7 +234,13 @@
     "selfAssessment": "Насколько вы поняли тему?",
     "delete": "Удалить",
     "save": "Сохранить",
-    "useCurrentTime": "Текущее время видео"
+    "useCurrentTime": "Текущее время видео",
+    "vqLabel": "Вопрос",
+    "vqCheck": "Проверить",
+    "vqCorrect": "Верно!",
+    "vqWrong": "Неверно",
+    "vqContinue": "Продолжить",
+    "vqSkip": "Пропустить"
   },
   "Assess": {
     "tab": "Тесты",

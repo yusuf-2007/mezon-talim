@@ -150,7 +150,18 @@
     "bunnyError": "Videoni tekshirib bo‘lmadi",
     "bunnyNotConfigured": "Bunny sozlanmagan",
     "bunnyPreview": "Ko‘rib chiqish",
-    "bunnyUseDuration": "Davomiylikni qo‘yish ({value})"
+    "bunnyUseDuration": "Davomiylikni qo‘yish ({value})",
+    "vqButton": "Savollar",
+    "vqTitle": "Video ichidagi savollar",
+    "vqNone": "Hozircha savollar yo'q. Savol video belgilangan vaqtga yetganda paydo bo'ladi.",
+    "vqAdd": "Savol qo'shish",
+    "vqTime": "Video vaqti",
+    "vqPromptUz": "Savol (UZ)",
+    "vqPromptRu": "Savol (RU)",
+    "vqOption": "Variant",
+    "vqCorrectHint": "To'g'ri javob variantini belgilang:",
+    "vqDelete": "O'chirish",
+    "vqError": "Saqlanmadi — maydonlarni tekshiring (kamida 2 ta variant)."
   },
   "Catalog": {
     "title": "Kurslar",
@@ -223,7 +234,13 @@
     "selfAssessment": "Mavzuni qanchalik tushundingiz?",
     "delete": "O'chirish",
     "save": "Saqlash",
-    "useCurrentTime": "Joriy video vaqti"
+    "useCurrentTime": "Joriy video vaqti",
+    "vqLabel": "Savol",
+    "vqCheck": "Tekshirish",
+    "vqCorrect": "To'g'ri!",
+    "vqWrong": "Noto'g'ri",
+    "vqContinue": "Davom etish",
+    "vqSkip": "O'tkazib yuborish"
   },
   "Assess": {
     "tab": "Testlar",

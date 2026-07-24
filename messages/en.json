@@ -150,7 +150,18 @@
     "bunnyError": "Couldn't verify the video",
     "bunnyNotConfigured": "Bunny not configured",
     "bunnyPreview": "Preview",
-    "bunnyUseDuration": "Set duration ({value})"
+    "bunnyUseDuration": "Set duration ({value})",
+    "vqButton": "Questions",
+    "vqTitle": "In-video questions",
+    "vqNone": "No questions yet. A question pops up when the video reaches its timestamp.",
+    "vqAdd": "Add question",
+    "vqTime": "Video time",
+    "vqPromptUz": "Question (UZ)",
+    "vqPromptRu": "Question (RU)",
+    "vqOption": "Option",
+    "vqCorrectHint": "Mark the correct option:",
+    "vqDelete": "Delete",
+    "vqError": "Not saved — check the fields (at least 2 options)."
   },
   "Catalog": {
     "title": "Courses",
@@ -223,7 +234,13 @@
     "selfAssessment": "How well did you understand the topic?",
     "delete": "Delete",
     "save": "Save",
-    "useCurrentTime": "Current video time"
+    "useCurrentTime": "Current video time",
+    "vqLabel": "Question",
+    "vqCheck": "Check",
+    "vqCorrect": "Correct!",
+    "vqWrong": "Incorrect",
+    "vqContinue": "Continue",
+    "vqSkip": "Skip"
   },
   "Assess": {
     "tab": "Tests",

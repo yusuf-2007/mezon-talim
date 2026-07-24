@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
+import { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
 import {
   createLessonAction,
   deleteLessonAction,
@@ -7,8 +8,20 @@ import {
   updateLessonAction,
   updateModuleAction,
 } from "@/lib/content/actions";
+import { deleteVideoQuestionAction } from "@/lib/content/video-question-actions";
+import { pickLocale } from "@/lib/i18n/localized";
 import { ModuleHeader } from "./module-header";
 import { AddLesson, LessonRow } from "./lesson-list";
+import { VideoQuestionsEditor } from "./video-questions-editor";
+
+function fmtTime(t: number): string {
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = t % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(s).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+}
 
 type ModuleLike = {
   id: string;
@@ -46,14 +59,33 @@ export async function ModuleCard({
         <p className="mt-3 text-sm text-slate-500">{t("noLessons")}</p>
       ) : (
         <ul className="mt-3 space-y-2">
-          {lessons.map((lesson) => (
-            <LessonRow
-              key={lesson.id}
-              lesson={lesson}
-              updateAction={updateLessonAction.bind(null, courseId, lesson.id)}
-              deleteAction={deleteLessonAction.bind(null, courseId, lesson.id)}
-            />
-          ))}
+          {await Promise.all(
+            lessons.map(async (lesson) => {
+              const vqs = await videoQuestionsRepository.listForLesson(lesson.id);
+              return (
+                <LessonRow
+                  key={lesson.id}
+                  lesson={lesson}
+                  updateAction={updateLessonAction.bind(null, courseId, lesson.id)}
+                  deleteAction={deleteLessonAction.bind(null, courseId, lesson.id)}
+                  videoQuestionsCount={vqs.length}
+                  videoQuestionsSlot={
+                    <VideoQuestionsEditor
+                      lessonId={lesson.id}
+                      deleteAction={deleteVideoQuestionAction}
+                      questions={vqs.map((q) => ({
+                        id: q.id,
+                        time: fmtTime(q.timestampSeconds),
+                        prompt: pickLocale(q.prompt, "uz") ?? "",
+                        options: q.options.map((o) => pickLocale(o, "uz") ?? ""),
+                        correctIndex: q.correctIndex,
+                      }))}
+                    />
+                  }
+                />
+              );
+            }),
+          )}
         </ul>
       )}
 

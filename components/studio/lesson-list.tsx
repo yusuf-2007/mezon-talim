@@ -24,13 +24,19 @@ export function LessonRow({
   lesson,
   updateAction,
   deleteAction,
+  videoQuestionsSlot,
+  videoQuestionsCount = 0,
 }: {
   lesson: LessonLike;
   updateAction: Action;
   deleteAction: () => Promise<void>;
+  /** Server-rendered VideoQuestionsEditor, toggled from here. */
+  videoQuestionsSlot?: React.ReactNode;
+  videoQuestionsCount?: number;
 }) {
   const t = useTranslations("Studio");
   const [editing, setEditing] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(false);
 
   return (
     <li className="rounded-lg border border-line bg-surface p-3">
@@ -48,6 +54,18 @@ export function LessonRow({
           <Button variant="ghost" size="sm" onClick={() => setEditing((e) => !e)}>
             {editing ? t("cancel") : t("editLesson")}
           </Button>
+          {videoQuestionsSlot && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuestions((s) => !s)}
+            >
+              ❓ {t("vqButton")}
+              {videoQuestionsCount > 0 && (
+                <span className="ml-1 tabular-nums">({videoQuestionsCount})</span>
+              )}
+            </Button>
+          )}
           <form action={deleteAction}>
             <ConfirmSubmit label={t("delete")} />
           </form>
@@ -63,6 +81,7 @@ export function LessonRow({
           />
         </div>
       )}
+      {showQuestions && videoQuestionsSlot}
     </li>
   );
 }

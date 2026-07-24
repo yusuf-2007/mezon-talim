@@ -7,6 +7,7 @@ import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { notesRepository } from "@/lib/db/repositories/notes";
 import { commentsRepository } from "@/lib/db/repositories/comments";
 import { messagesRepository } from "@/lib/db/repositories/messages";
+import { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
 import { glossaryRepository } from "@/lib/db/repositories/glossary";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
@@ -86,7 +87,7 @@ export default async function PlayerPage({
   // fetches only their own thread. Privacy is enforced here at fetch time —
   // the panel never receives other students' messages.
 
-  const [full, notes, comments, privateMessages, glossary, quiz] =
+  const [full, notes, comments, privateMessages, glossary, quiz, videoQuestions] =
     await Promise.all([
       lessonsRepository.findById(lessonId),
       notesRepository.listForLesson(user.id, lessonId),
@@ -96,6 +97,7 @@ export default async function PlayerPage({
         : messagesRepository.listThread(lessonId, user.id),
       glossaryRepository.listForCourse(courseId),
       assessmentsRepository.findForLesson(lessonId),
+      videoQuestionsRepository.listForLessonWithAnswers(lessonId, user.id),
     ]);
   const quizCount = quiz ? await questionsRepository.countByAssessment(quiz.id) : 0;
   const lessonTitle = pickLocale(lesson.title, locale);
@@ -108,7 +110,12 @@ export default async function PlayerPage({
       </h1>
 
       <div className="mt-4">
-        <VideoFrame bunnyVideoId={full?.bunnyVideoId ?? null} title={lessonTitle} />
+        <VideoFrame
+          bunnyVideoId={full?.bunnyVideoId ?? null}
+          title={lessonTitle}
+          videoQuestions={videoQuestions}
+          durationSeconds={full?.durationSeconds ?? null}
+        />
       </div>
 
       {quiz && quizCount > 0 && (

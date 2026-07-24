@@ -42,10 +42,11 @@ export const USERS = {
 
 export const PASSWORD = "E2ePass123!";
 
-/** Clear all user-generated community content between spec files. */
+/** Clear all user-generated community + authoring content between spec files. */
 export async function wipeCommunity(sql: ReturnType<typeof testSql>) {
   await sql`delete from user_notifications`;
   await sql`delete from lesson_messages`;
   await sql`delete from lesson_comments`;
   await sql`delete from notes`;
+  await sql`delete from video_questions`; // responses cascade
 }
