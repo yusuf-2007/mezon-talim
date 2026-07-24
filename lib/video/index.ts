@@ -127,6 +127,38 @@ export function isBunnyManagementConfigured(): boolean {
   return Boolean(env.BUNNY_STREAM_LIBRARY_ID && env.BUNNY_STREAM_API_KEY);
 }
 
+/**
+ * Sync Bunny "moments" for a video — the embed player renders each as a small
+ * dot ON ITS OWN SEEK BAR (the only supported way to mark up the cross-origin
+ * player's timeline). Used to mirror in-video question timestamps. Replaces
+ * the video's whole moments list; best-effort — a Bunny hiccup must never
+ * break question authoring (the in-app marker strip still works without it).
+ */
+export async function syncVideoMoments(
+  videoId: string,
+  moments: { label: string; timestamp: number }[],
+): Promise<boolean> {
+  const libraryId = env.BUNNY_STREAM_LIBRARY_ID;
+  const apiKey = env.BUNNY_STREAM_API_KEY;
+  if (!libraryId || !apiKey || !videoId) return false;
+  try {
+    const res = await fetch(`${BUNNY_API}/library/${libraryId}/videos/${videoId}`, {
+      method: "POST",
+      headers: {
+        AccessKey: apiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ moments }),
+    });
+    if (!res.ok) console.error(`Bunny moments sync failed: ${res.status}`);
+    return res.ok;
+  } catch (err) {
+    console.error("Bunny moments sync failed:", err);
+    return false;
+  }
+}
+
 /** Deterministic thumbnail URL for a video (works from the CDN host alone). */
 export function bunnyThumbnailUrl(guid: string, file = "thumbnail.jpg"): string {
   const cdn = env.BUNNY_STREAM_CDN_HOSTNAME;

@@ -6,6 +6,7 @@ import { requireCourseEditor } from "./access";
 import { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { modulesRepository } from "@/lib/db/repositories/modules";
+import { syncVideoMoments } from "@/lib/video";
 import type { LocalizedText } from "@/lib/db/schema";
 
 /**
@@ -40,6 +41,27 @@ async function requireLessonEditor(lessonId: string) {
   if (!mod) return null;
   await requireCourseEditor(mod.courseId);
   return { lesson, courseId: mod.courseId };
+}
+
+/**
+ * Mirror the lesson's question timestamps onto the Bunny video as native
+ * "moments", so dots appear inside the embed player's own seek bar. Best
+ * effort: authoring succeeds even when Bunny is unreachable/unconfigured.
+ */
+async function syncMomentsForLesson(
+  lessonId: string,
+  bunnyVideoId: string | null,
+): Promise<void> {
+  if (!bunnyVideoId) return;
+  try {
+    const questions = await videoQuestionsRepository.listForLesson(lessonId);
+    await syncVideoMoments(
+      bunnyVideoId,
+      questions.map((q) => ({ label: "Savol", timestamp: q.timestampSeconds })),
+    );
+  } catch (err) {
+    console.error("moments sync skipped:", err);
+  }
 }
 
 export async function createVideoQuestionAction(
@@ -90,6 +112,7 @@ export async function createVideoQuestionAction(
     correctIndex,
   });
 
+  await syncMomentsForLesson(lessonId, ctx.lesson.bunnyVideoId);
   revalidatePath(`/studio/courses/${ctx.courseId}`);
   return { ok: true };
 }
@@ -103,5 +126,6 @@ export async function deleteVideoQuestionAction(
   const ctx = await requireLessonEditor(question.lessonId);
   if (!ctx) return;
   await videoQuestionsRepository.remove(questionId);
+  await syncMomentsForLesson(question.lessonId, ctx.lesson.bunnyVideoId);
   revalidatePath(`/studio/courses/${ctx.courseId}`);
 }
