@@ -28,6 +28,7 @@ export function DashboardNav({
   const items = [
     { href: "/dashboard", label: t("navHome") },
     { href: "/dashboard/courses", label: t("navCourses") },
+    { href: "/dashboard/messages", label: t("navMessages") },
     { href: "/dashboard/certificates", label: t("navCertificates") },
   ];
   const active = (href: string) =>

@@ -1,5 +1,5 @@
 import "server-only";
-import { count, desc, eq, or } from "drizzle-orm";
+import { count, desc, eq, or, sql } from "drizzle-orm";
 import { db } from "../client";
 import { lessonComments, lessons, modules, userAvatars, users } from "../schema";
 
@@ -80,6 +80,30 @@ export const commentsRepository = {
         ),
       );
     return rows.map((r) => r.userId);
+  },
+
+  /**
+   * One user's comments across all lessons (dashboard Messages), newest-first,
+   * with lesson/course context and the size of each comment's reply thread.
+   */
+  async listForUser(userId: string, limit = 50) {
+    return db
+      .select({
+        id: lessonComments.id,
+        parentId: lessonComments.parentId,
+        body: lessonComments.body,
+        createdAt: lessonComments.createdAt,
+        lessonId: lessonComments.lessonId,
+        lessonTitle: lessons.title,
+        courseId: modules.courseId,
+        replies: sql<number>`(select count(*)::int from ${lessonComments} r where r.parent_id = ${lessonComments.id})`,
+      })
+      .from(lessonComments)
+      .innerJoin(lessons, eq(lessons.id, lessonComments.lessonId))
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(eq(lessonComments.userId, userId))
+      .orderBy(desc(lessonComments.createdAt), desc(lessonComments.id))
+      .limit(limit);
   },
 
   /** Comment totals per lesson (with owning course) for the admin pickers. */

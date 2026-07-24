@@ -599,6 +599,12 @@
   "Student": {
     "navHome": "Home",
     "navCourses": "My courses",
+    "navMessages": "Messages",
+    "msgAnswered": "Answered",
+    "goToLesson": "Go to lesson",
+    "msgNoQuestions": "No questions to your instructor yet. Ask one from the \"Ask instructor\" tab on any lesson page.",
+    "msgNoComments": "No comments yet. Join the conversation from the \"Discussion\" tab on any lesson page.",
+    "msgReplies": "{count, plural, one {# reply} other {# replies}}",
     "navCertificates": "Certificates",
     "navProfile": "Profile",
     "navSettings": "Settings",

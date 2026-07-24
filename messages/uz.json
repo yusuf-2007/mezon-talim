@@ -599,6 +599,12 @@
   "Student": {
     "navHome": "Asosiy",
     "navCourses": "Kurslarim",
+    "navMessages": "Xabarlar",
+    "msgAnswered": "Javob berildi",
+    "goToLesson": "Darsga o'tish",
+    "msgNoQuestions": "Hozircha ustozga savollaringiz yo'q. Savolni dars sahifasidagi \"Ustozga savol\" bo'limidan berishingiz mumkin.",
+    "msgNoComments": "Hozircha izohlaringiz yo'q. Dars sahifasidagi \"Muhokama\" bo'limida izoh qoldirishingiz mumkin.",
+    "msgReplies": "{count} ta javob",
     "navCertificates": "Sertifikatlar",
     "navProfile": "Profil",
     "navSettings": "Sozlamalar",

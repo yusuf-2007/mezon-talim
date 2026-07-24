@@ -101,4 +101,33 @@ test.describe.serial("discussion, ask-instructor, notifications", () => {
     await studentB.context().close();
     await admin.context().close();
   });
+
+  test("student dashboard Messages shows my threads and comments", async ({
+    browser,
+  }) => {
+    // Student A: the answered thread from test 1, continuable from here.
+    const a = await newSession(browser, USERS.studentA.email);
+    await a.goto("/uz/dashboard/messages");
+    await expect(a.getByText("Savol: mudoraba nima?")).toBeVisible();
+    await expect(a.getByText("Javob: foyda taqsimoti")).toBeVisible();
+    await expect(a.getByText("Javob berildi")).toBeVisible();
+
+    await a.fill("textarea[name=body]", "Qo'shimcha savol: dalillar qanday?");
+    await a.getByRole("button", { name: "Yuborish" }).click();
+    await expect(a.getByText("Qo'shimcha savol")).toBeVisible();
+    // Follow-up flips the thread back to awaiting-reply.
+    await expect(a.getByText("Javob kutilmoqda")).toBeVisible();
+    await a.screenshot({ path: "test-results/student-messages.png", fullPage: true });
+
+    // Student B: own comment with the admin's reply counted.
+    const b = await newSession(browser, USERS.studentB.email);
+    await b.goto("/uz/dashboard/messages?section=discussion");
+    await expect(b.getByText("Ochiq izoh: juda foydali dars")).toBeVisible();
+    await expect(b.getByText("1 ta javob")).toBeVisible();
+    // B's dashboard never contains A's private thread.
+    await expect(b.getByText("mudoraba")).toHaveCount(0);
+
+    await a.context().close();
+    await b.context().close();
+  });
 });

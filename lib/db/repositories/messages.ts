@@ -62,6 +62,28 @@ export const messagesRepository = {
       .orderBy(asc(lessonMessages.createdAt), asc(lessonMessages.id));
   },
 
+  /**
+   * All of one student's threads across every course (dashboard Messages),
+   * message-ordered; the panel groups by lesson. Includes lesson/course
+   * context for linking back into the player.
+   */
+  async listThreadsForStudent(studentId: string) {
+    return db
+      .select({
+        ...messageColumns,
+        lessonId: lessonMessages.lessonId,
+        lessonTitle: lessons.title,
+        courseId: modules.courseId,
+      })
+      .from(lessonMessages)
+      .innerJoin(users, eq(users.id, lessonMessages.senderId))
+      .innerJoin(students, eq(students.id, lessonMessages.studentId))
+      .innerJoin(lessons, eq(lessons.id, lessonMessages.lessonId))
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(eq(lessonMessages.studentId, studentId))
+      .orderBy(asc(lessonMessages.createdAt), asc(lessonMessages.id));
+  },
+
   /** Does the student have an open thread on this lesson? */
   async hasThread(lessonId: string, studentId: string): Promise<boolean> {
     const [row] = await db

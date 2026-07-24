@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Home, BookOpen, Award, User } from "lucide-react";
+import { Home, BookOpen, MessageCircle, Award, User } from "lucide-react";
 import { Link, usePathname } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ export function DashboardTabs() {
   const items = [
     { href: "/dashboard", label: t("navHome"), Icon: Home },
     { href: "/dashboard/courses", label: t("navCourses"), Icon: BookOpen },
+    { href: "/dashboard/messages", label: t("navMessages"), Icon: MessageCircle },
     { href: "/dashboard/certificates", label: t("navCertificates"), Icon: Award },
     { href: "/dashboard/profile", label: t("navProfile"), Icon: User },
   ];
