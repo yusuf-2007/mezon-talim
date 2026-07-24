@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { addCommentAction, deleteCommentAction } from "@/lib/community/actions";
 import { UserAvatar } from "@/components/admin/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { TimeAgo } from "@/components/time-ago";
 import { cn } from "@/lib/utils";
 
 /** Serialized comment as passed from the server page (dates as ISO strings). */
@@ -20,27 +21,6 @@ export type CommentItem = {
   authorHasAvatar: boolean;
 };
 
-/** "5 minutes ago" via Intl — no per-unit i18n keys needed. */
-function timeAgo(iso: string, locale: string): string {
-  const diffSec = (Date.parse(iso) - Date.now()) / 1000;
-  const units: [Intl.RelativeTimeFormatUnit, number][] = [
-    ["year", 31_536_000],
-    ["month", 2_592_000],
-    ["week", 604_800],
-    ["day", 86_400],
-    ["hour", 3_600],
-    ["minute", 60],
-  ];
-  try {
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-    for (const [unit, sec] of units) {
-      if (Math.abs(diffSec) >= sec) return rtf.format(Math.round(diffSec / sec), unit);
-    }
-    return rtf.format(Math.round(diffSec), "second");
-  } catch {
-    return new Date(iso).toLocaleDateString(locale);
-  }
-}
 
 function CommentForm({
   lessonId,
@@ -100,7 +80,6 @@ function CommentRow({
   isReply,
   canDelete,
   onReply,
-  locale,
   t,
 }: {
   comment: CommentItem;
@@ -108,7 +87,6 @@ function CommentRow({
   isReply: boolean;
   canDelete: boolean;
   onReply: () => void;
-  locale: string;
   t: ReturnType<typeof useTranslations<"Player">>;
 }) {
   const instructor =
@@ -131,9 +109,7 @@ function CommentRow({
               {t("discInstructor")}
             </span>
           )}
-          <span className="text-xs text-slate-400">
-            {timeAgo(comment.createdAt, locale)}
-          </span>
+          <TimeAgo iso={comment.createdAt} className="text-xs text-slate-400" />
         </p>
         <p className="mt-0.5 whitespace-pre-line break-words text-sm text-ink">
           {comment.body}
@@ -179,7 +155,6 @@ export function DiscussionPanel({
   canModerate: boolean;
 }) {
   const t = useTranslations("Player");
-  const locale = useLocale();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   // Repo returns newest-first; keep that for threads, flip replies to oldest-first.
@@ -214,7 +189,6 @@ export function DiscussionPanel({
                   isReply={false}
                   canDelete={canModerate || c.authorId === currentUserId}
                   onReply={() => setReplyingTo(replyingTo === c.id ? null : c.id)}
-                  locale={locale}
                   t={t}
                 />
                 {(replies.length > 0 || replyingTo === c.id) && (
@@ -229,7 +203,6 @@ export function DiscussionPanel({
                         onReply={() =>
                           setReplyingTo(replyingTo === c.id ? null : c.id)
                         }
-                        locale={locale}
                         t={t}
                       />
                     ))}

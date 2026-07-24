@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   MessageForm,
@@ -30,7 +30,6 @@ export function AuthorMessagesPanel({
   isInstructor: boolean;
 }) {
   const t = useTranslations("Player");
-  const locale = useLocale();
   const [openThread, setOpenThread] = useState<string | null>(null);
 
   if (!isInstructor) {
@@ -44,7 +43,6 @@ export function AuthorMessagesPanel({
         ) : (
           <ThreadMessages
             messages={messages}
-            locale={locale}
             instructorLabel={t("discInstructor")}
           />
         )}
@@ -97,7 +95,6 @@ export function AuthorMessagesPanel({
               </p>
               <ThreadMessages
                 messages={thread}
-                locale={locale}
                 instructorLabel={t("discInstructor")}
               />
               <div className="mt-3">

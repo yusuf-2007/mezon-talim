@@ -1,14 +1,14 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import {
   MessageForm,
   ThreadMessages,
   threadAwaiting,
-  timeAgo,
   type MessageItem,
 } from "@/components/player/message-thread";
+import { TimeAgo } from "@/components/time-ago";
 
 export type StudentThread = {
   courseId: string;
@@ -31,7 +31,6 @@ export function StudentThreadsPanel({
 }) {
   const t = useTranslations("Player");
   const tS = useTranslations("Student");
-  const locale = useLocale();
 
   if (threads.length === 0) {
     return <p className="text-sm text-slate-500">{tS("msgNoQuestions")}</p>;
@@ -66,7 +65,6 @@ export function StudentThreadsPanel({
           </div>
           <ThreadMessages
             messages={thread.messages}
-            locale={locale}
             instructorLabel={t("discInstructor")}
           />
           <div className="mt-3">
@@ -96,7 +94,6 @@ export type StudentComment = {
 /** Dashboard "my comments": where I've spoken in lesson discussions. */
 export function StudentCommentsList({ comments }: { comments: StudentComment[] }) {
   const tS = useTranslations("Student");
-  const locale = useLocale();
 
   if (comments.length === 0) {
     return <p className="text-sm text-slate-500">{tS("msgNoComments")}</p>;
@@ -119,7 +116,7 @@ export function StudentCommentsList({ comments }: { comments: StudentComment[] }
                 {tS("msgReplies", { count: c.replies })}
               </span>
             )}
-            <span className="text-slate-400">{timeAgo(c.createdAt, locale)}</span>
+            <TimeAgo iso={c.createdAt} className="text-slate-400" />
           </p>
         </li>
       ))}

@@ -151,11 +151,7 @@ export function NotificationDropdown({
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
-              <NotificationItems
-                items={items}
-                locale={locale}
-                onOpened={onItemOpened}
-              />
+              <NotificationItems items={items} onOpened={onItemOpened} />
             </div>
           )}
 

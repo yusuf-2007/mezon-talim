@@ -46,7 +46,7 @@ export default async function NotificationsPage({
             {t("empty")}
           </p>
         ) : (
-          <NotificationItems items={visible} locale={locale} />
+          <NotificationItems items={visible} />
         )}
       </div>
 

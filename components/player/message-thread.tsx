@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { sendAuthorMessageAction } from "@/lib/community/message-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { TimeAgo } from "@/components/time-ago";
 import { cn } from "@/lib/utils";
 
 /** Serialized private message as passed from server pages (dates as ISO). */
@@ -18,28 +19,6 @@ export type MessageItem = {
   body: string;
   createdAt: string;
 };
-
-/** "5 minutes ago" via Intl — no per-unit i18n keys needed. */
-export function timeAgo(iso: string, locale: string): string {
-  const diffSec = (Date.parse(iso) - Date.now()) / 1000;
-  const units: [Intl.RelativeTimeFormatUnit, number][] = [
-    ["year", 31_536_000],
-    ["month", 2_592_000],
-    ["week", 604_800],
-    ["day", 86_400],
-    ["hour", 3_600],
-    ["minute", 60],
-  ];
-  try {
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-    for (const [unit, sec] of units) {
-      if (Math.abs(diffSec) >= sec) return rtf.format(Math.round(diffSec / sec), unit);
-    }
-    return rtf.format(Math.round(diffSec), "second");
-  } catch {
-    return new Date(iso).toLocaleDateString(locale);
-  }
-}
 
 /** Compose box for a private thread (both sides use the same server action). */
 export function MessageForm({
@@ -86,11 +65,9 @@ export function MessageForm({
 /** One chat thread: student messages left, instructor replies highlighted. */
 export function ThreadMessages({
   messages,
-  locale,
   instructorLabel,
 }: {
   messages: MessageItem[];
-  locale: string;
   instructorLabel: string;
 }) {
   return (
@@ -115,7 +92,7 @@ export function ThreadMessages({
                   {instructorLabel}
                 </span>
               )}
-              <span className="text-slate-400">{timeAgo(m.createdAt, locale)}</span>
+              <TimeAgo iso={m.createdAt} className="text-slate-400" />
             </p>
             <p className="mt-1 whitespace-pre-line break-words text-sm text-ink">
               {m.body}
