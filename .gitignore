@@ -55,3 +55,7 @@ __pycache__/
 !.agents/skills
 .agents/skills/*
 !.agents/skills/code-reviewer
+
+# Playwright
+/test-results/
+/playwright-report/

@@ -1,8 +1,8 @@
 import "server-only";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "../client";
-import { lessonMessages, users } from "../schema";
+import { lessonMessages, lessons, modules, users } from "../schema";
 
 export type LessonMessage = {
   id: string;
@@ -85,5 +85,41 @@ export const messagesRepository = {
   }) {
     const [row] = await db.insert(lessonMessages).values(input).returning();
     return row;
+  },
+
+  /**
+   * Threads still awaiting an instructor reply (their LATEST message is from
+   * the student), counted per lesson with the owning course — feeds the
+   * "needs reply" badges in the admin Messages pickers.
+   */
+  async unansweredCounts(): Promise<
+    { lessonId: string; courseId: string; n: number }[]
+  > {
+    const latest = db
+      .selectDistinctOn([lessonMessages.lessonId, lessonMessages.studentId], {
+        lessonId: lessonMessages.lessonId,
+        studentId: lessonMessages.studentId,
+        senderId: lessonMessages.senderId,
+      })
+      .from(lessonMessages)
+      .orderBy(
+        lessonMessages.lessonId,
+        lessonMessages.studentId,
+        desc(lessonMessages.createdAt),
+        desc(lessonMessages.id),
+      )
+      .as("latest");
+
+    return db
+      .select({
+        lessonId: latest.lessonId,
+        courseId: modules.courseId,
+        n: count(),
+      })
+      .from(latest)
+      .innerJoin(lessons, eq(lessons.id, latest.lessonId))
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(eq(latest.senderId, latest.studentId))
+      .groupBy(latest.lessonId, modules.courseId);
   },
 };

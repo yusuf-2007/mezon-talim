@@ -172,18 +172,25 @@ export function AuthorMessagesPanel({
     );
   }
 
-  // Instructor view: group messages into per-student threads, newest activity first.
+  // Instructor view: group messages into per-student threads. A thread whose
+  // LATEST message is the student's still needs an answer — those float to
+  // the top (inbox behavior), then by newest activity.
   const threads = new Map<string, MessageItem[]>();
   for (const m of messages) {
     const list = threads.get(m.studentId) ?? [];
     list.push(m);
     threads.set(m.studentId, list);
   }
-  const ordered = [...threads.entries()].sort(
-    (a, b) =>
+  const awaiting = (thread: MessageItem[]) =>
+    thread[thread.length - 1].senderId === thread[thread.length - 1].studentId;
+  const ordered = [...threads.entries()].sort((a, b) => {
+    const diff = Number(awaiting(b[1])) - Number(awaiting(a[1]));
+    if (diff !== 0) return diff;
+    return (
       Date.parse(b[1][b[1].length - 1].createdAt) -
-      Date.parse(a[1][a[1].length - 1].createdAt),
-  );
+      Date.parse(a[1][a[1].length - 1].createdAt)
+    );
+  });
 
   return (
     <div className="space-y-4">
@@ -196,8 +203,13 @@ export function AuthorMessagesPanel({
         <ul className="space-y-4">
           {ordered.map(([studentId, thread]) => (
             <li key={studentId} className="rounded-lg border border-line bg-surface p-4">
-              <p className="mb-3 text-sm font-semibold text-navy-800">
+              <p className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-navy-800">
                 {thread[0].studentName ?? "—"}
+                {awaiting(thread) && (
+                  <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-500">
+                    {t("msgAwaiting")}
+                  </span>
+                )}
               </p>
               <ThreadMessages
                 messages={thread}

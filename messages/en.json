@@ -210,6 +210,7 @@
     "msgInstructorHint": "Students' private questions about this lesson appear here. Only the student who asked will see your reply.",
     "msgReplyPlaceholder": "Write a reply...",
     "msgError": "Couldn't send. Try again.",
+    "msgAwaiting": "Awaiting reply",
     "noGlossary": "The glossary is empty.",
     "noLessonText": "No lesson text.",
     "markComplete": "Mark as complete",

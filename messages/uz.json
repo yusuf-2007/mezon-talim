@@ -210,6 +210,7 @@
     "msgInstructorHint": "Talabalarning ushbu darsga oid shaxsiy savollari shu yerda ko'rinadi. Javobingizni faqat savol bergan talaba ko'radi.",
     "msgReplyPlaceholder": "Javob yozing...",
     "msgError": "Yuborilmadi. Qayta urinib ko'ring.",
+    "msgAwaiting": "Javob kutilmoqda",
     "noGlossary": "Lug'at bo'sh.",
     "noLessonText": "Dars matni yo'q.",
     "markComplete": "Tugallandi deb belgilash",

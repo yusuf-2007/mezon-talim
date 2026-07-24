@@ -1,7 +1,7 @@
 import "server-only";
 import { count, desc, eq, or } from "drizzle-orm";
 import { db } from "../client";
-import { lessonComments, userAvatars, users } from "../schema";
+import { lessonComments, lessons, modules, userAvatars, users } from "../schema";
 
 export type LessonComment = {
   id: string;
@@ -80,6 +80,22 @@ export const commentsRepository = {
         ),
       );
     return rows.map((r) => r.userId);
+  },
+
+  /** Comment totals per lesson (with owning course) for the admin pickers. */
+  async countsByLesson(): Promise<
+    { lessonId: string; courseId: string; n: number }[]
+  > {
+    return db
+      .select({
+        lessonId: lessonComments.lessonId,
+        courseId: modules.courseId,
+        n: count(),
+      })
+      .from(lessonComments)
+      .innerJoin(lessons, eq(lessons.id, lessonComments.lessonId))
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .groupBy(lessonComments.lessonId, modules.courseId);
   },
 
   async countForLesson(lessonId: string): Promise<number> {

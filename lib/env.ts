@@ -31,6 +31,9 @@ const envSchema = z.object({
   BUNNY_STREAM_CDN_HOSTNAME: z.string().optional(),
   BUNNY_TOKEN_AUTH_KEY: z.string().optional(),
 
+  // --- Error monitoring (Sentry — optional; SDK is a no-op without it) ---
+  SENTRY_DSN: z.string().optional(),
+
   // --- Payments (Click + Payme) ---
   CLICK_SERVICE_ID: z.string().optional(),
   CLICK_MERCHANT_ID: z.string().optional(),

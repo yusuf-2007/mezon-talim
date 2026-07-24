@@ -35,7 +35,23 @@ export default async function AdminMessagesPage({
   const section: Section = sp.section === "ask" ? "ask" : "discussion";
   const lessonId = sp.lessonId ?? "";
 
-  const courses = await coursesRepository.listAll();
+  // Per-section activity counts decorate the pickers: unanswered private
+  // threads for "ask" (the instructor's real to-do list), comment totals for
+  // "discussion".
+  const [courses, activity] = await Promise.all([
+    coursesRepository.listAll(),
+    section === "ask"
+      ? messagesRepository.unansweredCounts()
+      : commentsRepository.countsByLesson(),
+  ]);
+  const byLesson = new Map(activity.map((a) => [a.lessonId, a.n]));
+  const byCourse = new Map<string, number>();
+  for (const a of activity) {
+    byCourse.set(a.courseId, (byCourse.get(a.courseId) ?? 0) + a.n);
+  }
+  const decorate = (label: string, n: number | undefined) =>
+    n ? `${label} (${n})` : label;
+
   // Validate against the real list — a malformed courseId must not reach SQL.
   const courseId = courses.some((c) => c.id === sp.courseId)
     ? (sp.courseId as string)
@@ -45,7 +61,7 @@ export default async function AdminMessagesPage({
     : [];
   const lessonOptions = lessonRows.map((r) => ({
     id: r.lesson.id,
-    label: pickLocale(r.lesson.title, locale),
+    label: decorate(pickLocale(r.lesson.title, locale), byLesson.get(r.lesson.id)),
   }));
   // Guard against a stale lessonId after switching course.
   const validLessonId = lessonOptions.some((l) => l.id === lessonId)
@@ -95,7 +111,7 @@ export default async function AdminMessagesPage({
           value={courseId}
           options={courses.map((c) => ({
             id: c.id,
-            label: pickLocale(c.title, locale),
+            label: decorate(pickLocale(c.title, locale), byCourse.get(c.id)),
           }))}
           placeholder={t("enrollmentsSelectCourse")}
           clears={["lessonId"]}
