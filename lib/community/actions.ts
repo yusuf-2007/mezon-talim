@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { commentsRepository } from "@/lib/db/repositories/comments";
+import { coursesRepository } from "@/lib/db/repositories/courses";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { modulesRepository } from "@/lib/db/repositories/modules";
+import { fireInAppNotification } from "@/lib/notifications/inapp";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
@@ -59,13 +61,47 @@ export async function addCommentAction(
     effectiveParentId = parent.parentId ?? parent.id;
   }
 
-  await commentsRepository.create({
+  const created = await commentsRepository.create({
     userId: user.id,
     lessonId,
     body: parsedBody.data,
     parentId: effectiveParentId,
   });
+
+  // Bell notifications: a reply pings every other participant of the flattened
+  // thread (root author + reply authors — so answering a reply reaches the
+  // person being answered, not just the thread owner); a new top-level comment
+  // pings the course author. Best-effort, self-notify filtered inside.
+  if (effectiveParentId) {
+    const participants = await commentsRepository.threadParticipants(
+      effectiveParentId,
+    );
+    for (const recipientId of participants) {
+      await fireInAppNotification({
+        userId: recipientId,
+        actorUserId: user.id,
+        type: "comment_reply",
+        courseId,
+        lessonId,
+        body: parsedBody.data,
+        sourceCommentId: created?.id,
+      });
+    }
+  } else {
+    const course = await coursesRepository.findById(courseId);
+    await fireInAppNotification({
+      userId: course?.createdBy,
+      actorUserId: user.id,
+      type: "lesson_comment",
+      courseId,
+      lessonId,
+      body: parsedBody.data,
+      sourceCommentId: created?.id,
+    });
+  }
+
   revalidatePath(`/learn/${courseId}/${lessonId}`);
+  revalidatePath("/admin/messages");
   return { ok: true };
 }
 
@@ -83,4 +119,5 @@ export async function deleteCommentAction(
   await commentsRepository.remove(commentId);
   const courseId = await courseIdForLesson(lessonId);
   if (courseId) revalidatePath(`/learn/${courseId}/${lessonId}`);
+  revalidatePath("/admin/messages");
 }

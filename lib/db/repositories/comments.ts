@@ -1,5 +1,5 @@
 import "server-only";
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, or } from "drizzle-orm";
 import { db } from "../client";
 import { lessonComments, userAvatars, users } from "../schema";
 
@@ -66,6 +66,20 @@ export const commentsRepository = {
   /** Hard delete; replies cascade at the DB level (YouTube semantics). */
   async remove(commentId: string) {
     await db.delete(lessonComments).where(eq(lessonComments.id, commentId));
+  },
+
+  /** Distinct authors in a flattened thread (root + all replies). */
+  async threadParticipants(threadRootId: string): Promise<string[]> {
+    const rows = await db
+      .selectDistinct({ userId: lessonComments.userId })
+      .from(lessonComments)
+      .where(
+        or(
+          eq(lessonComments.id, threadRootId),
+          eq(lessonComments.parentId, threadRootId),
+        ),
+      );
+    return rows.map((r) => r.userId);
   },
 
   async countForLesson(lessonId: string): Promise<number> {

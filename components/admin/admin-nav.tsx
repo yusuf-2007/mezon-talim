@@ -17,6 +17,7 @@ export function AdminNav({ canManage }: { canManage: boolean }) {
     { href: "/admin/courses", label: t("navCourses"), show: canManage },
     { href: "/admin/users", label: t("navUsers"), show: canManage },
     { href: "/admin/enrollments", label: t("navEnrollments"), show: canManage },
+    { href: "/admin/messages", label: t("navMessages"), show: canManage },
     { href: "/admin/payments", label: t("navPayments"), show: true },
     { href: "/admin/quizzes", label: t("navQuizzes"), show: canManage },
     { href: "/admin/module-tests", label: t("navModuleTests"), show: canManage },

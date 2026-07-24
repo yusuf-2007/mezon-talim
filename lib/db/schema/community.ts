@@ -1,7 +1,7 @@
 import { index, pgTable, text, uuid, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { users } from "./auth";
-import { lessons } from "./catalog";
-import { createdAt, updatedAt } from "./_shared";
+import { courses, lessons } from "./catalog";
+import { createdAt, timestamptz, updatedAt } from "./_shared";
 
 /**
  * Per-lesson discussion — YouTube-style comments (B19). Threads are one level
@@ -57,4 +57,49 @@ export const lessonMessages = pgTable(
   (t) => [
     index("lesson_messages_thread_idx").on(t.lessonId, t.studentId, t.createdAt),
   ],
+);
+
+/**
+ * In-app notifications (the header bell). One row per recipient per event.
+ * `type` drives the rendered text: 'private_question' (student → course
+ * author), 'private_reply' (instructor → student), 'comment_reply' (reply in
+ * a thread you participate in), 'lesson_comment' (new top-level comment →
+ * course author). Distinct from the `notifications` table, which audits
+ * outbound email/SMS sends. Created best-effort from community actions — a
+ * failed insert must never break the comment/message itself. The source FKs
+ * cascade so that deleting (moderating away) a comment or message also
+ * removes any notification still quoting its excerpt.
+ */
+export const userNotifications = pgTable(
+  "user_notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    /** Recipient. */
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Who triggered it (kept nullable so account deletion preserves history). */
+    actorUserId: uuid("actor_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    type: text("type").notNull(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    lessonId: uuid("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    /** The comment/message that caused this — cascade on moderation delete. */
+    sourceCommentId: uuid("source_comment_id").references(() => lessonComments.id, {
+      onDelete: "cascade",
+    }),
+    sourceMessageId: uuid("source_message_id").references(() => lessonMessages.id, {
+      onDelete: "cascade",
+    }),
+    /** Short preview of the message/comment body. */
+    excerpt: text("excerpt"),
+    readAt: timestamptz("read_at"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("user_notifications_user_idx").on(t.userId, t.createdAt)],
 );

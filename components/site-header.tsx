@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BrandWordmark } from "@/components/brand-wordmark";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 /**
  * Light top bar that sits above the navy hero. Shows auth actions based on the
@@ -37,6 +38,7 @@ export async function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {user && <NotificationBell userId={user.id} role={user.role} />}
           <LanguageSwitcher />
           {user ? (
             <div className="flex items-center gap-2">

@@ -9,6 +9,7 @@ import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import { getCurriculum, locateLesson } from "@/lib/learning/curriculum";
+import { fireInAppNotification } from "@/lib/notifications/inapp";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
@@ -64,12 +65,26 @@ export async function sendAuthorMessageAction(
     if (!located.lesson?.accessible) return { ok: false };
   }
 
-  await messagesRepository.create({
+  const created = await messagesRepository.create({
     lessonId,
     studentId: threadStudentId,
     senderId: user.id,
     body: parsedBody.data,
   });
+
+  // Bell notifications: instructor reply pings the student; a student's
+  // question pings the course author. Best-effort, self-notify filtered.
+  await fireInAppNotification({
+    userId: isInstructor ? threadStudentId : course.createdBy,
+    actorUserId: user.id,
+    type: isInstructor ? "private_reply" : "private_question",
+    courseId: course.id,
+    lessonId,
+    body: parsedBody.data,
+    sourceMessageId: created?.id,
+  });
+
   revalidatePath(`/learn/${course.id}/${lessonId}`);
+  revalidatePath("/admin/messages");
   return { ok: true };
 }

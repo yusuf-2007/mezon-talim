@@ -431,6 +431,7 @@
     "colProvider": "To'lov tizimi",
     "colAmount": "Summa",
     "navEnrollments": "Yozilishlar",
+    "navMessages": "Xabarlar",
     "navPayments": "To'lovlar",
     "navQuizzes": "Imtihonlar",
     "navModuleTests": "Modul testlari",
@@ -590,7 +591,9 @@
     "pollModalBlur": "Markaziy oyna (xira fon)",
     "pollModalBlurSub": "Xuddi shu, lekin fon biroz xiralashtiriladi.",
     "pollCorner": "Burchak oynasi",
-    "pollCornerSub": "Pastki o‘ng burchakda kichik, xalaqit bermaydigan oyna."
+    "pollCornerSub": "Pastki o‘ng burchakda kichik, xalaqit bermaydigan oyna.",
+    "messagesTitle": "Xabarlar",
+    "selectLesson": "Darsni tanlang"
   },
   "Student": {
     "navHome": "Asosiy",
@@ -746,5 +749,16 @@
     "occ_corporate_employee": "Korporativ xodim",
     "occ_educator": "O‘qituvchi",
     "occ_other": "Boshqa"
+  },
+  "Notifications": {
+    "title": "Bildirishnomalar",
+    "titleWithCount": "Bildirishnomalar ({count} ta yangi)",
+    "empty": "Hozircha bildirishnomalar yo'q.",
+    "markAllRead": "Barchasini o'qilgan deb belgilash",
+    "someone": "Foydalanuvchi",
+    "nPrivateQuestion": "{name} sizga shaxsiy savol yubordi",
+    "nPrivateReply": "{name} savolingizga javob berdi",
+    "nCommentReply": "{name} izohingizga javob berdi",
+    "nLessonComment": "{name} darsga izoh qoldirdi"
   }
 }

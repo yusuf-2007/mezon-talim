@@ -431,6 +431,7 @@
     "colProvider": "Платёжная система",
     "colAmount": "Сумма",
     "navEnrollments": "Записи",
+    "navMessages": "Сообщения",
     "navPayments": "Платежи",
     "navQuizzes": "Экзамены",
     "navModuleTests": "Модульные тесты",
@@ -590,7 +591,9 @@
     "pollModalBlur": "Центральное окно (размытие)",
     "pollModalBlurSub": "То же, но фон слегка размывается.",
     "pollCorner": "Угловое окно",
-    "pollCornerSub": "Небольшое ненавязчивое окно в правом нижнем углу."
+    "pollCornerSub": "Небольшое ненавязчивое окно в правом нижнем углу.",
+    "messagesTitle": "Сообщения",
+    "selectLesson": "Выберите урок"
   },
   "Student": {
     "navHome": "Главная",
@@ -746,5 +749,16 @@
     "occ_corporate_employee": "Корпоративный сотрудник",
     "occ_educator": "Преподаватель",
     "occ_other": "Другое"
+  },
+  "Notifications": {
+    "title": "Уведомления",
+    "titleWithCount": "Уведомления ({count} новых)",
+    "empty": "Пока нет уведомлений.",
+    "markAllRead": "Отметить все как прочитанные",
+    "someone": "Пользователь",
+    "nPrivateQuestion": "{name} задал(а) вам личный вопрос",
+    "nPrivateReply": "{name} ответил(а) на ваш вопрос",
+    "nCommentReply": "{name} ответил(а) на ваш комментарий",
+    "nLessonComment": "{name} оставил(а) комментарий к уроку"
   }
 }

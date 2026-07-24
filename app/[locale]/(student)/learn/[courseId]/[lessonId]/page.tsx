@@ -27,12 +27,21 @@ import { AddNoteForm } from "@/components/player/add-note-form";
 import { DiscussionPanel } from "@/components/player/discussion-panel";
 import { AuthorMessagesPanel } from "@/components/player/author-messages-panel";
 
+const PLAYER_TABS = ["notes", "discussion", "ask", "glossary", "text"] as const;
+
 export default async function PlayerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseId: string; lessonId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { courseId, lessonId } = await params;
+  const { tab } = await searchParams;
+  // Deep link from bell notifications: /learn/...?tab=ask|discussion
+  const initialTab = (PLAYER_TABS as readonly string[]).includes(tab ?? "")
+    ? (tab as string)
+    : "notes";
   const user = await requireUser();
   const locale = await getLocale();
   const t = await getTranslations("Player");
@@ -120,7 +129,7 @@ export default async function PlayerPage({
       </div>
 
       <div className="mt-6">
-        <Tabs defaultValue="notes">
+        <Tabs defaultValue={initialTab}>
           <TabsList>
             <TabsTrigger value="notes">{t("notes")}</TabsTrigger>
             <TabsTrigger value="discussion">{t("discussion")}</TabsTrigger>

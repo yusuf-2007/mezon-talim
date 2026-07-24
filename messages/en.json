@@ -431,6 +431,7 @@
     "colProvider": "Payment method",
     "colAmount": "Amount",
     "navEnrollments": "Enrollments",
+    "navMessages": "Messages",
     "navPayments": "Payments",
     "navQuizzes": "Exams",
     "navModuleTests": "Module tests",
@@ -590,7 +591,9 @@
     "pollModalBlur": "Centered modal (blurred)",
     "pollModalBlurSub": "The same, but the backdrop is lightly blurred.",
     "pollCorner": "Corner card",
-    "pollCornerSub": "A small, unobtrusive card in the bottom-right."
+    "pollCornerSub": "A small, unobtrusive card in the bottom-right.",
+    "messagesTitle": "Messages",
+    "selectLesson": "Select a lesson"
   },
   "Student": {
     "navHome": "Home",
@@ -746,5 +749,16 @@
     "occ_corporate_employee": "Corporate employee",
     "occ_educator": "Educator",
     "occ_other": "Other"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "titleWithCount": "Notifications ({count} unread)",
+    "empty": "No notifications yet.",
+    "markAllRead": "Mark all as read",
+    "someone": "Someone",
+    "nPrivateQuestion": "{name} sent you a private question",
+    "nPrivateReply": "{name} replied to your question",
+    "nCommentReply": "{name} replied to your comment",
+    "nLessonComment": "{name} commented on a lesson"
   }
 }

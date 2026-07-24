@@ -1,0 +1,4 @@
+ALTER TABLE "user_notifications" ADD COLUMN "source_comment_id" uuid;--> statement-breakpoint
+ALTER TABLE "user_notifications" ADD COLUMN "source_message_id" uuid;--> statement-breakpoint
+ALTER TABLE "user_notifications" ADD CONSTRAINT "user_notifications_source_comment_id_lesson_comments_id_fk" FOREIGN KEY ("source_comment_id") REFERENCES "public"."lesson_comments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_notifications" ADD CONSTRAINT "user_notifications_source_message_id_lesson_messages_id_fk" FOREIGN KEY ("source_message_id") REFERENCES "public"."lesson_messages"("id") ON DELETE cascade ON UPDATE no action;

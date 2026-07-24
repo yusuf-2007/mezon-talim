@@ -78,6 +78,20 @@
       "when": 1784836118193,
       "tag": "0010_broken_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784876546508,
+      "tag": "0011_gifted_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784877296131,
+      "tag": "0012_neat_sauron",
+      "breakpoints": true
     }
   ]
 }
