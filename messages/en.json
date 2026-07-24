@@ -207,6 +207,7 @@
     "msgSend": "Send",
     "msgEmpty": "No messages yet. Ask your question!",
     "msgNoThreads": "No student questions yet.",
+    "msgInstructorHint": "Students' private questions about this lesson appear here. Only the student who asked will see your reply.",
     "msgReplyPlaceholder": "Write a reply...",
     "msgError": "Couldn't send. Try again.",
     "noGlossary": "The glossary is empty.",

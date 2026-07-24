@@ -187,6 +187,9 @@ export function AuthorMessagesPanel({
 
   return (
     <div className="space-y-4">
+      <p className="flex items-center gap-1.5 text-xs text-slate-500">
+        <span aria-hidden>🔒</span> {t("msgInstructorHint")}
+      </p>
       {ordered.length === 0 ? (
         <p className="text-sm text-slate-500">{t("msgNoThreads")}</p>
       ) : (
