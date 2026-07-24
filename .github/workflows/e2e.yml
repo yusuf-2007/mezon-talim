@@ -34,9 +34,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 24 LTS ships npm 11, matching the npm that generated the lockfile
+      # (npm 10 reads nested peer deps more strictly and rejects `npm ci`).
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
