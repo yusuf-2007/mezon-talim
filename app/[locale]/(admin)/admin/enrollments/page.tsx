@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/admin/stat-card";
 import { UserAvatar } from "@/components/admin/user-avatar";
 import { ConfirmSubmit } from "@/components/studio/confirm-submit";
-import { AddStudentForm } from "@/components/admin/add-student-form";
+import { CourseFilter } from "@/components/admin/course-filter";
+import { EnrollStudentsDialog } from "@/components/admin/enroll-students-dialog";
 import type { Locale } from "@/lib/i18n/routing";
 
 export default async function AdminEnrollmentsPage({
@@ -36,24 +37,15 @@ export default async function AdminEnrollmentsPage({
         </h1>
       </div>
 
-      {/* Course selector (GET form) */}
-      <form className="flex flex-wrap items-center gap-2">
-        <select
-          name="courseId"
-          defaultValue={courseId ?? ""}
-          className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink"
-        >
-          <option value="">{t("enrollmentsSelectCourse")}</option>
-          {courses.map((c) => (
-            <option key={c.id} value={c.id}>
-              {pickLocale(c.title, locale)}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" variant="outline" size="sm">
-          {t("filter")}
-        </Button>
-      </form>
+      {/* Course selector — applies on selection, no submit button */}
+      <CourseFilter
+        courses={courses.map((c) => ({
+          id: c.id,
+          label: pickLocale(c.title, locale),
+        }))}
+        current={courseId ?? ""}
+        placeholder={t("enrollmentsSelectCourse")}
+      />
 
       {!courseId ? (
         <div className="rounded-xl border border-line bg-surface p-8 text-center text-slate-500 shadow-sm">
@@ -113,7 +105,7 @@ async function CourseRoster({
         <h2 className="font-heading text-lg font-semibold text-navy-800">
           {t("addStudents")}
         </h2>
-        <AddStudentForm courseId={courseId} users={candidates} />
+        <EnrollStudentsDialog courseId={courseId} users={candidates} />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
