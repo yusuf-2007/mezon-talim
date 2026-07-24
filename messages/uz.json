@@ -760,6 +760,9 @@
     "nPrivateQuestion": "{name} sizga shaxsiy savol yubordi",
     "nPrivateReply": "{name} savolingizga javob berdi",
     "nCommentReply": "{name} izohingizga javob berdi",
-    "nLessonComment": "{name} darsga izoh qoldirdi"
+    "nLessonComment": "{name} darsga izoh qoldirdi",
+    "viewAll": "Barchasini ko'rish",
+    "newer": "Yangilari",
+    "older": "Oldingilari"
   }
 }

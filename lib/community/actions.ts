@@ -39,7 +39,7 @@ export async function addCommentAction(
   if (!parsedBody.success) return { ok: false };
 
   // Modest per-user cap to blunt spam; generous enough for real discussion.
-  if (!checkRateLimit(`comment:add:${user.id}`, 10, 5 * 60_000).ok) {
+  if (!(await checkRateLimit(`comment:add:${user.id}`, 10, 5 * 60_000)).ok) {
     return { ok: false };
   }
 

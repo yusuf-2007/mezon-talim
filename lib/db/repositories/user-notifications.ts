@@ -42,8 +42,12 @@ export const userNotificationsRepository = {
     return row;
   },
 
-  /** Latest notifications for the bell dropdown, newest-first. */
-  async listForUser(userId: string, limit = 15): Promise<UserNotificationItem[]> {
+  /** Latest notifications, newest-first (bell dropdown + /notifications page). */
+  async listForUser(
+    userId: string,
+    limit = 15,
+    offset = 0,
+  ): Promise<UserNotificationItem[]> {
     return db
       .select({
         id: userNotifications.id,
@@ -61,7 +65,8 @@ export const userNotificationsRepository = {
       .leftJoin(lessons, eq(lessons.id, userNotifications.lessonId))
       .where(eq(userNotifications.userId, userId))
       .orderBy(desc(userNotifications.createdAt), desc(userNotifications.id))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
   },
 
   async unreadCount(userId: string): Promise<number> {

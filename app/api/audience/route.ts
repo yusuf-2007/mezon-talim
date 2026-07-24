@@ -23,7 +23,7 @@ const bodySchema = z.object({
 export async function POST(req: Request) {
   // Coarse global rate limit (the visitor id is client-controlled, so also cap
   // total writes to blunt scripted spam).
-  if (!checkRateLimit("audience:global", 600, 60_000).ok) {
+  if (!(await checkRateLimit("audience:global", 600, 60_000)).ok) {
     return NextResponse.json({ ok: false }, { status: 429 });
   }
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   const { visitorId, occupation, landingPath, referrer, locale } = parsed.data;
 
   // Per-visitor cap + one-row dedup: a browser only ever counts once.
-  if (!checkRateLimit(`audience:${visitorId}`, 3, 60_000).ok) {
+  if (!(await checkRateLimit(`audience:${visitorId}`, 3, 60_000)).ok) {
     return NextResponse.json({ ok: true, deduped: true });
   }
   if (await audienceRepository.hasResponded(visitorId)) {

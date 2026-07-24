@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 import {
   createdAt,
@@ -31,6 +31,18 @@ export const notifications = pgTable("notifications", {
  * setting; `value` is JSONB so a setting can be a string, flag, or object.
  * Read through settingsRepository, never inline.
  */
+/**
+ * Fixed-window rate-limit counters, shared across serverless instances (the
+ * in-memory Map reset on every deploy and never saw sibling instances). Rows
+ * are upserted atomically by rateLimitsRepository.hit(); stale rows are
+ * opportunistically swept. Not security-critical — blunts abusive bursts.
+ */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamptz("window_start").notNull(),
+  count: integer("count").notNull(),
+});
+
 export const appSettings = pgTable("app_settings", {
   key: text("key").primaryKey(),
   value: jsonb("value").notNull(),

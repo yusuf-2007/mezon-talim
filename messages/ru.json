@@ -760,6 +760,9 @@
     "nPrivateQuestion": "{name} задал(а) вам личный вопрос",
     "nPrivateReply": "{name} ответил(а) на ваш вопрос",
     "nCommentReply": "{name} ответил(а) на ваш комментарий",
-    "nLessonComment": "{name} оставил(а) комментарий к уроку"
+    "nLessonComment": "{name} оставил(а) комментарий к уроку",
+    "viewAll": "Показать все",
+    "newer": "Более новые",
+    "older": "Более старые"
   }
 }

@@ -39,7 +39,7 @@ function displayName(user: UserRow): string {
 }
 
 /** Record + dispatch one email; swallow errors after marking the row. */
-async function dispatchEmail(
+export async function dispatchEmail(
   userId: string,
   type: string,
   to: string | null,

@@ -13,7 +13,7 @@ import {
 /** Begin/resume an attempt and go to the runner; on block, back to pre-exam. */
 export async function startExamAction(assessmentId: string): Promise<void> {
   const user = await requireUser();
-  if (!checkExamRateLimit("start", user.id).ok) {
+  if (!(await checkExamRateLimit("start", user.id)).ok) {
     return redirectLocalized(`/exam/${assessmentId}`);
   }
   try {
@@ -34,14 +34,14 @@ export async function saveAnswerAction(
   selectedOptionIds: string[],
 ): Promise<{ ok: boolean; expired?: boolean }> {
   const user = await requireUser();
-  if (!checkExamRateLimit("save", user.id).ok) return { ok: false };
+  if (!(await checkExamRateLimit("save", user.id)).ok) return { ok: false };
   return saveAnswer(attemptId, user.id, questionId, selectedOptionIds);
 }
 
 /** Submit (manually or on time-expiry) → grade → result page. */
 export async function submitExamAction(attemptId: string): Promise<void> {
   const user = await requireUser();
-  if (!checkExamRateLimit("submit", user.id).ok) {
+  if (!(await checkExamRateLimit("submit", user.id)).ok) {
     return redirectLocalized(`/exam/attempt/${attemptId}`);
   }
   await submitAttempt(attemptId, user.id);
@@ -57,6 +57,6 @@ export async function requestRetryAction(
   assessmentId: string,
 ): Promise<{ ok: boolean; alreadyRequested?: boolean }> {
   const user = await requireUser();
-  if (!checkExamRateLimit("retry", user.id).ok) return { ok: false };
+  if (!(await checkExamRateLimit("retry", user.id)).ok) return { ok: false };
   return requestRetryApproval(assessmentId, user.id);
 }

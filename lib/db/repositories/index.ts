@@ -16,6 +16,7 @@ export { notesRepository } from "./notes";
 export { commentsRepository } from "./comments";
 export { messagesRepository } from "./messages";
 export { userNotificationsRepository } from "./user-notifications";
+export { rateLimitsRepository } from "./rate-limits";
 export { glossaryRepository } from "./glossary";
 export { assessmentsRepository } from "./assessments";
 export { questionsRepository } from "./questions";

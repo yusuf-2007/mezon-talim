@@ -64,6 +64,37 @@ export function welcomeEmail(
   };
 }
 
+/**
+ * Daily instructor digest: unanswered private student questions, one line per
+ * course. `lines` are pre-formatted "Course title — N" strings.
+ */
+export function unansweredDigestEmail(
+  locale: Locale,
+  data: { total: number; lines: string[]; inboxUrl: string },
+): EmailTemplate {
+  const list = data.lines
+    .map((l) => `<li style="margin:4px 0">${l}</li>`)
+    .join("");
+  if (locale === "ru") {
+    const body = `<p>У вас <b>${data.total}</b> неотвеченных вопросов от студентов:</p>
+      <ul style="padding-left:20px;margin:12px 0">${list}</ul>
+      <p style="margin-top:20px">${button(data.inboxUrl, "Ответить на вопросы")}</p>`;
+    return {
+      subject: `Неотвеченные вопросы студентов: ${data.total}`,
+      html: shell("Вопросы ждут ответа", body, FOOTER.ru),
+      text: `У вас ${data.total} неотвеченных вопросов от студентов. ${data.inboxUrl}`,
+    };
+  }
+  const body = `<p>Sizda talabalardan <b>${data.total}</b> ta javobsiz savol bor:</p>
+    <ul style="padding-left:20px;margin:12px 0">${list}</ul>
+    <p style="margin-top:20px">${button(data.inboxUrl, "Savollarga javob berish")}</p>`;
+  return {
+    subject: `Javobsiz talaba savollari: ${data.total} ta`,
+    html: shell("Savollar javob kutmoqda", body, FOOTER.uz),
+    text: `Sizda talabalardan ${data.total} ta javobsiz savol bor. ${data.inboxUrl}`,
+  };
+}
+
 /** Payment receipt email after a verified enrollment. */
 export function receiptEmail(
   locale: Locale,

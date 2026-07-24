@@ -1,65 +1,78 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Bell } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "@/lib/i18n/navigation";
-import {
-  markAllNotificationsReadAction,
-  markNotificationReadAction,
-} from "@/lib/notifications/actions";
-import { cn } from "@/lib/utils";
+import { Link, useRouter } from "@/lib/i18n/navigation";
+import { markAllNotificationsReadAction } from "@/lib/notifications/actions";
+import { NotificationItems } from "./notification-items";
+import type { BellItem } from "./types";
 
-export type BellItem = {
-  id: string;
-  type: string;
-  actorName: string | null;
-  lessonTitle: string | null;
-  excerpt: string | null;
-  read: boolean;
-  createdAt: string;
-  href: string;
-};
-
-/** "5 minutes ago" via Intl — no per-unit i18n keys needed. */
-function timeAgo(iso: string, locale: string): string {
-  const diffSec = (Date.parse(iso) - Date.now()) / 1000;
-  const units: [Intl.RelativeTimeFormatUnit, number][] = [
-    ["year", 31_536_000],
-    ["month", 2_592_000],
-    ["week", 604_800],
-    ["day", 86_400],
-    ["hour", 3_600],
-    ["minute", 60],
-  ];
-  try {
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-    for (const [unit, sec] of units) {
-      if (Math.abs(diffSec) >= sec) return rtf.format(Math.round(diffSec / sec), unit);
-    }
-    return rtf.format(Math.round(diffSec), "second");
-  } catch {
-    return new Date(iso).toLocaleDateString(locale);
-  }
-}
+const POLL_MS = 60_000;
 
 /**
- * Client half of the header bell: unread badge, dropdown list, mark-read on
- * click (then deep-links to the lesson tab), and mark-all-read.
+ * Client half of the header bell. Server-rendered with initial data, then
+ * kept fresh by refetching /api/notifications when the tab regains focus and
+ * on a slow interval — so the badge updates without a page navigation.
  */
 export function NotificationDropdown({
-  unread,
-  items,
+  initialUnread,
+  initialItems,
 }: {
-  unread: number;
-  items: BellItem[];
+  initialUnread: number;
+  initialItems: BellItem[];
 }) {
   const t = useTranslations("Notifications");
   const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(initialUnread);
+  const [items, setItems] = useState(initialItems);
   const [, start] = useTransition();
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // A navigation re-renders the server component with fresh props — adopt
+  // them (render-time reset pattern, not an effect).
+  const [lastProps, setLastProps] = useState({ initialUnread, initialItems });
+  if (
+    lastProps.initialUnread !== initialUnread ||
+    lastProps.initialItems !== initialItems
+  ) {
+    setLastProps({ initialUnread, initialItems });
+    setUnread(initialUnread);
+    setItems(initialItems);
+  }
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/notifications?locale=${locale}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data: { unread: number; items: BellItem[] } = await res.json();
+      setUnread(data.unread);
+      setItems(data.items);
+    } catch {
+      // Offline / transient — keep showing what we have.
+    }
+  }, [locale]);
+
+  // Freshness: refetch on tab focus and on a slow poll while visible.
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible") void refresh();
+    }
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, POLL_MS);
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(timer);
+    };
+  }, [refresh]);
 
   // Close on outside click / Escape.
   useEffect(() => {
@@ -80,34 +93,15 @@ export function NotificationDropdown({
     };
   }, [open]);
 
-  function titleFor(n: BellItem): string {
-    const name = n.actorName ?? t("someone");
-    switch (n.type) {
-      case "private_question":
-        return t("nPrivateQuestion", { name });
-      case "private_reply":
-        return t("nPrivateReply", { name });
-      case "comment_reply":
-        return t("nCommentReply", { name });
-      default:
-        return t("nLessonComment", { name });
-    }
-  }
-
-  function openItem(n: BellItem) {
+  function onItemOpened(id: string) {
     setOpen(false);
-    // Best-effort mark-read: navigation must happen even if it fails.
-    if (!n.read) void markNotificationReadAction(n.id).catch(() => {});
-    const [pathname, qs] = n.href.split("?");
-    start(() => {
-      router.push({
-        pathname,
-        query: Object.fromEntries(new URLSearchParams(qs ?? "")),
-      });
-    });
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setUnread((prev) => Math.max(0, prev - 1));
   }
 
   function markAll() {
+    setUnread(0);
+    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
     start(async () => {
       await markAllNotificationsReadAction();
       router.refresh();
@@ -156,36 +150,24 @@ export function NotificationDropdown({
               {t("empty")}
             </p>
           ) : (
-            <ul className="max-h-96 overflow-y-auto">
-              {items.map((n) => (
-                <li key={n.id} className="border-b border-line last:border-b-0">
-                  <button
-                    type="button"
-                    onClick={() => openItem(n)}
-                    className={cn(
-                      "block w-full px-4 py-3 text-left transition-colors hover:bg-bg",
-                      !n.read && "bg-navy-100/40",
-                    )}
-                  >
-                    <p className="text-sm text-ink">
-                      <span className={cn(!n.read && "font-medium")}>
-                        {titleFor(n)}
-                      </span>
-                    </p>
-                    {n.excerpt && (
-                      <p className="mt-0.5 truncate text-xs text-slate-500">
-                        {n.excerpt}
-                      </p>
-                    )}
-                    <p className="mt-0.5 text-xs text-slate-400">
-                      {n.lessonTitle && <span>{n.lessonTitle} · </span>}
-                      {timeAgo(n.createdAt, locale)}
-                    </p>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-96 overflow-y-auto">
+              <NotificationItems
+                items={items}
+                locale={locale}
+                onOpened={onItemOpened}
+              />
+            </div>
           )}
+
+          <div className="border-t border-line px-4 py-2 text-center">
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="text-xs font-medium text-navy-600 hover:underline"
+            >
+              {t("viewAll")}
+            </Link>
+          </div>
         </div>
       )}
     </div>

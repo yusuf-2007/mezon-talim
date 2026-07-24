@@ -34,6 +34,9 @@ const envSchema = z.object({
   // --- Error monitoring (Sentry — optional; SDK is a no-op without it) ---
   SENTRY_DSN: z.string().optional(),
 
+  // --- Cron auth (Vercel sends `Authorization: Bearer <CRON_SECRET>`) ---
+  CRON_SECRET: z.string().optional(),
+
   // --- Payments (Click + Payme) ---
   CLICK_SERVICE_ID: z.string().optional(),
   CLICK_MERCHANT_ID: z.string().optional(),

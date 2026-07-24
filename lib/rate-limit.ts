@@ -1,49 +1,40 @@
 import "server-only";
+import { rateLimitsRepository } from "@/lib/db/repositories/rate-limits";
 
 /**
- * Minimal in-process rate limiter (fixed-window per key). Suited to the
- * single-instance in-country VPS deploy (modular monolith) — no Redis needed.
- * If this ever scales horizontally, swap the Map for a shared store behind the
- * same `checkRateLimit` signature.
- *
- * Not security-critical on its own (all exam gating is enforced server-side in
- * the service layer) — this just blunts abusive bursts (spec Part 4 #7).
+ * Fixed-window rate limiter backed by Postgres, so limits hold across
+ * serverless instances and survive deploys (the old in-process Map did
+ * neither). FAIL-OPEN: if the DB check itself errors, the request is allowed —
+ * availability wins, because none of these limits are security-critical (all
+ * exam gating is enforced separately in the service layer); they just blunt
+ * abusive bursts (spec Part 4 #7).
  */
-
-type Window = { count: number; resetAt: number };
-const store = new Map<string, Window>();
-
-// Opportunistic cleanup so the Map can't grow unbounded across long uptimes.
-let lastSweep = 0;
-function sweep(now: number) {
-  if (now - lastSweep < 60_000) return;
-  lastSweep = now;
-  for (const [k, w] of store) if (w.resetAt <= now) store.delete(k);
-}
 
 export type RateLimitResult = { ok: boolean; retryAfterMs: number };
 
 /**
- * Allow up to `limit` events per `windowMs` for `key`. Returns ok=false with the
- * ms until the window resets when exceeded.
+ * Allow up to `limit` events per `windowMs` for `key`. Returns ok=false with
+ * the ms until the window resets when exceeded.
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   limit: number,
   windowMs: number,
-  now = Date.now(),
-): RateLimitResult {
-  sweep(now);
-  const w = store.get(key);
-  if (!w || w.resetAt <= now) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
+): Promise<RateLimitResult> {
+  try {
+    const { count, windowStart } = await rateLimitsRepository.hit(key, windowMs);
+    if (count <= limit) return { ok: true, retryAfterMs: 0 };
+    const retryAfterMs = Math.max(0, windowStart.getTime() + windowMs - Date.now());
+    return { ok: false, retryAfterMs };
+  } catch (err) {
+    console.error("[rate-limit] check failed — allowing request:", err);
     return { ok: true, retryAfterMs: 0 };
+  } finally {
+    // Opportunistic sweep of long-expired counters (~1% of hits).
+    if (Math.random() < 0.01) {
+      void rateLimitsRepository.sweep().catch(() => {});
+    }
   }
-  if (w.count >= limit) {
-    return { ok: false, retryAfterMs: w.resetAt - now };
-  }
-  w.count += 1;
-  return { ok: true, retryAfterMs: 0 };
 }
 
 const MIN = 60_000;
@@ -59,10 +50,10 @@ export const EXAM_LIMITS = {
 export type ExamAction = keyof typeof EXAM_LIMITS;
 
 /** Convenience wrapper: enforce an exam action's limit for a user. */
-export function checkExamRateLimit(
+export async function checkExamRateLimit(
   action: ExamAction,
   userId: string,
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const { limit, windowMs } = EXAM_LIMITS[action];
   return checkRateLimit(`exam:${action}:${userId}`, limit, windowMs);
 }

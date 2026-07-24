@@ -35,7 +35,7 @@ export async function sendAuthorMessageAction(
   const parsedBody = bodySchema.safeParse(formData.get("body"));
   if (!parsedBody.success) return { ok: false };
 
-  if (!checkRateLimit(`msg:add:${user.id}`, 10, 5 * 60_000).ok) {
+  if (!(await checkRateLimit(`msg:add:${user.id}`, 10, 5 * 60_000)).ok) {
     return { ok: false };
   }
 

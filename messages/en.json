@@ -760,6 +760,9 @@
     "nPrivateQuestion": "{name} sent you a private question",
     "nPrivateReply": "{name} replied to your question",
     "nCommentReply": "{name} replied to your comment",
-    "nLessonComment": "{name} commented on a lesson"
+    "nLessonComment": "{name} commented on a lesson",
+    "viewAll": "View all",
+    "newer": "Newer",
+    "older": "Older"
   }
 }
