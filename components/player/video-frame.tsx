@@ -53,6 +53,7 @@ export async function VideoFrame({
         prompt: pickLocale(q.prompt, locale) ?? "",
         options: q.options.map((o) => pickLocale(o, locale) ?? ""),
         answered: q.answeredIndex != null,
+        correct: q.answeredIndex != null ? Boolean(q.answeredCorrect) : null,
       }))}
     />
   );

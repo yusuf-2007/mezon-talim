@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { answerVideoQuestionAction } from "@/lib/learning/video-question-actions";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,53 @@ export type VideoPopupQuestion = {
   prompt: string;
   options: string[];
   answered: boolean;
+  /** Whether this student got it right; null when not answered yet. */
+  correct: boolean | null;
 };
+
+/**
+ * Marker palette. These cross into Bunny's cross-origin iframe as literal
+ * colours (no stylesheet reaches in there), so they must be hex rather than
+ * design tokens — keep in sync with --color-gold-500/success/danger.
+ */
+const MARKER_COLORS = {
+  unanswered: "#f8b801",
+  correct: "#1e9e6a",
+  wrong: "#d14343",
+} as const;
+
+/**
+ * Where a marker click lands. Aiming a second early keeps the crossing
+ * detector armed, so jumping to an unanswered question still pops it.
+ */
+function markerSeek(t: number): number {
+  return Math.max(0, t - 1);
+}
+
+type VideoMarker = { t: number; seek: number; color: string };
+
+/**
+ * Bunny renders our question timestamps as "moments" on its own seek bar, but
+ * moments are per-video — the player has no idea who is watching. The library's
+ * custom-head script (docs/bunny-player-customization.md) listens for this
+ * message to colour each marker per student and to snap marker clicks to the
+ * exact timestamp. Harmless no-op when that script isn't pasted.
+ */
+function sendMarkers(
+  iframe: HTMLIFrameElement | null,
+  src: string,
+  markers: VideoMarker[],
+) {
+  const win = iframe?.contentWindow;
+  if (!win) return;
+  let origin = "*";
+  try {
+    origin = new URL(src).origin;
+  } catch {
+    /* dev fallback URL — fall back to a wildcard target */
+  }
+  win.postMessage({ __mezon: "vq", markers }, origin);
+}
 
 function fmt(t: number): string {
   const h = Math.floor(t / 3600);
@@ -56,10 +102,23 @@ export function VideoEmbed({
   const [failed, setFailed] = useState(false);
   const [pending, start] = useTransition();
 
-  // Answered/skipped in this session (drives green markers + no re-pop).
-  const [doneIds, setDoneIds] = useState<Set<string>>(
-    () => new Set(questions.filter((q) => q.answered).map((q) => q.id)),
+  // Per-question outcome (id → got it right), seeded from the server and kept
+  // current as the student answers. Drives marker colour on both seek bars.
+  // A skipped question stays absent here — no answer, so it stays gold.
+  const [outcomes, setOutcomes] = useState<Map<string, boolean>>(
+    () =>
+      new Map(
+        questions
+          .filter((q) => q.correct != null)
+          .map((q) => [q.id, q.correct as boolean]),
+      ),
   );
+
+  function markerColor(q: VideoPopupQuestion): string {
+    const outcome = outcomes.get(q.id);
+    if (outcome === undefined) return MARKER_COLORS.unanswered;
+    return outcome ? MARKER_COLORS.correct : MARKER_COLORS.wrong;
+  }
 
   // Refs mirror state used inside the message handler (bound once per src).
   const lastTimeRef = useRef(0);
@@ -84,6 +143,26 @@ export function VideoEmbed({
     );
   }
 
+  const markers = useMemo(
+    () =>
+      questions.map((q) => ({
+        t: q.t,
+        seek: markerSeek(q.t),
+        color: markerColor(q),
+      })),
+    // markerColor closes over `outcomes`, so recompute when either changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [questions, outcomes],
+  );
+  // Read by the src-scoped effect below, which binds once per lesson.
+  const markersRef = useRef<VideoMarker[]>(markers);
+
+  // Re-broadcast whenever a marker changes colour (i.e. right after answering).
+  useEffect(() => {
+    markersRef.current = markers;
+    sendMarkers(ref.current, src, markers);
+  }, [markers, src]);
+
   // VideoFrame keys this component by src, so a lesson change remounts it and
   // all state starts fresh; the effect only needs to reset the shared store
   // and the crossing cursor (-1 so a question at t=0 satisfies `q.t > last`).
@@ -105,6 +184,7 @@ export function VideoEmbed({
         }),
         "*",
       );
+      sendMarkers(iframe, src, markersRef.current);
     };
 
     const onMessage = (e: MessageEvent) => {
@@ -154,9 +234,15 @@ export function VideoEmbed({
     window.addEventListener("message", onMessage);
     // The embed may already be past 'ready' by the time we mount — also try on load.
     iframe.addEventListener("load", subscribe);
+    // ...and if it was served from cache, neither may fire, so nudge the marker
+    // state across once the custom-head script has certainly parsed.
+    const nudges = [1200, 4000].map((ms) =>
+      setTimeout(() => sendMarkers(iframe, src, markersRef.current), ms),
+    );
     return () => {
       window.removeEventListener("message", onMessage);
       iframe.removeEventListener("load", subscribe);
+      nudges.forEach(clearTimeout);
     };
   }, [src]);
 
@@ -167,6 +253,7 @@ export function VideoEmbed({
       if (res.ok) {
         setFailed(false);
         setResult({ correct: res.correct, correctIndex: res.correctIndex });
+        setOutcomes((prev) => new Map(prev).set(active.id, res.correct));
       } else {
         setFailed(true);
       }
@@ -176,7 +263,6 @@ export function VideoEmbed({
   function closeQuestion() {
     if (active) {
       doneRef.current.add(active.id);
-      setDoneIds((prev) => new Set(prev).add(active.id));
       // Rewind the crossing cursor to this question's time so a second
       // question inside the same timeupdate window still triggers next tick.
       lastTimeRef.current = active.t;
@@ -298,12 +384,12 @@ export function VideoEmbed({
                 type="button"
                 title={`${t("vqLabel")} · ${fmt(q.t)}`}
                 aria-label={`${t("vqLabel")} ${fmt(q.t)}`}
-                onClick={() => post("setCurrentTime", Math.max(0, q.t - 1))}
-                className={cn(
-                  "absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface",
-                  doneIds.has(q.id) || q.answered ? "bg-success" : "bg-gold-500",
-                )}
-                style={{ left: `${Math.min(99.5, (q.t / dur) * 100)}%` }}
+                onClick={() => post("setCurrentTime", markerSeek(q.t))}
+                className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface"
+                style={{
+                  left: `${Math.min(99.5, (q.t / dur) * 100)}%`,
+                  backgroundColor: markerColor(q),
+                }}
               />
             ))}
           </div>
