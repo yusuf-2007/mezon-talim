@@ -190,6 +190,18 @@ library immediately (hard-refresh a lesson page to bypass the cached embed).
   // so keep re-applying cheaply rather than betting on a single pass.
   setInterval(paint, 500);
   window.addEventListener('resize', paint);
+
+  /* The player defaults to counting down ("-1:40:15"). Show elapsed time
+     instead. Set once, so clicking the clock still toggles as usual. */
+  var waits = 0;
+  var wait = setInterval(function () {
+    if (window.plyr && window.plyr.config) {
+      window.plyr.config.invertTime = false;
+      clearInterval(wait);
+    } else if (++waits > 200) {
+      clearInterval(wait);
+    }
+  }, 50);
 })();
 </script>
 ```
@@ -208,6 +220,13 @@ to grade.
 **Clicking a marker** seeks to exactly one second before the question, so
 the popup still triggers. Clicks elsewhere on the bar seek normally; the
 snap only applies within ~9px of a marker.
+
+**Elapsed vs remaining time.** The player ships with Plyr's `invertTime`
+on, so the clock counts down (`-1:40:15`). There is no dashboard toggle for
+this; the snippet sets `plyr.config.invertTime = false` once at startup so
+it shows elapsed time instead. It is set once rather than enforced, so
+clicking the clock still switches to remaining time as Plyr intends
+(verified both directions, 2026-07-31).
 
 ### How the app drives it
 
