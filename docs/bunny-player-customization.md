@@ -23,9 +23,14 @@ library immediately (hard-refresh a lesson page to bypass the cached embed).
    The element keeps Bunny's 12px slot (correct centering + a real click
    target); the visible bar is drawn by ::before and colored via --vq. */
 .sp__moment {
+  box-sizing: border-box !important;
   width: 12px !important;
   height: 18px !important;
+  /* Bunny's default marker is a bordered, shadowed box — clear all three or
+     the (now empty) 12px slot still draws a grey rectangle. */
   background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
   border-radius: 0 !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
