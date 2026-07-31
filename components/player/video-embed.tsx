@@ -157,6 +157,13 @@ export function VideoEmbed({
   // Read by the src-scoped effect below, which binds once per lesson.
   const markersRef = useRef<VideoMarker[]>(markers);
 
+  // Move focus into the question when it opens: it is a modal, and focus would
+  // otherwise stay in the cross-origin iframe behind it.
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (active) dialogRef.current?.focus();
+  }, [active]);
+
   // Re-broadcast whenever a marker changes colour (i.e. right after answering).
   useEffect(() => {
     markersRef.current = markers;
@@ -223,6 +230,12 @@ export function VideoEmbed({
         if (hit) {
           activeRef.current = true;
           post("pause");
+          // The overlay lives in this document, so it cannot paint over the
+          // iframe while the iframe is fullscreen — the student would just see
+          // a frozen video. Drop out of fullscreen so the question is visible.
+          if (document.fullscreenElement) {
+            void document.exitFullscreen().catch(() => {});
+          }
           setSelected(null);
           setResult(null);
           setFailed(false);
@@ -292,9 +305,17 @@ export function VideoEmbed({
             role="dialog"
             aria-modal="true"
             aria-label={t("vqLabel")}
-            className="absolute inset-0 z-10 flex items-center justify-center bg-navy-900/85 p-4"
+            /* On a phone the 16:9 box is ~200px tall — far too short for a
+               prompt plus four options, and the parent clips overflow, so the
+               answer buttons became unreachable. Below `sm` the overlay covers
+               the viewport instead; from `sm` up it stays over the video. */
+            className="absolute inset-0 z-10 flex items-center justify-center bg-navy-900/85 p-4 max-sm:fixed max-sm:z-50 max-sm:p-3"
           >
-            <div className="w-full max-w-lg rounded-xl bg-surface p-5 shadow-xl">
+            <div
+              ref={dialogRef}
+              tabIndex={-1}
+              className="max-h-full w-full max-w-lg overflow-y-auto rounded-xl bg-surface p-5 shadow-xl outline-none"
+            >
               <p className="text-[11px] font-bold uppercase tracking-wider text-gold-500">
                 {t("vqLabel")}
               </p>
