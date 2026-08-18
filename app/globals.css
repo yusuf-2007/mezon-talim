@@ -27,12 +27,58 @@
   --color-bg: #f7f9fc;
   --color-success: #1e9e6a;
   --color-danger: #d14343;
+
+  /*
+   * Landing-page scale — from the "Landing Page CPSS" Claude Design project.
+   * Deliberately a separate ramp from the brand scale above: the marketing page
+   * runs a cooler, higher-contrast navy/slate set than the app chrome. Used as
+   * bg-lp-navy, text-lp-slate, border-lp-line, …
+   */
+  --color-lp-navy: #023a69; /* hero / band background */
+  --color-lp-navy-deep: #011e38; /* footer, text on gold */
+  --color-lp-navy-mid: #0b4c82; /* links, avatar chips */
+  --color-lp-navy-dark: #012a4d; /* photo-slot backdrop */
+  --color-lp-gold: #f8b801; /* primary CTA only */
+  --color-lp-gold-light: #fbd968; /* eyebrow text on navy */
+  /* Eyebrow text on light. Darkened from the comp's #c08e00, which measured
+     2.95:1 on white and 2.72:1 on the wash — both below WCAG AA's 4.5:1 for
+     small text. This value clears it on both grounds (5.07:1 / 4.68:1). The two
+     Mezon brand colours (navy #023a69, gold #f8b801) are untouched; this is a
+     derived tint the comp invented for small caps. */
+  --color-lp-gold-deep: #8a6a00;
+  --color-lp-gold-ink: #8a5b00; /* text inside gold-tinted chips */
+  --color-lp-gold-tint: #fef3d2;
+  --color-lp-gold-line: #e8d9a8; /* hairline between chain nodes */
+  --color-lp-gold-wash: #fffaec;
+  --color-lp-cream: #fffcf4; /* highlighted chain node */
+  --color-lp-ink: #0e2233; /* body text */
+  --color-lp-slate: #46586b; /* secondary text */
+  /* Tertiary text. Darkened from the comp's #8a97a6 (2.98:1 white / 2.74:1
+     wash) to clear WCAG AA on both grounds (5.00:1 / 4.61:1) while staying
+     clearly lighter than lp-slate. */
+  --color-lp-muted: #63717f;
+  --color-lp-muted-light: #a9b4c0; /* placeholders */
+  --color-lp-on-navy: #c6d6e6; /* body text on navy */
+  --color-lp-on-navy-dim: #8fa8c0; /* secondary text on navy */
+  /* Footer labels. Lightened from the comp's #5e7a96 (3.78:1 on navy-deep) to
+     clear WCAG AA at 4.65:1. */
+  --color-lp-on-navy-faint: #6d89a6;
+  --color-lp-line: #e2e7ee; /* hairline borders */
+  --color-lp-line-soft: #eff2f6; /* inner dividers */
+  --color-lp-line-strong: #dce3ec; /* data-strip dividers */
+  --color-lp-wash: #f3f6fa; /* alternating section background */
+  --color-lp-wash-alt: #f7f9fb; /* secondary certificate card */
+  --color-lp-tint: #e7eef4; /* navy-tinted chips */
 }
 
 @theme inline {
   /* Fonts: Inter (body/UI) + Source Serif 4 (headings), both Cyrillic-capable */
   --font-sans: var(--font-inter);
   --font-heading: var(--font-source-serif);
+
+  /* Landing-page pair — Spectral (editorial headings) + Manrope (UI/body). */
+  --font-lp-heading: var(--font-spectral);
+  --font-lp-body: var(--font-manrope);
 
   /* shadcn semantic tokens → Mezon brand */
   --color-background: var(--background);
@@ -132,5 +178,119 @@
   }
   h1, h2, h3, h4 {
     @apply font-heading;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * Landing page (marketing)
+ *
+ * Behaviour the design relies on that Tailwind utilities can't express:
+ * scroll-reveal, <details> accordion chrome, the hover lifts, the form field,
+ * and the geometric diamond texture behind the navy bands. Everything else on
+ * the landing page is plain utilities over the --color-lp-* tokens above.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .lp {
+    font-family: var(--font-lp-body), system-ui, sans-serif;
+    color: var(--color-lp-ink);
+    overflow-x: hidden;
+  }
+  .lp ::selection {
+    background: var(--color-lp-gold-light);
+    color: var(--color-lp-navy-deep);
+  }
+
+  /* Reveal on scroll — toggled by components/landing/reveal.tsx */
+  .lp-rv {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .lp-rv[data-shown="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* FAQ accordion — native <details>, chevron rotates on open */
+  .lp-faq > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .lp-faq > summary::-webkit-details-marker {
+    display: none;
+  }
+  .lp-faq .lp-cv {
+    transition: transform 0.25s ease;
+  }
+  .lp-faq[open] .lp-cv {
+    transform: rotate(180deg);
+  }
+
+  .lp-lift {
+    transition:
+      transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.25s ease;
+  }
+  .lp-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgb(2 58 105 / 0.13);
+  }
+
+  .lp-gold {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .lp-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgb(248 184 1 / 0.42);
+  }
+
+  .lp-fld {
+    width: 100%;
+    font-family: var(--font-lp-body), system-ui, sans-serif;
+    font-size: 0.95rem;
+    color: var(--color-lp-ink);
+    border: 1.5px solid var(--color-lp-line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    outline: none;
+    background: #fff;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .lp-fld:focus {
+    border-color: var(--color-lp-navy);
+    box-shadow: 0 0 0 3px rgb(248 184 1 / 0.35);
+  }
+  .lp-fld::placeholder {
+    color: var(--color-lp-muted-light);
+  }
+  .lp-fld[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+
+  /* The design tiled a faint diamond lattice over every navy band; dropped in
+     favour of flat colour. To restore it, add a ::before with
+     background-image: url("data:image/svg+xml,…<path d='M23 1 L45 23 L23 45 L1 23 Z'
+     stroke='%23ffffff' stroke-opacity='0.06'/>…") at background-size:46px. */
+
+  @media (prefers-reduced-motion: reduce) {
+    .lp-rv {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .lp-lift,
+    .lp-gold {
+      transition: none;
+    }
+    .lp-lift:hover,
+    .lp-gold:hover {
+      transform: none;
+    }
   }
 }

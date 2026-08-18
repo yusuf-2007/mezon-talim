@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:#fff;color:#0E2233;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  a{color:#0B4C82;text-decoration:none}
+  a:hover{color:#023A69}
+  ::selection{background:#FBD968;color:#011E38}
+  [data-rv]{opacity:0;transform:translateY(12px);transition:opacity .5s cubic-bezier(.2,.7,.2,1),transform .5s cubic-bezier(.2,.7,.2,1)}
+  [data-rv].on{opacity:1;transform:none}
+  details[data-faq] summary{list-style:none;cursor:pointer}
+  details[data-faq] summary::-webkit-details-marker{display:none}
+  details[data-faq] .cv{transition:transform .25s ease}
+  details[data-faq][open] .cv{transform:rotate(180deg)}
+  .lift{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s ease}
+  .lift:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(2,58,105,.13)}
+  .gold{transition:transform .2s ease,box-shadow .2s ease}
+  .gold:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(248,184,1,.42)}
+  .navlink{transition:color .2s ease}
+  .navlink:hover{color:#023A69}
+  .fld{width:100%;font-family:'Manrope',sans-serif;font-size:.95rem;color:#0E2233;border:1.5px solid #E2E7EE;border-radius:10px;padding:12px 14px;outline:none;transition:border-color .2s ease,box-shadow .2s ease;background:#fff}
+  .fld:focus{border-color:#023A69;box-shadow:0 0 0 3px rgba(248,184,1,.35)}
+  .fld::placeholder{color:#A9B4C0}
+  .sec{padding:88px 0}
+  .burger{display:none}
+  .mobnav{display:none;border-top:1px solid #E2E7EE;background:#fff}
+  .mobnav.open{display:block}
+  .t2cell:first-child{border-left:0!important}
+  @media (max-width:980px){
+    .g2,.g3,.gsplit,.ghero,.gcert,.gform{grid-template-columns:1fr!important}
+    .navlinks{display:none!important}
+    .burger{display:grid!important}
+    .ghero{gap:40px!important}
+    .heromedia{max-width:460px}
+    .heromedia .hero-ph{aspect-ratio:3/2!important}
+    .datagrid{grid-template-columns:1fr 1fr!important}
+    .datacell{border-left:0!important;padding:0!important;border-top:1px solid #E2E7EE;padding-top:18px!important;margin-top:4px}
+    .chaingrid{grid-template-columns:1fr!important;gap:8px!important}
+    .chainsep{transform:rotate(90deg)}
+    .sec{padding-top:60px!important;padding-bottom:60px!important}
+    .hdr-cta{padding:9px 14px!important;font-size:.82rem!important}
+    .certsep{flex-direction:row!important;height:auto!important;padding:8px 0}
+    .certsep span:first-child,.certsep span:last-child{width:auto!important;height:1px!important;flex:1!important}
+    .certsep .certsep-t{writing-mode:horizontal-tb!important;transform:none!important}
+  }
+  @media (max-width:620px){
+    .datagrid{grid-template-columns:1fr!important}
+    .t2grid{grid-template-columns:1fr!important}
+    .t2cell{border-left:0!important;border-top:1px solid #EFF2F6}
+    .t2cell:first-child{border-top:0!important}
+    .heromedia{max-width:none}
+    .hdr-lang{display:none!important}
+  }
+  @media (prefers-reduced-motion:reduce){[data-rv]{opacity:1!important;transform:none!important;transition:none}}
+</style>
+</helmet>
+<div style="font-family:'Manrope',sans-serif;overflow-x:hidden">
+
+  <!-- ══════════ 01 · HEADER ══════════ -->
+  <header style="position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid #E2E7EE">
+    <div style="max-width:1200px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px">
+      <img src="assets/mezon-logo-horizontal.png" alt="Mezon Ta'lim" style="height:30px;width:auto;flex-shrink:0">
+      <nav class="navlinks" style="display:flex;gap:28px;font-size:.92rem;font-weight:600;color:#46586B">
+        <a href="#kurs" class="navlink" style="color:#46586B">Kurs</a>
+        <a href="#aaoifi" class="navlink" style="color:#46586B">AAOIFI haqida</a>
+        <a href="#ustozlar" class="navlink" style="color:#46586B">Ustozlar</a>
+        <a href="#savollar" class="navlink" style="color:#46586B">Savol-javob</a>
+      </nav>
+      <div style="display:flex;gap:11px;align-items:center;flex-shrink:0">
+        <div class="hdr-lang" style="display:flex;background:#F3F6FA;border:1px solid #E2E7EE;border-radius:8px;overflow:hidden;font-size:.78rem;font-weight:700">
+          <span style="padding:6px 10px;background:#023A69;color:#fff">UZ</span>
+          <span title="Tez orada" style="padding:6px 10px;color:#A9B4C0;cursor:default">RU</span>
+        </div>
+        <a href="#ariza" class="gold hdr-cta" data-cta style="background:#F8B801;color:#011E38;font-weight:700;font-size:.88rem;border-radius:9px;padding:10px 18px;box-shadow:0 4px 14px rgba(248,184,1,.28);white-space:nowrap">Ariza qoldirish</a>
+        <button class="burger" type="button" aria-label="Menyu" aria-expanded="false" onclick="{{ toggleMenu }}" style="width:40px;height:40px;place-items:center;background:#fff;border:1px solid #E2E7EE;border-radius:9px;cursor:pointer;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="mobnav" data-mobnav>
+      <div style="max-width:1200px;margin:0 auto;padding:8px 24px 18px;display:flex;flex-direction:column">
+        <a href="#kurs" onclick="{{ closeMenu }}" style="font-size:1rem;font-weight:600;color:#0E2233;padding:13px 0;border-bottom:1px solid #EFF2F6">Kurs</a>
+        <a href="#aaoifi" onclick="{{ closeMenu }}" style="font-size:1rem;font-weight:600;color:#0E2233;padding:13px 0;border-bottom:1px solid #EFF2F6">AAOIFI haqida</a>
+        <a href="#ustozlar" onclick="{{ closeMenu }}" style="font-size:1rem;font-weight:600;color:#0E2233;padding:13px 0;border-bottom:1px solid #EFF2F6">Ustozlar</a>
+        <a href="#savollar" onclick="{{ closeMenu }}" style="font-size:1rem;font-weight:600;color:#0E2233;padding:13px 0;border-bottom:1px solid #EFF2F6">Savol-javob</a>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:16px">
+          <div style="display:flex;background:#F3F6FA;border:1px solid #E2E7EE;border-radius:8px;overflow:hidden;font-size:.78rem;font-weight:700">
+            <span style="padding:7px 12px;background:#023A69;color:#fff">UZ</span>
+            <span title="Tez orada" style="padding:7px 12px;color:#A9B4C0">RU</span>
+          </div>
+          <a href="#ariza" onclick="{{ closeMenu }}" data-cta style="background:#F8B801;color:#011E38;font-weight:700;font-size:.9rem;border-radius:9px;padding:11px 20px">Ariza qoldirish</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ 02 · HERO (navy) ══════════ -->
+  <section style="background:#023A69;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2246%22 height=%2246%22><path d=%22M23 1 L45 23 L23 45 L1 23 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.06%22 stroke-width=%221%22/></svg>');background-size:46px 46px;pointer-events:none"></div>
+    <div style="position:absolute;top:-180px;right:-120px;width:540px;height:540px;border-radius:50%;background:radial-gradient(circle at 42% 42%,rgba(11,76,130,.62),transparent 64%);pointer-events:none"></div>
+    <div class="ghero" style="position:relative;max-width:1200px;margin:0 auto;padding:76px 24px 88px;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:11px;margin-bottom:26px">
+          <span style="width:32px;height:2px;background:#F8B801;flex-shrink:0"></span>
+          <span style="font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FBD968;line-height:1.4">O&rsquo;zbekistonda AAOIFI standartining rasmiy ta&rsquo;lim markazi</span>
+        </div>
+        <h1 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(2.3rem,5vw,4rem);line-height:1.03;letter-spacing:-.025em;color:#fff">AAOIFI CPSS sertifikatiga o&rsquo;zbek tilida tayyorlaning</h1>
+        <p style="font-family:'Spectral',serif;font-style:italic;font-weight:500;font-size:clamp(1.15rem,2.2vw,1.5rem);line-height:1.35;color:#FBD968;margin-top:20px">Standart &mdash; xalqaro. Til &mdash; o&rsquo;zimizniki.</p>
+        <p style="font-size:1.08rem;line-height:1.65;color:#C6D6E6;margin-top:20px;max-width:50ch">30 dars, 15 hafta, ~90 soat. Banklar va moliya mutaxassislari uchun mo&rsquo;ljallangan &mdash; 70% onlayn, ishlab yurgan odam uchun.</p>
+        <div style="display:flex;gap:13px;flex-wrap:wrap;margin-top:34px">
+          <a href="#ariza" class="gold" data-cta style="background:#F8B801;color:#011E38;font-weight:700;font-size:1rem;border-radius:11px;padding:15px 28px;box-shadow:0 6px 20px rgba(248,184,1,.32)">Ariza qoldirish</a>
+          <a href="#ariza" style="background:rgba(255,255,255,.07);color:#fff;font-weight:600;font-size:1rem;border:1.5px solid rgba(255,255,255,.3);border-radius:11px;padding:14px 26px;transition:background .2s ease" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">Bepul darsni ko&rsquo;rish</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:32px;flex-wrap:wrap">
+          <span style="font-size:.82rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8FA8C0">Keyingi oqim</span>
+          <span data-ph style="border:1px dashed rgba(248,184,1,.6);background:rgba(248,184,1,.08);border-radius:6px;padding:4px 12px;font-family:ui-monospace,monospace;font-size:.86rem;color:#FBD968;font-weight:600">[OQIM SANASI]</span>
+          <span style="font-size:.85rem;color:#8FA8C0">&middot; joylar cheklangan</span>
+        </div>
+      </div>
+      <div class="heromedia" style="position:relative">
+        <div class="hero-ph" style="position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 24px 60px rgba(1,20,40,.5);background:#012A4D">
+          <image-slot id="cpss-hero" shape="rect" placeholder="Oflayn dars / auditoriya fotosi"></image-slot>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,58,105,.16),rgba(1,30,56,.5));mix-blend-mode:multiply;pointer-events:none"></div>
+          <div style="position:absolute;left:0;bottom:0;width:100%;height:4px;background:#F8B801;pointer-events:none"></div>
+        </div>
+        <span style="position:absolute;top:14px;left:14px;width:26px;height:26px;border-left:2px solid #F8B801;border-top:2px solid #F8B801;pointer-events:none"></span>
+        <span style="position:absolute;top:14px;right:14px;width:26px;height:26px;border-right:2px solid #F8B801;border-top:2px solid #F8B801;pointer-events:none"></span>
+        <div style="position:absolute;bottom:-20px;left:-20px;background:#fff;border-radius:13px;padding:15px 17px;box-shadow:0 16px 36px rgba(1,20,40,.34);display:flex;align-items:center;gap:12px;max-width:250px">
+          <span style="width:42px;height:42px;border-radius:11px;background:#FEF3D2;display:grid;place-items:center;flex-shrink:0"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C08E00" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></span>
+          <div>
+            <div style="font-weight:700;font-size:.88rem;color:#023A69;line-height:1.3">58 ta Shariat standarti</div>
+            <div style="font-size:.76rem;color:#8A97A6;line-height:1.3">~90 soat dars</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 03 · STATUS CHAIN (light, hairline) ══════════ -->
+  <section id="aaoifi" style="background:#fff;border-bottom:1px solid #E2E7EE">
+    <div style="max-width:1200px;margin:0 auto;padding:64px 24px" data-rv>
+      <div class="chaingrid" style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:20px;align-items:center">
+        <div style="text-align:center">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;margin-bottom:7px">AAOIFI</div>
+          <div style="font-size:.85rem;color:#8A97A6;line-height:1.45">Xalqaro standart</div>
+        </div>
+        <div class="chainsep" style="display:flex;flex-direction:column;align-items:center;gap:5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C08E00" stroke-width="1.3"><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"/></svg><span style="width:30px;height:1px;background:#E8D9A8"></span></div>
+        <div style="text-align:center">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;margin-bottom:7px">Mezon Kengashi</div>
+          <div style="font-size:.85rem;color:#8A97A6;line-height:1.45">Amaliyot &mdash; rasmiy vakil</div>
+        </div>
+        <div class="chainsep" style="display:flex;flex-direction:column;align-items:center;gap:5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C08E00" stroke-width="1.3"><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"/></svg><span style="width:30px;height:1px;background:#E8D9A8"></span></div>
+        <div style="text-align:center;position:relative;padding:16px 12px">
+          <div style="position:absolute;inset:0;border:1.5px solid #F8B801;border-radius:12px;background:#FFFCF4"></div>
+          <div style="position:relative">
+            <div style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;margin-bottom:7px">Mezon Ta&rsquo;lim</div>
+            <div style="font-size:.85rem;color:#8A5B00;line-height:1.45;font-weight:600">Bilim &mdash; ta&rsquo;lim markazi</div>
+          </div>
+        </div>
+      </div>
+      <p style="text-align:center;font-family:'Spectral',serif;font-size:1.05rem;line-height:1.6;color:#46586B;margin:34px auto 0;padding-top:26px;border-top:1px solid #EFF2F6;max-width:74ch">Mezon Ta&rsquo;lim &mdash; AAOIFI ning O&rsquo;zbekistondagi rasmiy vakili bo&rsquo;lgan Mezon Kengashining ta&rsquo;lim markazi.</p>
+      <p style="text-align:center;font-size:.95rem;line-height:1.6;color:#8A97A6;margin:14px auto 0;max-width:66ch">Raqobatchi standartni sotib olib o&rsquo;qiy oladi. Biz esa shu standart asosida O&rsquo;zbekistonda audit o&rsquo;tkazganmiz va Shariat kengashida o&rsquo;tirganmiz &mdash; <b style="color:#46586B">misollarimiz kitobdan emas, bajarilgan loyihalardan.</b></p>
+    </div>
+  </section>
+
+  <!-- ══════════ 04 · WHY NOW — data strip ══════════ -->
+  <section style="background:#F3F6FA;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div style="max-width:52ch;margin-bottom:44px" data-rv>
+        <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Nega aynan hozir</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">Bozor ochildi, kadr yetishmayapti</h2>
+      </div>
+      <div class="datagrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0" data-rv>
+        <div style="padding-right:28px">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;line-height:1.05;margin-bottom:10px">29.06.2026</div>
+          <div style="font-size:.92rem;line-height:1.55;color:#46586B">Islom moliyasi to&rsquo;g&rsquo;risidagi qonun kuchga kirdi &mdash; banklardan AAOIFI standartlariga muvofiqlik talab qilinadi</div>
+        </div>
+        <div class="datacell" style="padding:0 28px;border-left:1px solid #DCE3EC">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;line-height:1.05;margin-bottom:10px">4&times;</div>
+          <div style="font-size:.92rem;line-height:1.55;color:#46586B">Portfel o&rsquo;sishi: 2025-yilda ~$7 mln &rarr; 2026-ning 5 oyida ~$32 mln</div>
+        </div>
+        <div class="datacell" style="padding:0 28px;border-left:1px solid #DCE3EC">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;line-height:1.05;margin-bottom:10px">2030</div>
+          <div style="font-size:.92rem;line-height:1.55;color:#46586B">Yo&rsquo;l xaritasi: 2026 oxirigacha kamida bitta islomiy &ldquo;darcha&rdquo;, 2030-gacha mustaqil islomiy banklar</div>
+        </div>
+        <div class="datacell" style="padding-left:28px;border-left:1px solid #DCE3EC">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#C08E00;line-height:1.05;margin-bottom:10px">Kadr tanqisligi</div>
+          <div style="font-size:.92rem;line-height:1.55;color:#46586B">Banklar &ldquo;darcha&rdquo; ochmoqda &mdash; Shariatga muvofiq mahsulotni tushunadigan xodim yetishmaydi</div>
+        </div>
+      </div>
+      <p style="font-size:.85rem;color:#8A97A6;margin-top:28px;padding-top:18px;border-top:1px solid #DCE3EC">Manba: O&rsquo;zbekiston Respublikasi qonunchiligi va Markaziy bank ma&rsquo;lumotlari &middot; <span data-ph style="border:1px dashed #C08E00;background:#FFFAEC;border-radius:5px;padding:2px 8px;font-family:ui-monospace,monospace;font-size:.78rem;color:#8A5B00;font-weight:600">[MANBA HAVOLALARI]</span></p>
+    </div>
+  </section>
+
+  <!-- ══════════ 05 · TIER-1 PROOF QUOTE (navy) ══════════ -->
+  <section style="background:#023A69;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2252%22 height=%2252%22><path d=%22M26 1 L51 26 L26 51 L1 26 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.055%22 stroke-width=%221%22/></svg>');background-size:52px 52px;pointer-events:none"></div>
+    <div style="position:relative;max-width:900px;margin:0 auto;padding:84px 24px" data-rv>
+      <div style="font-family:'Spectral',serif;font-size:4rem;color:#F8B801;line-height:0;height:32px">&ldquo;</div>
+      <p style="font-family:'Spectral',serif;font-weight:500;font-style:italic;font-size:clamp(1.4rem,3vw,2.05rem);line-height:1.36;color:#fff;margin-top:8px">To&rsquo;lovim 200% o&rsquo;zini oqladi&hellip; Kurs tugashiga yaqin Mushoraka shartnoma qilib bir ish boshladim. Shartnoma va kelishuvlarimdagi kamchiliklarimni bildim, tuzatdim.</p>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:32px;flex-wrap:wrap">
+        <span style="width:52px;height:52px;border-radius:50%;background:#0B4C82;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem;flex-shrink:0">AM</span>
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:1rem">Akbarbek Mustaqimov</div>
+          <div style="font-size:.88rem;color:#8FA8C0">&ldquo;Hisobchilar Uyushmasi&rdquo; bosh buxgalteri</div>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:6px 12px;font-size:.76rem;font-weight:600;color:#C6D6E6;margin-left:4px">Biznesda Islom moliyasi kursi bitiruvchisi</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 06 · CPSS COURSE + OUTCOMES ══════════ -->
+  <section id="kurs" style="background:#fff;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div style="max-width:56ch;margin-bottom:48px" data-rv>
+        <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Asosiy dastur</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">AAOIFI CPSS tayyorlov kursi</h2>
+        <p style="font-size:1.05rem;line-height:1.65;color:#46586B;margin-top:16px">Dastur AAOIFI ning 58 ta Shariat standarti asosida qurilgan. Quruq nazariya emas &mdash; bajarilgan loyihalardan olingan misollar bilan.</p>
+      </div>
+      <div class="gsplit" style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start">
+        <div data-rv>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A97A6;margin-bottom:18px">Kurs tuzilmasi</div>
+          <sc-for list="{{ facts }}" as="f" hint-placeholder-count="8">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid #EFF2F6">
+              <span style="font-size:.95rem;color:#46586B">{{ f.k }}</span>
+              <span style="font-family:'Spectral',serif;font-weight:600;font-size:1.1rem;color:#023A69;text-align:right">{{ f.v }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:24px;flex-wrap:wrap">
+            <span style="font-size:.85rem;color:#8A97A6">Narx</span>
+            <span data-ph style="border:1px dashed #C08E00;background:#FFFAEC;border-radius:6px;padding:5px 12px;font-family:ui-monospace,monospace;font-size:.86rem;color:#8A5B00;font-weight:600">[NARX]</span>
+            <span style="font-size:.85rem;color:#8A97A6">&middot; bo&rsquo;lib to&rsquo;lash va korporativ schyot-faktura mavjud</span>
+          </div>
+        </div>
+        <div data-rv>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A97A6;margin-bottom:18px">Kursdan so&rsquo;ng nima qila olasiz</div>
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="4">
+              <div style="display:flex;gap:14px;align-items:flex-start">
+                <span style="width:26px;height:26px;border-radius:7px;background:#E7EEF4;display:grid;place-items:center;flex-shrink:0;margin-top:1px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <div>
+                  <div style="font-weight:700;font-size:1rem;color:#0E2233;margin-bottom:3px">{{ o.t }}</div>
+                  <div style="font-size:.93rem;line-height:1.55;color:#46586B">{{ o.d }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#F3F6FA;border:1px solid #E2E7EE;border-radius:12px;padding:18px 20px;margin-top:26px">
+            <div style="font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:10px">Paketga kiradi</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span style="font-size:.82rem;color:#46586B;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:5px 12px">Onlayn + oflayn darslar</span>
+              <span style="font-size:.82rem;color:#46586B;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:5px 12px">Kurator qo&rsquo;llab-quvvatlashi</span>
+              <span style="font-size:.82rem;color:#46586B;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:5px 12px">Haftalik quizlar</span>
+              <span style="font-size:.82rem;color:#46586B;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:5px 12px">Mock imtihonlar</span>
+              <span style="font-size:.82rem;color:#46586B;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:5px 12px">Ikki tilli terminologiya lug&rsquo;ati</span>
+            </div>
+            <p style="font-size:.85rem;color:#8A97A6;margin-top:12px">5 kurator &mdash; har biriga ~20 o&rsquo;quvchi. Yakka qolmaysiz.</p>
+          </div>
+          <a href="#ariza" class="gold" data-cta style="display:inline-block;background:#F8B801;color:#011E38;font-weight:700;font-size:.98rem;border-radius:11px;padding:14px 26px;margin-top:26px;box-shadow:0 6px 18px rgba(248,184,1,.3)">Ariza qoldirish</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 07 · LANGUAGE BRIDGE ══════════ -->
+  <section style="background:#F3F6FA;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center" data-rv>
+        <div>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Til ko&rsquo;prigi</div>
+          <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.7rem,3vw,2.3rem);line-height:1.18;letter-spacing:-.015em;color:#023A69">Darslar o&rsquo;zbek tilida. Imtihon &mdash; ingliz va arab tilida.</h2>
+          <p style="font-size:1.02rem;line-height:1.65;color:#46586B;margin-top:18px">Buni yashirmaymiz. Shuning uchun dastur ichida til ko&rsquo;prigi bor: ikki tilli terminologiya, imtihon tilidagi savol formulirovkalari bilan alohida mashq, va kurs boshida til darajasini aniqlash.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #E2E7EE;border-radius:12px;padding:16px 18px">
+            <span style="font-size:.74rem;font-weight:800;letter-spacing:.06em;color:#023A69;background:#E7EEF4;border-radius:6px;padding:5px 10px;flex-shrink:0">UZ</span>
+            <div><div style="font-size:.98rem;color:#0E2233;font-weight:700">Darslar, tushuntirish, muhokama</div><div style="font-size:.86rem;color:#8A97A6;margin-top:2px">Mohiyatni ona tilingizda tushunasiz</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #E2E7EE;border-radius:12px;padding:16px 18px">
+            <span style="font-size:.74rem;font-weight:800;letter-spacing:.06em;color:#8A5B00;background:#FEF3D2;border-radius:6px;padding:5px 10px;flex-shrink:0">UZ/EN</span>
+            <div><div style="font-size:.98rem;color:#0E2233;font-weight:700">Ikki tilli terminologiya lug&rsquo;ati</div><div style="font-size:.86rem;color:#8A97A6;margin-top:2px">Har bir atama ikki tilda mustahkamlanadi</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #E2E7EE;border-radius:12px;padding:16px 18px">
+            <span style="font-size:.74rem;font-weight:800;letter-spacing:.06em;color:#023A69;background:#E7EEF4;border-radius:6px;padding:5px 10px;flex-shrink:0">EN</span>
+            <div><div style="font-size:.98rem;color:#0E2233;font-weight:700">Imtihon savollari bilan mashq</div><div style="font-size:.86rem;color:#8A97A6;margin-top:2px">Imtihon tilidagi formulirovkalarga o&rsquo;rganasiz</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 08 · USTOZLAR ══════════ -->
+  <section id="ustozlar" style="background:#fff;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div style="max-width:54ch;margin-bottom:44px" data-rv>
+        <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Ustozlar</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">Nazariyachilar emas, amaliyotchilar</h2>
+      </div>
+      <div class="g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
+        <sc-for list="{{ teachers }}" as="t" hint-placeholder-count="3">
+          <div data-rv>
+            <div style="position:relative;margin-bottom:20px">
+              <div style="position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/5;background:#012A4D">
+                <image-slot id="{{ t.slot }}" shape="rect" placeholder="Portret"></image-slot>
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,58,105,.1),rgba(1,30,56,.42));mix-blend-mode:multiply;pointer-events:none"></div>
+              </div>
+              <span style="position:absolute;bottom:-1px;left:14px;width:24px;height:24px;border-left:2px solid #F8B801;border-bottom:2px solid #F8B801;pointer-events:none"></span>
+            </div>
+            <h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.3rem;color:#023A69;margin-bottom:5px">{{ t.name }}</h3>
+            <div style="font-size:.88rem;font-weight:600;color:#C08E00;margin-bottom:14px">{{ t.role }}</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ t.creds }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                  <span style="width:5px;height:5px;border-radius:50%;background:#F8B801;flex-shrink:0;margin-top:8px"></span>
+                  <span style="font-size:.92rem;line-height:1.5;color:#46586B">{{ c }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 09 · TESTIMONIALS ══════════ -->
+  <section style="background:#F3F6FA;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div style="max-width:56ch;margin-bottom:44px" data-rv>
+        <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Bitiruvchilar</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">O&rsquo;lchanadigan natijalar</h2>
+        <p style="font-size:1rem;line-height:1.6;color:#46586B;margin-top:14px">Quyidagi fikrlar &mdash; &ldquo;Biznesda Islom moliyasi&rdquo; kursi bitiruvchilaridan. CPSS birinchi oqimi yakunlangach, bu bo&rsquo;lim CPSS bitiruvchilari bilan to&rsquo;ldiriladi.</p>
+      </div>
+      <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px">
+        <sc-for list="{{ tier1 }}" as="t" hint-placeholder-count="2">
+          <div class="lift" data-rv style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:28px;box-shadow:0 2px 10px rgba(2,58,105,.05)">
+            <p style="font-family:'Spectral',serif;font-size:1.1rem;line-height:1.5;color:#0E2233;font-style:italic;margin-bottom:22px">{{ t.quote }}</p>
+            <div style="display:flex;align-items:center;gap:13px">
+              <span style="width:46px;height:46px;border-radius:50%;background:#E7EEF4;display:grid;place-items:center;color:#023A69;font-weight:700;font-size:.85rem;flex-shrink:0">{{ t.ini }}</span>
+              <div>
+                <div style="font-weight:700;font-size:.96rem;color:#023A69">{{ t.name }}</div>
+                <div style="font-size:.84rem;color:#8A97A6">{{ t.role }}</div>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding-top:13px;border-top:1px solid #EFF2F6">
+              <span style="display:inline-flex;align-items:center;gap:7px;background:#F3F6FA;border-radius:6px;padding:5px 11px;font-size:.75rem;font-weight:600;color:#46586B"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8A97A6" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Biznesda Islom moliyasi kursi bitiruvchisi</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div class="t2grid" data-t2 data-rv style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;border:1px solid #E2E7EE;border-radius:16px;overflow:hidden">
+        <sc-for list="{{ tier2 }}" as="q" hint-placeholder-count="4">
+          <div class="t2cell" style="padding:22px 24px;border-left:1px solid #EFF2F6">
+            <p style="font-family:'Spectral',serif;font-style:italic;font-size:.98rem;line-height:1.5;color:#0E2233;margin-bottom:12px">{{ q.quote }}</p>
+            <div style="font-size:.82rem;font-weight:700;color:#8A97A6">{{ q.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 10 · TWO CERTIFICATES ══════════ -->
+  <section style="background:#fff;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div style="max-width:58ch;margin-bottom:44px" data-rv>
+        <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Sertifikat</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">Ikki hujjat &mdash; ikki xil narsa</h2>
+        <p style="font-size:1.05rem;line-height:1.65;color:#46586B;margin-top:16px">CPSS sertifikatini AAOIFI beradi &mdash; o&rsquo;z imtihoni orqali. Mezon Ta&rsquo;lim sizni shu imtihonga <b style="color:#0E2233">tayyorlaydi</b>. Kursni tamomlaganlarga Mezon Ta&rsquo;limning kursni yakunlaganlik sertifikati beriladi.</p>
+      </div>
+      <div class="gcert" style="display:grid;grid-template-columns:1fr auto 1fr;gap:26px;align-items:stretch" data-rv>
+        <div style="background:#fff;border:2px solid #023A69;border-radius:16px;padding:30px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:100%;height:5px;background:linear-gradient(90deg,#023A69,#F8B801)"></div>
+          <div style="position:absolute;inset:0;opacity:.6;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2234%22 height=%2234%22><path d=%22M17 1 L33 17 L17 33 L1 17 Z%22 fill=%22none%22 stroke=%22%23023A69%22 stroke-opacity=%220.055%22 stroke-width=%221%22/></svg>');background-size:34px 34px;pointer-events:none"></div>
+          <div style="position:relative">
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:12px">AAOIFI beradi</div>
+            <h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;margin-bottom:12px">CPSS xalqaro sertifikati</h3>
+            <p style="font-size:.98rem;line-height:1.6;color:#46586B;margin-bottom:20px">AAOIFI ning o&rsquo;z imtihoni orqali beriladi. Biz sizni shu imtihonga tayyorlaymiz &mdash; dastur to&rsquo;liq AAOIFI Shariat standartlari asosida qurilgan.</p>
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#E7EEF4;border-radius:999px;padding:6px 14px"><span style="width:7px;height:7px;border-radius:50%;background:#023A69"></span><span style="font-size:.79rem;font-weight:700;color:#023A69">Xalqaro hujjat</span></div>
+          </div>
+        </div>
+        <div class="certsep" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+          <span style="width:1px;flex:1;background:#E2E7EE"></span>
+          <span class="certsep-t" style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap">alohida hujjatlar</span>
+          <span style="width:1px;flex:1;background:#E2E7EE"></span>
+        </div>
+        <div style="background:#F7F9FB;border:1px solid #E2E7EE;border-radius:16px;padding:30px">
+          <div style="font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8A97A6;margin-bottom:12px">Mezon Ta&rsquo;lim beradi</div>
+          <h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;margin-bottom:12px">Kursni yakunlaganlik sertifikati</h3>
+          <p style="font-size:.98rem;line-height:1.6;color:#46586B;margin-bottom:20px">Kursni tamomlaganlarga beriladi. Bu AAOIFI sertifikati emas &mdash; dasturni yakunlaganingizni tasdiqlaydi.</p>
+          <div style="display:inline-flex;align-items:center;gap:8px;background:#EFF2F6;border-radius:999px;padding:6px 14px"><span style="width:7px;height:7px;border-radius:50%;background:#8A97A6"></span><span style="font-size:.79rem;font-weight:700;color:#46586B">Ichki hujjat</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 11 · BIM (secondary course) ══════════ -->
+  <section style="background:#F3F6FA;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px;padding-top:64px;padding-bottom:64px">
+      <div data-rv style="background:#fff;border:1px solid #E2E7EE;border-radius:18px;padding:34px 38px;display:flex;align-items:center;justify-content:space-between;gap:36px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(2,58,105,.05)">
+        <div style="flex:1;min-width:280px">
+          <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A97A6;margin-bottom:10px">Ikkinchi kurs &middot; tadbirkorlar uchun</div>
+          <h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.65rem;color:#023A69;margin-bottom:10px">Biznesda Islom moliyasi</h3>
+          <p style="font-size:.98rem;line-height:1.6;color:#46586B;max-width:56ch">&ldquo;Pulim halolmi?&rdquo; degan savolga tizimli javob. 12 dars, 1,5&ndash;2 oy, oldindan tayyorgarlik talab qilinmaydi.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap">
+          <div style="display:flex;gap:22px">
+            <div><div style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;line-height:1">12</div><div style="font-size:.8rem;color:#8A97A6;margin-top:3px">dars</div></div>
+            <div><div style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;line-height:1">1,5&ndash;2</div><div style="font-size:.8rem;color:#8A97A6;margin-top:3px">oy</div></div>
+            <div><div style="font-family:'Spectral',serif;font-weight:600;font-size:1.5rem;color:#023A69;line-height:1">BIM-5</div><div style="font-size:.8rem;color:#8A97A6;margin-top:3px">oqim</div></div>
+          </div>
+          <a href="#ariza" style="background:#fff;color:#023A69;font-weight:700;font-size:.92rem;border:1.5px solid #023A69;border-radius:10px;padding:12px 22px;white-space:nowrap;transition:background .2s ease" onmouseover="this.style.background='#F3F6FA'" onmouseout="this.style.background='#fff'">Batafsil</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 12 · B2B (navy band) ══════════ -->
+  <section style="background:#023A69;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2246%22 height=%2246%22><path d=%22M23 1 L45 23 L23 45 L1 23 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.06%22 stroke-width=%221%22/></svg>');background-size:46px 46px;pointer-events:none"></div>
+    <div class="sec" style="position:relative;max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center" data-rv>
+        <div>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#FBD968;margin-bottom:14px">Tashkilotlar uchun</div>
+          <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.8rem,3.2vw,2.4rem);line-height:1.16;letter-spacing:-.015em;color:#fff">Xodimlaringizni islomiy &ldquo;darcha&rdquo;ga tayyorlang</h2>
+          <p style="font-size:1.02rem;line-height:1.65;color:#C6D6E6;margin-top:18px;max-width:48ch">Banklar va moliya tashkilotlari uchun guruh bo&rsquo;lib o&rsquo;qish, korporativ schyot-faktura va moslashtirilgan jadval.</p>
+          <a href="#ariza" class="gold" data-cta style="display:inline-block;background:#F8B801;color:#011E38;font-weight:700;font-size:.98rem;border-radius:11px;padding:14px 26px;margin-top:28px;box-shadow:0 6px 20px rgba(248,184,1,.3)">Ariza qoldirish</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:18px 20px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8B801" stroke-width="1.75" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+            <div><div style="font-weight:700;font-size:.98rem;color:#fff;margin-bottom:3px">Guruh bo&rsquo;lib ro&rsquo;yxatdan o&rsquo;tish</div><div style="font-size:.88rem;line-height:1.5;color:#8FA8C0">Bir nechta xodim uchun yagona ariza va yagona hisob</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:18px 20px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8B801" stroke-width="1.75" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+            <div><div style="font-weight:700;font-size:.98rem;color:#fff;margin-bottom:3px">Korporativ schyot-faktura</div><div style="font-size:.88rem;line-height:1.5;color:#8FA8C0">Bank orqali to&rsquo;lov va barcha buxgalteriya hujjatlari</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:18px 20px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8B801" stroke-width="1.75" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <div><div style="font-weight:700;font-size:.98rem;color:#fff;margin-bottom:3px">Moslashtirilgan jadval</div><div style="font-size:.88rem;line-height:1.5;color:#8FA8C0">Ish grafigingizga mos dars vaqtlari</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 13 · FAQ ══════════ -->
+  <section id="savollar" style="background:#fff;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:860px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div style="margin-bottom:40px" data-rv>
+        <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Savol-javob</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">Ko&rsquo;p beriladigan savollar</h2>
+      </div>
+      <div data-rv>
+        <sc-for list="{{ faq }}" as="f" hint-placeholder-count="6">
+          <details data-faq style="border-top:1px solid #E2E7EE">
+            <summary style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0">
+              <span style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;color:#023A69;line-height:1.35">{{ f.q }}</span>
+              <svg class="cv" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C08E00" stroke-width="2" style="flex-shrink:0"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p style="padding:0 0 22px;font-size:1rem;line-height:1.65;color:#46586B;max-width:70ch">{{ f.a }}</p>
+          </details>
+        </sc-for>
+        <div style="border-top:1px solid #E2E7EE"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 14 · FINAL CTA + WAITING LIST ══════════ -->
+  <section id="ariza" style="background:#F3F6FA;border-bottom:1px solid #E2E7EE">
+    <div class="sec" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+      <div class="gform" style="display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start">
+        <div data-rv>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Keyingi qadam</div>
+          <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.6rem);line-height:1.14;letter-spacing:-.015em;color:#023A69">Ariza qoldiring &mdash; qolganini biz aytamiz</h2>
+          <p style="font-size:1.05rem;line-height:1.65;color:#46586B;margin-top:16px;max-width:46ch">Qisqa konsultatsiya o&rsquo;tkazamiz: dastur sizga mos keladimi, til darajangiz yetarlimi va keyingi oqimda joy bormi.</p>
+          <div style="background:#023A69;border-radius:16px;padding:26px;position:relative;overflow:hidden;margin-top:32px">
+            <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><path d=%22M20 1 L39 20 L20 39 L1 20 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.07%22 stroke-width=%221%22/></svg>');background-size:40px 40px;pointer-events:none"></div>
+            <div style="position:relative">
+              <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FBD968;margin-bottom:12px">Keyingi oqim</div>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+                <span data-ph style="border:1px dashed rgba(248,184,1,.6);background:rgba(248,184,1,.08);border-radius:6px;padding:6px 14px;font-family:ui-monospace,monospace;font-size:1rem;color:#FBD968;font-weight:600">[OQIM SANASI]</span>
+                <span style="font-size:.9rem;color:#C6D6E6">15 hafta &middot; 30 dars</span>
+              </div>
+              <p style="font-size:.9rem;line-height:1.55;color:#8FA8C0;margin-bottom:18px">Joylar cheklangan &mdash; 5 kurator, har biriga ~20 o&rsquo;quvchi. Oqim to&rsquo;lgan bo&rsquo;lsa, kutish ro&rsquo;yxatiga yozilasiz.</p>
+              <div style="display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.28);border-radius:10px;padding:11px 18px;font-size:.9rem;font-weight:600;color:#fff;cursor:pointer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F8B801" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Kutish ro&rsquo;yxatiga yozilish
+              </div>
+            </div>
+          </div>
+        </div>
+        <div data-rv style="background:#fff;border:1px solid #E2E7EE;border-radius:18px;padding:32px;box-shadow:0 6px 24px rgba(2,58,105,.09)">
+          <h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.4rem;color:#023A69;margin-bottom:6px">Ariza qoldirish</h3>
+          <p style="font-size:.92rem;color:#46586B;margin-bottom:24px">Majburiyat yo&rsquo;q. Bir kun ichida bog&rsquo;lanamiz.</p>
+          <form onsubmit="{{ onSubmit }}" style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <label for="mz-name" style="display:block;font-size:.82rem;font-weight:600;color:#0E2233;margin-bottom:6px">Ism va familiya</label>
+              <input class="fld" id="mz-name" type="text" placeholder="Ismingiz" required="required" />
+            </div>
+            <div>
+              <label for="mz-phone" style="display:block;font-size:.82rem;font-weight:600;color:#0E2233;margin-bottom:6px">Telefon</label>
+              <input class="fld" id="mz-phone" type="tel" placeholder="+998 __ ___ __ __" required="required" />
+            </div>
+            <div>
+              <label for="mz-org" style="display:block;font-size:.82rem;font-weight:600;color:#0E2233;margin-bottom:6px">Ish joyi <span style="color:#8A97A6;font-weight:500">&mdash; ixtiyoriy</span></label>
+              <input class="fld" id="mz-org" type="text" placeholder="Bank yoki tashkilot" />
+            </div>
+            <button class="gold" type="submit" data-cta style="background:#F8B801;color:#011E38;font-family:'Manrope',sans-serif;font-weight:700;font-size:1rem;border:none;border-radius:11px;padding:15px;cursor:pointer;margin-top:4px;box-shadow:0 6px 18px rgba(248,184,1,.3)">Ariza qoldirish</button>
+            <p style="font-size:.8rem;line-height:1.5;color:#8A97A6;text-align:center">Ma&rsquo;lumotlaringiz uchinchi shaxslarga berilmaydi.</p>
+          </form>
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid #EFF2F6;text-align:center">
+            <p style="font-size:.88rem;color:#46586B;margin-bottom:12px">Hozircha shoshilmayapsizmi?</p>
+            <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#F3F6FA;border:1px solid #E2E7EE;border-radius:10px;padding:11px 18px;font-size:.9rem;font-weight:600;color:#023A69">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+              Telegram kanal &middot; bepul kirish darsi
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 15 · FOOTER ══════════ -->
+  <footer style="background:#011E38;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2246%22 height=%2246%22><path d=%22M23 1 L45 23 L23 45 L1 23 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.045%22 stroke-width=%221%22/></svg>');background-size:46px 46px;pointer-events:none"></div>
+    <div style="position:relative;max-width:1200px;margin:0 auto;padding:60px 24px 28px">
+      <div class="g3" style="display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:44px">
+        <div>
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px">
+            <span style="width:32px;height:25px;position:relative;display:inline-block;flex-shrink:0">
+              <span style="position:absolute;left:0;top:0;width:14px;height:25px;background:#0B4C82;border-radius:3px 0 0 8px;transform:skewX(-6deg)"></span>
+              <span style="position:absolute;right:0;top:0;width:14px;height:25px;background:#F8B801;border-radius:0 3px 8px 0;transform:skewX(6deg)"></span>
+            </span>
+            <span style="font-family:'Spectral',serif;font-weight:600;font-size:1.25rem"><span style="color:#fff">Mezon</span> <span style="color:#F8B801">Ta&rsquo;lim</span></span>
+          </div>
+          <p style="font-size:.92rem;line-height:1.65;color:#8FA8C0;max-width:44ch">Mezon Ta&rsquo;lim &mdash; AAOIFI ning O&rsquo;zbekistondagi rasmiy vakili bo&rsquo;lgan Mezon Kengashining ta&rsquo;lim markazi.</p>
+          <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+            <span data-ph style="border:1px dashed rgba(248,184,1,.5);background:rgba(248,184,1,.07);border-radius:6px;padding:4px 11px;font-family:ui-monospace,monospace;font-size:.76rem;color:#D9AE4A;font-weight:600">[MCHJ NOMI &middot; STIR]</span>
+            <span data-ph style="border:1px dashed rgba(248,184,1,.5);background:rgba(248,184,1,.07);border-radius:6px;padding:4px 11px;font-family:ui-monospace,monospace;font-size:.76rem;color:#D9AE4A;font-weight:600">[MANZIL]</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5E7A96;margin-bottom:16px">Kurslar</div>
+          <div style="display:flex;flex-direction:column;gap:11px;font-size:.92rem">
+            <a href="#kurs" style="color:#C6D6E6">AAOIFI CPSS tayyorlov kursi</a>
+            <a href="#kurs" style="color:#C6D6E6">Biznesda Islom moliyasi</a>
+            <a href="#aaoifi" style="color:#C6D6E6">AAOIFI haqida</a>
+            <a href="#savollar" style="color:#C6D6E6">Savol-javob</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5E7A96;margin-bottom:16px">Aloqa</div>
+          <div style="display:flex;flex-direction:column;gap:11px;font-size:.92rem">
+            <span data-ph style="border:1px dashed rgba(248,184,1,.5);background:rgba(248,184,1,.07);border-radius:6px;padding:4px 11px;font-family:ui-monospace,monospace;font-size:.76rem;color:#D9AE4A;font-weight:600;align-self:flex-start">[TELEFON]</span>
+            <span data-ph style="border:1px dashed rgba(248,184,1,.5);background:rgba(248,184,1,.07);border-radius:6px;padding:4px 11px;font-family:ui-monospace,monospace;font-size:.76rem;color:#D9AE4A;font-weight:600;align-self:flex-start">[EMAIL]</span>
+            <a href="#" style="color:#C6D6E6;display:inline-flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8FA8C0" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>Telegram kanal</a>
+            <span style="color:#C6D6E6">mezontalim.uz</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:48px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:.84rem;color:#5E7A96">&copy; 2026 Mezon Ta&rsquo;lim. Barcha huquqlar himoyalangan.</div>
+        <div style="display:flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:8px;overflow:hidden;font-size:.78rem;font-weight:700">
+          <span style="padding:6px 12px;background:#F8B801;color:#011E38">UZ</span>
+          <span style="padding:6px 12px;color:#8FA8C0">RU</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <x-import component-from-global-scope="image-slot" from="./image-slot.js" hint-size="1px,1px"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;ctaLabel&quot;: {
+    &quot;editor&quot;: &quot;enum&quot;,
+    &quot;options&quot;: [&quot;Ariza qoldirish&quot;, &quot;Konsultatsiya olish&quot;, &quot;Bepul konsultatsiya&quot;],
+    &quot;default&quot;: &quot;Ariza qoldirish&quot;,
+    &quot;tsType&quot;: &quot;string&quot;,
+    &quot;section&quot;: &quot;Konversiya&quot;
+  },
+  &quot;showTier2&quot;: {
+    &quot;editor&quot;: &quot;boolean&quot;,
+    &quot;default&quot;: true,
+    &quot;tsType&quot;: &quot;boolean&quot;,
+    &quot;section&quot;: &quot;Kontent&quot;
+  },
+  &quot;showPlaceholders&quot;: {
+    &quot;editor&quot;: &quot;boolean&quot;,
+    &quot;default&quot;: true,
+    &quot;tsType&quot;: &quot;boolean&quot;,
+    &quot;section&quot;: &quot;Kontent&quot;
+  }
+}">
+class Component extends DCLogic {
+  componentDidMount() { this.applyProps(); this.observe(); }
+  componentDidUpdate() { this.applyProps(); }
+
+  root() { return (this.el && this.el.querySelectorAll) ? this.el : document; }
+
+  applyProps() {
+    const r = this.root();
+    const label = this.props.ctaLabel ?? 'Ariza qoldirish';
+    r.querySelectorAll('[data-cta]').forEach(el => { el.textContent = label; });
+
+    const showT2 = this.props.showTier2 ?? true;
+    r.querySelectorAll('[data-t2]').forEach(el => { el.style.display = showT2 ? 'grid' : 'none'; });
+
+    const showPh = this.props.showPlaceholders ?? true;
+    r.querySelectorAll('[data-ph]').forEach(el => { el.style.visibility = showPh ? 'visible' : 'hidden'; });
+  }
+
+  observe() {
+    const r = this.root();
+    const els = r.querySelectorAll('[data-rv]');
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      els.forEach(el => el.classList.add('on'));
+      return;
+    }
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(el => io.observe(el));
+  }
+
+  renderVals() {
+    const facts = [
+      { k: 'Darslar soni', v: '30 dars' },
+      { k: 'Davomiyligi', v: '15 hafta' },
+      { k: 'Jadval', v: 'Haftasiga 2 dars' },
+      { k: 'Umumiy hajm', v: '~90 soat' },
+      { k: 'Format', v: '70% onlayn / 30% oflayn' },
+      { k: 'Dars tili', v: 'O\u2019zbek tili' },
+      { k: 'Qamrov', v: '58 ta Shariat standarti' },
+      { k: 'Oqim', v: '8-avgust \u2014 15-noyabr' },
+    ];
+    const outcomes = [
+      { t: 'CPSS imtihoniga tizimli tayyorgarlik', d: 'Tarqoq material emas \u2014 boshidan oxirigacha tuzilgan yo\u2019l.' },
+      { t: 'Shariatga muvofiqlikni baholash', d: 'Mahsulot yoki shartnomaning standartlarga mosligini o\u2019zingiz tekshirasiz.' },
+      { t: 'Islomiy \u201cdarcha\u201dda ishlash', d: 'Bank islomiy bo\u2019limida ishlash uchun zarur amaliy bilim.' },
+      { t: 'Shartnomalarni mohiyatan tushunish', d: 'Murabaha, ijara, mudaraba va boshqalar \u2014 nomigina emas, mexanikasi bilan.' },
+    ];
+    const teachers = [
+      {
+        slot: 'ustoz-1', name: 'Muxtorjon Akramov', role: 'Mezon Ta\u2019lim direktori va bosh treneri',
+        creds: ['AAOIFI CPSS sertifikati sohibi', 'O\u2019zbekiston Xalqaro Islom Akademiyasi magistri', 'Turkiya va Qatarda AAOIFI dasturlari ishtirokchisi'],
+      },
+      {
+        slot: 'ustoz-2', name: 'Muzaffar Xusnidinov', role: 'Mezon Kengashi direktori',
+        creds: ['CSAA (AAOIFI), CAP', 'MBA (Finance, Korea University)', 'UNDP Green Sukuk bo\u2019yicha milliy konsultant', 'PwC va Deloitte tajribasi'],
+      },
+      {
+        slot: 'ustoz-3', name: 'Xondamir Nusratxo\u2019jayev', role: 'Xalqaro islomiy moliya va banking eksperti',
+        creds: ['2016\u20132023 AAOIFI Moliya Kengashi a\u2019zosi', '26 yillik tajriba', 'AAOIFI hisob standartlari hammualliflaridan biri'],
+      },
+    ];
+    const tier1 = [
+      {
+        ini: 'AM', name: 'Akmal Mirzabayev', role: '\u201cHesap\u201d startapi hammuallifi',
+        quote: '\u00abIslomiy moliya haqida oldin parcha-parcha bilardim, lekin bu yerda tizimli va dalillarga asoslangan bilim oldim. Hozir moliyaviy qarorlarimni ongliroq qabul qilaman.\u00bb',
+      },
+      {
+        ini: 'BA', name: 'Bahodir Akbarov', role: '\u201cDefast Cargo Logistics\u201d asoschisi',
+        quote: '\u00abChet el bilan Muzoraba kelishuvi edi\u2026 To\u2019g\u2019rilash kerakli joylar bor ekan, to\u2019g\u2019riladik. Noo\u2019rin qo\u2019yilgan talablarga bemalol javob bera oldik.\u00bb',
+      },
+    ];
+    const tier2 = [
+      { quote: '\u00abBiznesimda ko\u2019p narsalar o\u2019zgardi, xatolarimiz juda ko\u2019p ekan\u00bb', name: 'Azizov A.' },
+      { quote: '\u00abMurobaha yo\u2019nalishini ancha yaxshi tushunib oldim\u00bb', name: 'Odilov D.' },
+      { quote: '\u00abO\u2019zim kitoblarni o\u2019qiganda tushunmadim\u00bb', name: 'Sulxiya G.' },
+      { quote: '\u00abOlingan ilm tengsiz\u00bb', name: 'Oybek M.' },
+    ];
+    const faq = [
+      {
+        q: 'Sertifikat tan olinadimi?',
+        a: 'CPSS \u2014 AAOIFI ning xalqaro sertifikati, uni AAOIFI ning o\u2019zi imtihon orqali beradi. Mezon Ta\u2019lim sizni shu imtihonga tayyorlaydi \u2014 dastur to\u2019liq AAOIFI Shariat standartlari asosida qurilgan.',
+      },
+      {
+        q: 'Imtihon qaysi tilda?',
+        a: 'Hozirda AAOIFI imtihoni ingliz va arab tillarida o\u2019tkaziladi. Darslar o\u2019zbek tilida bo\u2019ladi, shu bilan birga kurs davomida ikki tilli terminologiya va imtihon tilidagi savol formulirovkalari bilan ishlash alohida mashq qilinadi.',
+      },
+      {
+        q: 'Ingliz tilim yetarlimi?',
+        a: 'Til darajangiz kurs boshida aniqlanadi. Til ko\u2019prigi dastur ichida \u2014 terminologiya va imtihon formulirovkalari ustida alohida ishlaymiz.',
+      },
+      {
+        q: 'Vaqtim bo\u2019ladimi?',
+        a: 'Haftasiga 2 ta dars, 70% onlayn \u2014 dastur aynan ishlab yurgan odam uchun mo\u2019ljallangan. Har hafta ~6 soat dars va mustaqil ishlash.',
+      },
+      {
+        q: 'Qimmat emasmi?',
+        a: 'Eng kuchli javob \u2014 bitiruvchilarning natijasi. Ular orasida to\u2019lovi 200% qaytgan, kurs davomida Mushoraka shartnoma tuzgan va chet el bilan Muzoraba kelishuvini to\u2019g\u2019rilagan ishtirokchilar bor.',
+      },
+      {
+        q: 'Tashkilot sifatida xodimlarni yubora olamizmi?',
+        a: 'Ha. Guruh bo\u2019lib ro\u2019yxatdan o\u2019tish, korporativ schyot-faktura va moslashtirilgan jadval mavjud \u2014 \u201cTashkilotlar uchun\u201d bo\u2019limiga qarang.',
+      },
+    ];
+    const setMenu = (open) => {
+      const r = this.root();
+      const panel = r.querySelector('[data-mobnav]');
+      const btn = r.querySelector('.burger');
+      if (panel) panel.classList.toggle('open', open);
+      if (btn) btn.setAttribute('aria-expanded', String(open));
+    };
+    return {
+      facts, outcomes, teachers, tier1, tier2, faq,
+      onSubmit: (e) => { e.preventDefault(); },
+      toggleMenu: () => {
+        const p = this.root().querySelector('[data-mobnav]');
+        setMenu(!(p && p.classList.contains('open')));
+      },
+      closeMenu: () => setMenu(false),
+    };
+  }
+}
+</script>
+</body>
+</html>

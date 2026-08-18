@@ -3,6 +3,7 @@ import { landingPathForRole } from "@/lib/auth/landing";
 import { redirectLocalized } from "@/lib/i18n/redirect";
 import { Link } from "@/lib/i18n/navigation";
 import { BrandWordmark } from "@/components/brand-wordmark";
+import { SiteShell } from "@/components/site-shell";
 
 /** Centered shell for unauthenticated flows. Signed-in users are sent home. */
 export default async function AuthLayout({
@@ -14,13 +15,15 @@ export default async function AuthLayout({
   if (user) return redirectLocalized(landingPathForRole(user.role));
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col justify-center px-4 py-12">
-      <div className="mb-8 flex justify-center">
-        <Link href="/">
-          <BrandWordmark />
-        </Link>
+    <SiteShell>
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col justify-center px-4 py-12">
+        <div className="mb-8 flex justify-center">
+          <Link href="/">
+            <BrandWordmark />
+          </Link>
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
+    </SiteShell>
   );
 }

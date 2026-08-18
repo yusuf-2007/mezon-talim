@@ -17,18 +17,351 @@
     "en": "Inglizcha"
   },
   "Landing": {
-    "heroTitle": "AAOIFI Shariat standartlarini o'zbek tilida o'rganing",
-    "heroSubtitle": "Tuzilgan video-darslar, amaliy testlar va yakuniy imtihon — tan olingan sertifikat bilan yakunlanadi.",
-    "browseCourses": "Kurslarni ko'rish",
-    "aboutAaoifi": "AAOIFI haqida",
-    "affiliationNote": "AAOIFI bilan rasmiy hamkorlikda",
-    "valueVideoTitle": "Video-darslar",
-    "valueVideoBody": "Har bir mavzu bo'yicha tuzilgan, o'zbek tilidagi video-darslar.",
-    "valueAssessTitle": "Baholash",
-    "valueAssessBody": "Dars testlari, modul sinovlari va yakuniy imtihon orqali bilimni mustahkamlang.",
-    "valueCertTitle": "Sertifikat",
-    "valueCertBody": "Kursni muvaffaqiyatli yakunlab, tekshiriladigan sertifikatga ega bo'ling.",
-    "comingSoon": "Platforma ishlab chiqilmoqda."
+    "nav": {
+      "course": "Kurs",
+      "aaoifi": "AAOIFI haqida",
+      "teachers": "Ustozlar",
+      "faq": "Savol-javob",
+      "apply": "Ariza qoldirish",
+      "login": "Kirish",
+      "menu": "Menyu",
+      "logoAlt": "Mezon Ta’lim",
+      "ruSoon": "Tez orada"
+    },
+    "hero": {
+      "eyebrow": "O’zbekistonda AAOIFI standartining rasmiy ta’lim markazi",
+      "title": "AAOIFI CPSS sertifikatiga o’zbek tilida tayyorlaning",
+      "tagline": "Standart — xalqaro. Til — o’zimizniki.",
+      "lead": "30 dars, 15 hafta, ~90 soat. Banklar va moliya mutaxassislari uchun mo’ljallangan — 70% onlayn, ishlab yurgan odam uchun.",
+      "ctaPrimary": "Ariza qoldirish",
+      "ctaSecondary": "Bepul darsni ko’rish",
+      "cohortLabel": "Keyingi oqim",
+      "cohortDate": "[OQIM SANASI]",
+      "cohortNote": "· joylar cheklangan",
+      "photoAlt": "Oflayn dars / auditoriya fotosi",
+      "badgeTitle": "58 ta Shariat standarti",
+      "badgeSub": "~90 soat dars"
+    },
+    "chain": {
+      "aaoifiTitle": "AAOIFI",
+      "aaoifiSub": "Xalqaro standart",
+      "kengashTitle": "Mezon Kengashi",
+      "kengashSub": "Amaliyot — rasmiy vakil",
+      "talimTitle": "Mezon Ta’lim",
+      "talimSub": "Bilim — ta’lim markazi",
+      "statement": "Mezon Ta’lim — AAOIFI ning O’zbekistondagi rasmiy vakili bo’lgan Mezon Kengashining ta’lim markazi.",
+      "edge": "Raqobatchi standartni sotib olib o’qiy oladi. Biz esa shu standart asosida O’zbekistonda audit o’tkazganmiz va Shariat kengashida o’tirganmiz — ",
+      "edgeStrong": "misollarimiz kitobdan emas, bajarilgan loyihalardan.",
+      "heading": "AAOIFI, Mezon Kengashi va Mezon Ta’lim o‘rtasidagi maqom zanjiri"
+    },
+    "whyNow": {
+      "eyebrow": "Nega aynan hozir",
+      "title": "Bozor ochildi, kadr yetishmayapti",
+      "d1Value": "29.06.2026",
+      "d1Body": "Islom moliyasi to’g’risidagi qonun kuchga kirdi — banklardan AAOIFI standartlariga muvofiqlik talab qilinadi",
+      "d2Value": "4×",
+      "d2Body": "Portfel o’sishi: 2025-yilda ~$7 mln → 2026-ning 5 oyida ~$32 mln",
+      "d3Value": "2030",
+      "d3Body": "Yo’l xaritasi: 2026 oxirigacha kamida bitta islomiy “darcha”, 2030-gacha mustaqil islomiy banklar",
+      "d4Value": "Kadr tanqisligi",
+      "d4Body": "Banklar “darcha” ochmoqda — Shariatga muvofiq mahsulotni tushunadigan xodim yetishmaydi",
+      "source": "Manba: O’zbekiston Respublikasi qonunchiligi va Markaziy bank ma’lumotlari ·",
+      "sourceLinks": "[MANBA HAVOLALARI]"
+    },
+    "quote": {
+      "text": "To’lovim 200% o’zini oqladi… Kurs tugashiga yaqin Mushoraka shartnoma qilib bir ish boshladim. Shartnoma va kelishuvlarimdagi kamchiliklarimni bildim, tuzatdim.",
+      "initials": "AM",
+      "name": "Akbarbek Mustaqimov",
+      "role": "“Hisobchilar Uyushmasi” bosh buxgalteri",
+      "label": "Biznesda Islom moliyasi kursi bitiruvchisi"
+    },
+    "course": {
+      "eyebrow": "Asosiy dastur",
+      "title": "AAOIFI CPSS tayyorlov kursi",
+      "lead": "Dastur AAOIFI ning 58 ta Shariat standarti asosida qurilgan. Quruq nazariya emas — bajarilgan loyihalardan olingan misollar bilan.",
+      "structureLabel": "Kurs tuzilmasi",
+      "outcomesLabel": "Kursdan so’ng nima qila olasiz",
+      "facts": [
+        {
+          "k": "Darslar soni",
+          "v": "30 dars"
+        },
+        {
+          "k": "Davomiyligi",
+          "v": "15 hafta"
+        },
+        {
+          "k": "Jadval",
+          "v": "Haftasiga 2 dars"
+        },
+        {
+          "k": "Umumiy hajm",
+          "v": "~90 soat"
+        },
+        {
+          "k": "Format",
+          "v": "70% onlayn / 30% oflayn"
+        },
+        {
+          "k": "Dars tili",
+          "v": "O’zbek tili"
+        },
+        {
+          "k": "Qamrov",
+          "v": "58 ta Shariat standarti"
+        },
+        {
+          "k": "Oqim",
+          "v": "[OQIM SANALARI]"
+        }
+      ],
+      "priceLabel": "Narx",
+      "price": "[NARX]",
+      "priceNote": "· bo’lib to’lash va korporativ schyot-faktura mavjud",
+      "outcomes": [
+        {
+          "t": "CPSS imtihoniga tizimli tayyorgarlik",
+          "d": "Tarqoq material emas — boshidan oxirigacha tuzilgan yo’l."
+        },
+        {
+          "t": "Shariatga muvofiqlikni baholash",
+          "d": "Mahsulot yoki shartnomaning standartlarga mosligini o’zingiz tekshirasiz."
+        },
+        {
+          "t": "Islomiy “darcha”da ishlash",
+          "d": "Bank islomiy bo’limida ishlash uchun zarur amaliy bilim."
+        },
+        {
+          "t": "Shartnomalarni mohiyatan tushunish",
+          "d": "Murabaha, ijara, mudaraba va boshqalar — nomigina emas, mexanikasi bilan."
+        }
+      ],
+      "includesLabel": "Paketga kiradi",
+      "includes": [
+        "Onlayn + oflayn darslar",
+        "Kurator qo’llab-quvvatlashi",
+        "Haftalik quizlar",
+        "Mock imtihonlar",
+        "Ikki tilli terminologiya lug’ati"
+      ],
+      "curators": "5 kurator — har biriga ~20 o’quvchi. Yakka qolmaysiz.",
+      "cta": "Ariza qoldirish"
+    },
+    "bridge": {
+      "eyebrow": "Til ko’prigi",
+      "title": "Darslar o’zbek tilida. Imtihon — ingliz va arab tilida.",
+      "body": "Buni yashirmaymiz. Shuning uchun dastur ichida til ko’prigi bor: ikki tilli terminologiya, imtihon tilidagi savol formulirovkalari bilan alohida mashq, va kurs boshida til darajasini aniqlash.",
+      "rows": [
+        {
+          "tag": "UZ",
+          "t": "Darslar, tushuntirish, muhokama",
+          "d": "Mohiyatni ona tilingizda tushunasiz"
+        },
+        {
+          "tag": "UZ/EN",
+          "t": "Ikki tilli terminologiya lug’ati",
+          "d": "Har bir atama ikki tilda mustahkamlanadi"
+        },
+        {
+          "tag": "EN",
+          "t": "Imtihon savollari bilan mashq",
+          "d": "Imtihon tilidagi formulirovkalarga o’rganasiz"
+        }
+      ]
+    },
+    "teachers": {
+      "eyebrow": "Ustozlar",
+      "title": "Nazariyachilar emas, amaliyotchilar",
+      "portraitAlt": "Portret",
+      "list": [
+        {
+          "name": "Muxtorjon Akramov",
+          "role": "Mezon Ta’lim direktori va bosh treneri",
+          "creds": [
+            "AAOIFI CPSS sertifikati sohibi",
+            "O’zbekiston Xalqaro Islom Akademiyasi magistri",
+            "Turkiya va Qatarda AAOIFI dasturlari ishtirokchisi"
+          ]
+        },
+        {
+          "name": "Muzaffar Xusnidinov",
+          "role": "Mezon Kengashi direktori",
+          "creds": [
+            "CSAA (AAOIFI), CAP",
+            "MBA (Finance, Korea University)",
+            "UNDP Green Sukuk bo’yicha milliy konsultant",
+            "PwC va Deloitte tajribasi"
+          ]
+        },
+        {
+          "name": "Xondamir Nusratxo’jayev",
+          "role": "Xalqaro islomiy moliya va banking eksperti",
+          "creds": [
+            "2016–2023 AAOIFI Moliya Kengashi a’zosi",
+            "26 yillik tajriba",
+            "AAOIFI hisob standartlari hammualliflaridan biri"
+          ]
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "Bitiruvchilar",
+      "title": "O’lchanadigan natijalar",
+      "lead": "Quyidagi fikrlar — “Biznesda Islom moliyasi” kursi bitiruvchilaridan. CPSS birinchi oqimi yakunlangach, bu bo’lim CPSS bitiruvchilari bilan to’ldiriladi.",
+      "sourceLabel": "Biznesda Islom moliyasi kursi bitiruvchisi",
+      "tier1": [
+        {
+          "initials": "AM",
+          "name": "Akmal Mirzabayev",
+          "role": "“Hesap” startapi hammuallifi",
+          "quote": "«Islomiy moliya haqida oldin parcha-parcha bilardim, lekin bu yerda tizimli va dalillarga asoslangan bilim oldim. Hozir moliyaviy qarorlarimni ongliroq qabul qilaman.»"
+        },
+        {
+          "initials": "BA",
+          "name": "Bahodir Akbarov",
+          "role": "“Defast Cargo Logistics” asoschisi",
+          "quote": "«Chet el bilan Muzoraba kelishuvi edi… To’g’rilash kerakli joylar bor ekan, to’g’riladik. Noo’rin qo’yilgan talablarga bemalol javob bera oldik.»"
+        }
+      ],
+      "tier2": [
+        {
+          "quote": "«Biznesimda ko’p narsalar o’zgardi, xatolarimiz juda ko’p ekan»",
+          "name": "Azizov A."
+        },
+        {
+          "quote": "«Murobaha yo’nalishini ancha yaxshi tushunib oldim»",
+          "name": "Odilov D."
+        },
+        {
+          "quote": "«O’zim kitoblarni o’qiganda tushunmadim»",
+          "name": "Sulxiya G."
+        },
+        {
+          "quote": "«Olingan ilm tengsiz»",
+          "name": "Oybek M."
+        }
+      ]
+    },
+    "certificates": {
+      "eyebrow": "Sertifikat",
+      "title": "Ikki hujjat — ikki xil narsa",
+      "leadBefore": "CPSS sertifikatini AAOIFI beradi — o’z imtihoni orqali. Mezon Ta’lim sizni shu imtihonga ",
+      "leadStrong": "tayyorlaydi",
+      "leadAfter": ". Kursni tamomlaganlarga Mezon Ta’limning kursni yakunlaganlik sertifikati beriladi.",
+      "separator": "alohida hujjatlar",
+      "aaoifiLabel": "AAOIFI beradi",
+      "aaoifiTitle": "CPSS xalqaro sertifikati",
+      "aaoifiBody": "AAOIFI ning o’z imtihoni orqali beriladi. Biz sizni shu imtihonga tayyorlaymiz — dastur to’liq AAOIFI Shariat standartlari asosida qurilgan.",
+      "aaoifiChip": "Xalqaro hujjat",
+      "mezonLabel": "Mezon Ta’lim beradi",
+      "mezonTitle": "Kursni yakunlaganlik sertifikati",
+      "mezonBody": "Kursni tamomlaganlarga beriladi. Bu AAOIFI sertifikati emas — dasturni yakunlaganingizni tasdiqlaydi.",
+      "mezonChip": "Ichki hujjat"
+    },
+    "bim": {
+      "eyebrow": "Ikkinchi kurs · tadbirkorlar uchun",
+      "title": "Biznesda Islom moliyasi",
+      "body": "“Pulim halolmi?” degan savolga tizimli javob. 12 dars, 1,5–2 oy, oldindan tayyorgarlik talab qilinmaydi.",
+      "lessons": "12",
+      "lessonsLabel": "dars",
+      "months": "1,5–2",
+      "monthsLabel": "oy",
+      "cohort": "BIM-5",
+      "cohortLabel": "oqim",
+      "cta": "Batafsil"
+    },
+    "b2b": {
+      "eyebrow": "Tashkilotlar uchun",
+      "title": "Xodimlaringizni islomiy “darcha”ga tayyorlang",
+      "body": "Banklar va moliya tashkilotlari uchun guruh bo’lib o’qish, korporativ schyot-faktura va moslashtirilgan jadval.",
+      "cta": "Ariza qoldirish",
+      "item1Title": "Guruh bo’lib ro’yxatdan o’tish",
+      "item1Body": "Bir nechta xodim uchun yagona ariza va yagona hisob",
+      "item2Title": "Korporativ schyot-faktura",
+      "item2Body": "Bank orqali to’lov va barcha buxgalteriya hujjatlari",
+      "item3Title": "Moslashtirilgan jadval",
+      "item3Body": "Ish grafigingizga mos dars vaqtlari"
+    },
+    "faq": {
+      "eyebrow": "Savol-javob",
+      "title": "Ko’p beriladigan savollar",
+      "items": [
+        {
+          "q": "Sertifikat tan olinadimi?",
+          "a": "CPSS — AAOIFI ning xalqaro sertifikati, uni AAOIFI ning o’zi imtihon orqali beradi. Mezon Ta’lim sizni shu imtihonga tayyorlaydi — dastur to’liq AAOIFI Shariat standartlari asosida qurilgan."
+        },
+        {
+          "q": "Imtihon qaysi tilda?",
+          "a": "Hozirda AAOIFI imtihoni ingliz va arab tillarida o’tkaziladi. Darslar o’zbek tilida bo’ladi, shu bilan birga kurs davomida ikki tilli terminologiya va imtihon tilidagi savol formulirovkalari bilan ishlash alohida mashq qilinadi."
+        },
+        {
+          "q": "Ingliz tilim yetarlimi?",
+          "a": "Til darajangiz kurs boshida aniqlanadi. Til ko’prigi dastur ichida — terminologiya va imtihon formulirovkalari ustida alohida ishlaymiz."
+        },
+        {
+          "q": "Vaqtim bo’ladimi?",
+          "a": "Haftasiga 2 ta dars, 70% onlayn — dastur aynan ishlab yurgan odam uchun mo’ljallangan. Har hafta ~6 soat dars va mustaqil ishlash."
+        },
+        {
+          "q": "Qimmat emasmi?",
+          "a": "Eng kuchli javob — bitiruvchilarning natijasi. Ular orasida to’lovi 200% qaytgan, kurs davomida Mushoraka shartnoma tuzgan va chet el bilan Muzoraba kelishuvini to’g’rilagan ishtirokchilar bor."
+        },
+        {
+          "q": "Tashkilot sifatida xodimlarni yubora olamizmi?",
+          "a": "Ha. Guruh bo’lib ro’yxatdan o’tish, korporativ schyot-faktura va moslashtirilgan jadval mavjud — “Tashkilotlar uchun” bo’limiga qarang."
+        }
+      ]
+    },
+    "apply": {
+      "eyebrow": "Keyingi qadam",
+      "title": "Ariza qoldiring — qolganini biz aytamiz",
+      "lead": "Qisqa konsultatsiya o’tkazamiz: dastur sizga mos keladimi, til darajangiz yetarlimi va keyingi oqimda joy bormi.",
+      "cohortLabel": "Keyingi oqim",
+      "cohortDate": "[OQIM SANASI]",
+      "cohortMeta": "15 hafta · 30 dars",
+      "cohortNote": "Joylar cheklangan — 5 kurator, har biriga ~20 o’quvchi. Oqim to’lgan bo’lsa, kutish ro’yxatiga yozilasiz.",
+      "waitlist": "Kutish ro’yxatiga yozilish"
+    },
+    "form": {
+      "title": "Ariza qoldirish",
+      "lead": "Majburiyat yo’q. Bir kun ichida bog’lanamiz.",
+      "name": "Ism va familiya",
+      "namePlaceholder": "Ismingiz",
+      "phone": "Telefon",
+      "phonePlaceholder": "+998 __ ___ __ __",
+      "org": "Ish joyi",
+      "orgOptional": "— ixtiyoriy",
+      "orgPlaceholder": "Bank yoki tashkilot",
+      "consent": "Kurs bo’yicha SMS xabarlar olishga roziman",
+      "submit": "Ariza qoldirish",
+      "submitting": "Yuborilmoqda…",
+      "privacy": "Ma’lumotlaringiz uchinchi shaxslarga berilmaydi.",
+      "successTitle": "Arizangiz qabul qilindi",
+      "successBody": "Bir kun ichida ko’rsatilgan raqamga bog’lanamiz.",
+      "failed": "Yuborib bo’lmadi. Birozdan so’ng qayta urinib ko’ring.",
+      "tooMany": "Juda ko’p urinish. Birozdan so’ng qayta urinib ko’ring.",
+      "notRushing": "Hozircha shoshilmayapsizmi?",
+      "telegram": "Telegram kanal · bepul kirish darsi",
+      "errName": "Ism va familiyani to’liq kiriting.",
+      "errPhone": "Telefon raqami +998 bilan boshlanishi kerak.",
+      "errOrg": "Ish joyi nomi juda uzun."
+    },
+    "footer": {
+      "tagline": "Mezon Ta’lim — AAOIFI ning O’zbekistondagi rasmiy vakili bo’lgan Mezon Kengashining ta’lim markazi.",
+      "entity": "[MCHJ NOMI · STIR]",
+      "address": "[MANZIL]",
+      "coursesLabel": "Kurslar",
+      "cpss": "AAOIFI CPSS tayyorlov kursi",
+      "bim": "Biznesda Islom moliyasi",
+      "aaoifi": "AAOIFI haqida",
+      "faq": "Savol-javob",
+      "contactLabel": "Aloqa",
+      "phone": "[TELEFON]",
+      "email": "[EMAIL]",
+      "telegram": "Telegram kanal",
+      "site": "mezontalim.uz",
+      "rights": "© 2026 Mezon Ta’lim. Barcha huquqlar himoyalangan."
+    }
   },
   "Footer": {
     "tagline": "AAOIFI Shariat standartlari bo'yicha onlayn ta'lim platformasi.",
@@ -71,10 +404,10 @@
     "otpSent": "Tasdiqlash kodi yuborildi",
     "otpInvalid": "Kod noto'g'ri yoki muddati tugagan",
     "otpDisabled": "Telefon orqali kirish hozircha mavjud emas",
+    "otpSendFailed": "Kodni yuborib bo'lmadi. Birozdan so'ng qayta urinib ko'ring.",
     "forbiddenTitle": "Ruxsat yo'q",
     "forbiddenBody": "Sizda bu sahifaga kirish huquqi yo'q.",
-    "backHome": "Bosh sahifaga",
-    "otpSendFailed": "Kodni yuborib bo'lmadi. Birozdan so'ng qayta urinib ko'ring."
+    "backHome": "Bosh sahifaga"
   },
   "Account": {
     "studentTitle": "Mening kabinetim",
