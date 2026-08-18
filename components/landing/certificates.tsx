@@ -29,7 +29,7 @@ export async function Certificates() {
 
         <Reveal>
           <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-[26px] max-[980px]:grid-cols-1">
-            <div className="relative overflow-hidden rounded-2xl border-2 border-lp-navy bg-white p-[30px]">
+            <div className="lp-face relative overflow-hidden rounded-2xl border-2 border-lp-navy bg-white p-[30px]">
               <div
                 aria-hidden
                 className="absolute top-0 left-0 h-[5px] w-full bg-linear-to-r from-lp-navy to-lp-gold"
@@ -67,7 +67,7 @@ export async function Certificates() {
               <span className="w-px flex-1 bg-lp-line max-[980px]:h-px max-[980px]:w-auto" />
             </div>
 
-            <div className="rounded-2xl border border-lp-line bg-lp-wash-alt p-[30px]">
+            <div className="lp-face rounded-2xl border border-lp-line bg-lp-wash-alt p-[30px]">
               <div className="mb-3 text-[0.72rem] font-bold tracking-[0.16em] text-lp-muted uppercase">
                 {t("mezonLabel")}
               </div>

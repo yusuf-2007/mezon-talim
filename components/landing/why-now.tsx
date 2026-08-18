@@ -37,7 +37,7 @@ export async function WhyNow() {
                 }
               >
                 <div
-                  className={`mb-2.5 font-lp-heading text-[2rem] leading-[1.05] font-semibold ${
+                  className={`lp-settle mb-2.5 font-lp-heading text-[2rem] leading-[1.05] font-semibold ${
                     cell.accent ? "text-lp-gold-deep" : "text-lp-navy"
                   }`}
                 >

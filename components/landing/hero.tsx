@@ -72,7 +72,7 @@ export async function Hero() {
         </div>
 
         <div className="relative max-[980px]:max-w-[460px] max-[620px]:max-w-none">
-          <div className="relative aspect-4/5 overflow-hidden rounded-[18px] bg-lp-navy-dark shadow-[0_24px_60px_rgb(1_20_40/0.5)] max-[980px]:aspect-3/2">
+          <div className="lp-face relative aspect-4/5 overflow-hidden rounded-[18px] bg-lp-navy-dark shadow-[0_24px_60px_rgb(1_20_40/0.5)] max-[980px]:aspect-3/2">
             <PhotoSlot caption={t("photoAlt")} />
             <div
               aria-hidden

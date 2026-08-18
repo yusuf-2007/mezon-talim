@@ -41,7 +41,7 @@ export async function CourseSection() {
                   className="flex items-baseline justify-between gap-5 border-b border-lp-line-soft py-[15px]"
                 >
                   <dt className="text-[0.95rem] text-lp-slate">{f.k}</dt>
-                  <dd className="text-right font-lp-heading text-[1.1rem] font-semibold text-lp-navy">
+                  <dd className="lp-settle text-right font-lp-heading text-[1.1rem] font-semibold text-lp-navy">
                     {/* A fact Mezon has not settled yet renders as a visible
                         placeholder rather than plain text, so it reads the same
                         as every other unresolved value on the page. */}

@@ -21,17 +21,17 @@ export async function StatusChain() {
         <h2 className="sr-only">{t("heading")}</h2>
         <Reveal>
           <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-5 max-[980px]:grid-cols-1 max-[980px]:gap-2">
-            <ChainNode title={t("aaoifiTitle")} sub={t("aaoifiSub")} />
-            <ChainSeparator />
-            <ChainNode title={t("kengashTitle")} sub={t("kengashSub")} />
-            <ChainSeparator />
-            <div className="relative px-3 py-4 text-center">
+            <ChainNode title={t("aaoifiTitle")} sub={t("aaoifiSub")} index={0} />
+            <ChainSeparator index={1} />
+            <ChainNode title={t("kengashTitle")} sub={t("kengashSub")} index={2} />
+            <ChainSeparator index={3} />
+            <div className="relative px-3 py-4 text-center" style={{ "--lp-i": 4 } as React.CSSProperties}>
               <span
                 aria-hidden
                 className="absolute inset-0 rounded-xl border-[1.5px] border-lp-gold bg-lp-cream"
               />
               <div className="relative">
-                <div className="mb-[7px] font-lp-heading text-2xl font-semibold text-lp-navy">
+                <div className="lp-settle mb-[7px] font-lp-heading text-2xl font-semibold text-lp-navy">
                   {t("talimTitle")}
                 </div>
                 <div className="text-[0.85rem] leading-[1.45] font-semibold text-lp-gold-ink">
@@ -54,10 +54,18 @@ export async function StatusChain() {
   );
 }
 
-function ChainNode({ title, sub }: { title: string; sub: string }) {
+function ChainNode({
+  title,
+  sub,
+  index,
+}: {
+  title: string;
+  sub: string;
+  index: number;
+}) {
   return (
-    <div className="text-center">
-      <div className="mb-[7px] font-lp-heading text-2xl font-semibold text-lp-navy">
+    <div className="text-center" style={{ "--lp-i": index } as React.CSSProperties}>
+      <div className="lp-settle mb-[7px] font-lp-heading text-2xl font-semibold text-lp-navy">
         {title}
       </div>
       <div className="text-[0.85rem] leading-[1.45] text-lp-muted">{sub}</div>
@@ -65,14 +73,15 @@ function ChainNode({ title, sub }: { title: string; sub: string }) {
   );
 }
 
-function ChainSeparator() {
+function ChainSeparator({ index }: { index: number }) {
   return (
     <div
+      style={{ "--lp-i": index } as React.CSSProperties}
       aria-hidden
       className="flex flex-col items-center gap-[5px] max-[980px]:rotate-90"
     >
       <DiamondIcon className="text-lp-gold-deep" />
-      <span className="h-px w-[30px] bg-lp-gold-line" />
+      <span className="lp-draw h-px w-[30px] bg-lp-gold-line" />
     </div>
   );
 }

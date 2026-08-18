@@ -46,6 +46,9 @@ export default async function LandingPage({
         <style>{`.lp-rv{opacity:1 !important;transform:none !important}`}</style>
       </noscript>
 
+      {/* The beam: reading position, rendered as the balance's own indicator. */}
+      <div className="lp-beam" aria-hidden />
+
       <LandingHeader loginLabel={t("login")} />
 
       <main className="flex-1">
