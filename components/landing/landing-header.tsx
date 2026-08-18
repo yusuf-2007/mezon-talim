@@ -59,7 +59,7 @@ export function LandingHeader({ loginLabel }: { loginLabel: string }) {
           <LocaleToggle className="max-[620px]:hidden" />
           <Link
             href="/login"
-            className="inline-flex min-h-11 items-center rounded-[9px] border-[1.5px] border-lp-navy bg-white px-[18px] text-[0.9rem] font-bold whitespace-nowrap text-lp-navy transition-colors hover:bg-lp-tint max-[980px]:px-[14px] max-[980px]:text-[0.82rem] max-[620px]:hidden"
+            className="inline-flex min-h-11 items-center rounded-[9px] bg-lp-tint px-[18px] text-[0.9rem] font-bold whitespace-nowrap text-lp-navy transition-colors hover:bg-lp-navy hover:text-white max-[980px]:px-[14px] max-[980px]:text-[0.82rem] max-[620px]:hidden"
           >
             {loginLabel}
           </Link>
@@ -121,7 +121,7 @@ export function LandingHeader({ loginLabel }: { loginLabel: string }) {
             <Link
               href="/login"
               onClick={close}
-              className="inline-flex min-h-11 items-center justify-center rounded-[9px] border-[1.5px] border-lp-navy bg-white px-5 text-[0.95rem] font-bold text-lp-navy"
+              className="inline-flex min-h-11 items-center justify-center rounded-[9px] bg-lp-tint px-5 text-[0.95rem] font-bold text-lp-navy"
             >
               {loginLabel}
             </Link>
