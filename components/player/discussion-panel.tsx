@@ -105,7 +105,7 @@ function CommentRow({
             {comment.authorName ?? "—"}
           </span>
           {instructor && (
-            <span className="rounded-full bg-navy-100 px-2 py-0.5 text-[11px] font-medium text-navy-800">
+            <span className="rounded-full bg-navy-100 px-2 py-0.5 text-xs font-medium text-navy-800">
               {t("discInstructor")}
             </span>
           )}

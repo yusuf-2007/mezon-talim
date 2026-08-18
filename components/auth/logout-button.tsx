@@ -14,7 +14,7 @@ export function LogoutButton({
   const t = useTranslations("Auth");
   return (
     <form action={logoutAction}>
-      <Button type="submit" variant={variant} size={size}>
+      <Button type="submit" variant={variant} size={size} className="min-h-11">
         {t("logout")}
       </Button>
     </form>

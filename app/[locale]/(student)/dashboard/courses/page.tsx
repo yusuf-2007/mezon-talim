@@ -47,6 +47,7 @@ export default async function MyCoursesPage() {
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map(({ course, pct }) => (
             <CourseProgressCard
+              headingLevel={2}
               key={course.id}
               courseId={course.id}
               title={pickLocale(course.title, locale)}

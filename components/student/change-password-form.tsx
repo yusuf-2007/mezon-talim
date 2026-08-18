@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import { useTranslations } from "next-intl";
 import { changePasswordAction, type AccountFormState } from "@/lib/account/actions";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,11 @@ export function ChangePasswordForm() {
     changePasswordAction,
     {} as AccountFormState,
   );
+  // Explicit ids so each label is programmatically bound to its field. Without
+  // htmlFor these read as three unlabelled password boxes to a screen reader.
+  const currentId = useId();
+  const newId = useId();
+  const confirmId = useId();
 
   return (
     <form action={action} className="max-w-md space-y-4">
@@ -19,22 +24,49 @@ export function ChangePasswordForm() {
       {state.ok && <p className="text-sm text-success">{t("passwordChanged")}</p>}
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-navy-800">
+        <label
+          htmlFor={currentId}
+          className="mb-1 block text-sm font-medium text-navy-800"
+        >
           {t("currentPassword")}
         </label>
-        <Input name="currentPassword" type="password" autoComplete="current-password" required />
+        <Input
+          id={currentId}
+          name="currentPassword"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-navy-800">
+        <label
+          htmlFor={newId}
+          className="mb-1 block text-sm font-medium text-navy-800"
+        >
           {t("newPassword")}
         </label>
-        <Input name="newPassword" type="password" autoComplete="new-password" required />
+        <Input
+          id={newId}
+          name="newPassword"
+          type="password"
+          autoComplete="new-password"
+          required
+        />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-navy-800">
+        <label
+          htmlFor={confirmId}
+          className="mb-1 block text-sm font-medium text-navy-800"
+        >
           {t("confirmPassword")}
         </label>
-        <Input name="confirmPassword" type="password" autoComplete="new-password" required />
+        <Input
+          id={confirmId}
+          name="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          required
+        />
       </div>
 
       <Button type="submit" disabled={pending}>

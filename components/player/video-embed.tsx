@@ -316,7 +316,7 @@ export function VideoEmbed({
               tabIndex={-1}
               className="max-h-full w-full max-w-lg overflow-y-auto rounded-xl bg-surface p-5 shadow-xl outline-none"
             >
-              <p className="text-[11px] font-bold uppercase tracking-wider text-gold-500">
+              <p className="text-xs font-bold uppercase tracking-wider text-gold-500">
                 {t("vqLabel")}
               </p>
               <p className="mt-1.5 font-medium text-ink">{active.prompt}</p>

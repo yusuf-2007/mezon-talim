@@ -36,7 +36,7 @@ export function AdminNav({ canManage }: { canManage: boolean }) {
             key={i.href}
             href={i.href}
             className={cn(
-              "border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+              "flex min-h-11 items-center border-b-2 px-4 text-sm font-medium transition-colors",
               active
                 ? "border-navy-800 text-navy-800"
                 : "border-transparent text-slate-500 hover:text-navy-600",

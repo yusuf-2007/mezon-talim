@@ -945,7 +945,8 @@
     "pollCorner": "Corner card",
     "pollCornerSub": "A small, unobtrusive card in the bottom-right.",
     "messagesTitle": "Messages",
-    "selectLesson": "Select a lesson"
+    "selectLesson": "Select a lesson",
+    "dashboardHeading": "Overview"
   },
   "Student": {
     "navHome": "Home",

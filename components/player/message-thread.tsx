@@ -88,7 +88,7 @@ export function ThreadMessages({
             <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
               <span className="font-medium text-ink">{m.senderName ?? "—"}</span>
               {fromInstructor && (
-                <span className="rounded-full bg-navy-100 px-2 py-0.5 text-[11px] font-medium text-navy-800">
+                <span className="rounded-full bg-navy-100 px-2 py-0.5 text-xs font-medium text-navy-800">
                   {instructorLabel}
                 </span>
               )}

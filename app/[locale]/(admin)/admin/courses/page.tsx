@@ -72,11 +72,11 @@ export default async function AdminCoursesPage({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">{t("colCourse")}</th>
-              <th className="px-4 py-3 font-medium tabular-nums">{t("colEnrollments")}</th>
-              <th className="px-4 py-3 font-medium tabular-nums">{t("colRevenue")}</th>
-              <th className="px-4 py-3 font-medium">{t("colStatus")}</th>
-              <th className="px-4 py-3 font-medium">{t("colActions")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colCourse")}</th>
+              <th scope="col" className="px-4 py-3 font-medium tabular-nums">{t("colEnrollments")}</th>
+              <th scope="col" className="px-4 py-3 font-medium tabular-nums">{t("colRevenue")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">

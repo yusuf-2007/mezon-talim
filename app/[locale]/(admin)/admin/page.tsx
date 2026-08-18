@@ -29,6 +29,10 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-10">
+      {/* The layout's "Boshqaruv paneli" link is navigation, not a document
+          heading, so this page had no h1 while every sibling route did. */}
+      <h1 className="sr-only">{t("dashboardHeading")}</h1>
+
       {/* Quick actions */}
       {canManage && (
         <div className="flex flex-wrap gap-2">

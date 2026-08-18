@@ -182,7 +182,7 @@ function ExamBoxCard({
         active && "ring-2 ring-navy-800 ring-offset-1",
       )}
     >
-      <span className="absolute right-3 top-3 text-[9px] font-bold uppercase tracking-wider text-gold-500">
+      <span className="absolute right-3 top-3 text-xs font-bold uppercase tracking-wider text-gold-500">
         {tExam("finalStep")}
       </span>
       <div className="flex items-start gap-3">

@@ -945,7 +945,8 @@
     "pollCorner": "Угловое окно",
     "pollCornerSub": "Небольшое ненавязчивое окно в правом нижнем углу.",
     "messagesTitle": "Сообщения",
-    "selectLesson": "Выберите урок"
+    "selectLesson": "Выберите урок",
+    "dashboardHeading": "Общие показатели"
   },
   "Student": {
     "navHome": "Главная",

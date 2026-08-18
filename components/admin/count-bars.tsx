@@ -13,10 +13,14 @@ export function CountBars({
     return <p className="py-8 text-center text-sm text-slate-500">{emptyLabel}</p>;
   }
   const max = Math.max(...data.map((d) => d.count), 1);
+  // Labels were 9px so all 30 could fit. 9px is unreadable, so they render at
+  // the normal small step and only every Nth day is labelled — about eight
+  // across the window, which is enough to orient without colliding.
+  const labelEvery = Math.ceil(data.length / 8);
 
   return (
     <div className="flex h-44 items-end gap-1 overflow-x-auto pb-2">
-      {data.map((d) => (
+      {data.map((d, i) => (
         <div key={d.day} className="group flex min-w-[10px] flex-1 flex-col items-center">
           <div className="relative flex w-full flex-1 items-end">
             <div
@@ -25,8 +29,8 @@ export function CountBars({
               title={`${d.day}: ${d.count}`}
             />
           </div>
-          <span className="mt-1 hidden text-[9px] text-slate-500 tabular-nums sm:block">
-            {d.day.slice(5)}
+          <span className="mt-1 hidden h-4 text-xs text-slate-500 tabular-nums sm:block">
+            {i % labelEvery === 0 ? d.day.slice(5) : ""}
           </span>
         </div>
       ))}

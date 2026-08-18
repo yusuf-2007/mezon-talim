@@ -31,7 +31,7 @@ export function DashboardTabs() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium",
+              "flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium",
               active(href) ? "text-gold-600" : "text-slate-500",
             )}
           >

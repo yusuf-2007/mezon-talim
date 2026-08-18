@@ -91,13 +91,13 @@ export default async function AdminPaymentsPage({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">{t("colDate")}</th>
-              <th className="px-4 py-3 font-medium">{t("colRef")}</th>
-              <th className="px-4 py-3 font-medium">{t("colBuyer")}</th>
-              <th className="px-4 py-3 font-medium">{t("colCourse")}</th>
-              <th className="px-4 py-3 font-medium">{t("colProvider")}</th>
-              <th className="px-4 py-3 font-medium tabular-nums">{t("colAmount")}</th>
-              <th className="px-4 py-3 font-medium">{t("colPayStatus")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colDate")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colRef")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colBuyer")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colCourse")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colProvider")}</th>
+              <th scope="col" className="px-4 py-3 font-medium tabular-nums">{t("colAmount")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colPayStatus")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">

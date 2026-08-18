@@ -945,7 +945,8 @@
     "pollCorner": "Burchak oynasi",
     "pollCornerSub": "Pastki o‘ng burchakda kichik, xalaqit bermaydigan oyna.",
     "messagesTitle": "Xabarlar",
-    "selectLesson": "Darsni tanlang"
+    "selectLesson": "Darsni tanlang",
+    "dashboardHeading": "Umumiy ko‘rsatkichlar"
   },
   "Student": {
     "navHome": "Asosiy",

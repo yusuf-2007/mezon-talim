@@ -112,10 +112,10 @@ async function CourseRoster({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">{t("colStudent")}</th>
-              <th className="px-4 py-3 font-medium">{t("colProgress")}</th>
-              <th className="px-4 py-3 font-medium">{t("colEnrollStatus")}</th>
-              <th className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colStudent")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colProgress")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colEnrollStatus")}</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">

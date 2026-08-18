@@ -47,11 +47,11 @@ export function StudentThreadsPanel({
             <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-navy-800">
               {thread.lessonTitle}
               {threadAwaiting(thread.messages) ? (
-                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-500">
+                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-500">
                   {t("msgAwaiting")}
                 </span>
               ) : (
-                <span className="rounded-full bg-navy-100 px-2 py-0.5 text-[11px] font-medium text-navy-800">
+                <span className="rounded-full bg-navy-100 px-2 py-0.5 text-xs font-medium text-navy-800">
                   {tS("msgAnswered")}
                 </span>
               )}
@@ -112,7 +112,7 @@ export function StudentCommentsList({ comments }: { comments: StudentComment[] }
               {c.lessonTitle}
             </Link>
             {c.replies > 0 && (
-              <span className="rounded-full bg-navy-100 px-2 py-0.5 text-[11px] font-medium text-navy-800">
+              <span className="rounded-full bg-navy-100 px-2 py-0.5 text-xs font-medium text-navy-800">
                 {tS("msgReplies", { count: c.replies })}
               </span>
             )}

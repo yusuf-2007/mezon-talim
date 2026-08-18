@@ -69,12 +69,12 @@ export default async function AdminCertificatesPage({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">{t("colCertNumber")}</th>
-              <th className="px-4 py-3 font-medium">{t("colStudent")}</th>
-              <th className="px-4 py-3 font-medium">{t("colCourse")}</th>
-              <th className="px-4 py-3 font-medium">{t("colIssued")}</th>
-              <th className="px-4 py-3 font-medium">{t("colStatus")}</th>
-              <th className="px-4 py-3 font-medium">{t("colActions")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colCertNumber")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colStudent")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colCourse")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colIssued")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
