@@ -348,17 +348,17 @@
     },
     "footer": {
       "tagline": "Mezon Ta’lim — учебный центр Mezon Kengashi, официального представителя AAOIFI в Узбекистане.",
-      "entity": "[НАЗВАНИЕ ООО · ИНН]",
-      "address": "[АДРЕС]",
+      "entity": "ООО «MEZON TALIM» · ИНН 312 837 976",
+      "address": "г. Ташкент, Алмазарский район, ул. Узумбог, 9-й тупик, 2/1",
       "coursesLabel": "Курсы",
       "cpss": "Подготовительный курс AAOIFI CPSS",
       "bim": "Исламские финансы в бизнесе",
       "aaoifi": "Об AAOIFI",
       "faq": "Вопросы и ответы",
       "contactLabel": "Контакты",
-      "phone": "[ТЕЛЕФОН]",
+      "phone": "+998 50 700 77 99",
       "email": "[EMAIL]",
-      "telegram": "Telegram-канал",
+      "telegram": "Написать в Telegram",
       "site": "mezontalim.uz",
       "rights": "© 2026 Mezon Ta’lim. Все права защищены."
     }

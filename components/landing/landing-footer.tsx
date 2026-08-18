@@ -31,13 +31,9 @@ export async function LandingFooter() {
             <p className="max-w-[44ch] text-[0.92rem] leading-[1.65] text-lp-on-navy-dim">
               {t("tagline")}
             </p>
-            <div className="mt-5 flex flex-wrap gap-2.5">
-              <Bracket tone="navy" className="px-[11px] py-1 text-[0.76rem]">
-                {t("entity")}
-              </Bracket>
-              <Bracket tone="navy" className="px-[11px] py-1 text-[0.76rem]">
-                {t("address")}
-              </Bracket>
+            <div className="mt-5 flex flex-col gap-1.5 text-[0.85rem] leading-[1.5] text-lp-on-navy-dim">
+              <span>{t("entity")}</span>
+              <span>{t("address")}</span>
             </div>
           </div>
 
@@ -80,17 +76,27 @@ export async function LandingFooter() {
               {t("contactLabel")}
             </div>
             <div className="flex flex-col items-start gap-[11px] text-[0.92rem]">
-              <Bracket tone="navy" className="px-[11px] py-1 text-[0.76rem]">
+              <a
+                href="tel:+998507007799"
+                className="flex min-h-11 items-center text-lp-on-navy hover:text-white"
+              >
                 {t("phone")}
-              </Bracket>
-              <Bracket tone="navy" className="px-[11px] py-1 text-[0.76rem]">
+              </a>
+              <Bracket tone="navy" className="self-start px-[11px] py-1 text-[0.76rem]">
                 {t("email")}
               </Bracket>
-              {/* URL still outstanding — inert rather than href="#". */}
-              <span className="inline-flex min-h-11 items-center gap-2 text-lp-on-navy-dim">
+              {/* Direct line to the Mezon admin. The "channel + free lesson"
+                  element in the apply section stays inert until Mezon supplies
+                  the actual channel URL — a DM is not a channel. */}
+              <a
+                href="https://t.me/Mezon_adm"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 text-lp-on-navy hover:text-white"
+              >
                 <TelegramIcon size={14} className="text-lp-on-navy-dim" />
                 {t("telegram")}
-              </span>
+              </a>
               <span className="text-lp-on-navy">{t("site")}</span>
             </div>
           </div>

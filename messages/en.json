@@ -348,17 +348,17 @@
     },
     "footer": {
       "tagline": "Mezon Ta’lim is the education centre of Mezon Kengashi, AAOIFI’s official representative in Uzbekistan.",
-      "entity": "[LLC NAME · TIN]",
-      "address": "[ADDRESS]",
+      "entity": "“MEZON TALIM” LLC · TIN 312 837 976",
+      "address": "Tashkent, Olmazor district, Uzumbog street, 9th lane, 2/1",
       "coursesLabel": "Courses",
       "cpss": "AAOIFI CPSS preparation course",
       "bim": "Islamic Finance in Business",
       "aaoifi": "About AAOIFI",
       "faq": "FAQ",
       "contactLabel": "Contact",
-      "phone": "[PHONE]",
+      "phone": "+998 50 700 77 99",
       "email": "[EMAIL]",
-      "telegram": "Telegram channel",
+      "telegram": "Message us on Telegram",
       "site": "mezontalim.uz",
       "rights": "© 2026 Mezon Ta’lim. All rights reserved."
     }
