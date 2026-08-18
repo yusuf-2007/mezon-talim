@@ -73,7 +73,8 @@
     "otpDisabled": "Phone login is not available yet",
     "forbiddenTitle": "Access denied",
     "forbiddenBody": "You don't have permission to access this page.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "otpSendFailed": "Could not send the code. Please try again shortly."
   },
   "Account": {
     "studentTitle": "My account",

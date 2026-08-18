@@ -73,7 +73,8 @@
     "otpDisabled": "Telefon orqali kirish hozircha mavjud emas",
     "forbiddenTitle": "Ruxsat yo'q",
     "forbiddenBody": "Sizda bu sahifaga kirish huquqi yo'q.",
-    "backHome": "Bosh sahifaga"
+    "backHome": "Bosh sahifaga",
+    "otpSendFailed": "Kodni yuborib bo'lmadi. Birozdan so'ng qayta urinib ko'ring."
   },
   "Account": {
     "studentTitle": "Mening kabinetim",
