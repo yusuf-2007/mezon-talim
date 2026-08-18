@@ -53,16 +53,19 @@ export function LandingHeader({ loginLabel }: { loginLabel: string }) {
               {t(s.key)}
             </a>
           ))}
-          <Link href="/login" className="transition-colors hover:text-lp-navy">
-            {loginLabel}
-          </Link>
         </nav>
 
         <div className="flex shrink-0 items-center gap-[11px]">
           <LocaleToggle className="max-[620px]:hidden" />
+          <Link
+            href="/login"
+            className="inline-flex min-h-11 items-center rounded-[9px] border-[1.5px] border-lp-navy bg-white px-[18px] text-[0.9rem] font-bold whitespace-nowrap text-lp-navy transition-colors hover:bg-lp-tint max-[980px]:px-[14px] max-[980px]:text-[0.82rem] max-[620px]:hidden"
+          >
+            {loginLabel}
+          </Link>
           <a
             href="#ariza"
-            className="lp-gold inline-flex items-center rounded-[9px] bg-lp-gold px-[18px] py-2.5 text-[0.9rem] font-bold whitespace-nowrap text-lp-navy-deep shadow-[0_4px_14px_rgb(248_184_1/0.28)] max-[980px]:min-h-11 max-[980px]:px-[14px] max-[980px]:text-[0.82rem]"
+            className="lp-gold inline-flex min-h-11 items-center rounded-[9px] bg-lp-gold px-[18px] text-[0.9rem] font-bold whitespace-nowrap text-lp-navy-deep shadow-[0_4px_14px_rgb(248_184_1/0.28)] max-[980px]:px-[14px] max-[980px]:text-[0.82rem]"
           >
             {t("apply")}
           </a>
@@ -111,22 +114,29 @@ export function LandingHeader({ loginLabel }: { loginLabel: string }) {
               {t(s.key)}
             </a>
           ))}
-          <Link
-            href="/login"
-            onClick={close}
-            className="border-b border-lp-line-soft py-[13px] text-base font-semibold text-lp-ink"
-          >
-            {loginLabel}
-          </Link>
-          <div className="flex items-center justify-between gap-3.5 pt-4">
-            <LocaleToggle />
+          {/* Both actions are full-width buttons here: below 620 the header
+              cluster has no room for the log-in control, so the menu is where
+              it has to stay prominent. */}
+          <div className="flex flex-col gap-2.5 pt-4">
+            <Link
+              href="/login"
+              onClick={close}
+              className="inline-flex min-h-11 items-center justify-center rounded-[9px] border-[1.5px] border-lp-navy bg-white px-5 text-[0.95rem] font-bold text-lp-navy"
+            >
+              {loginLabel}
+            </Link>
             <a
               href="#ariza"
               onClick={close}
-              className="inline-flex min-h-11 items-center rounded-[9px] bg-lp-gold px-5 text-[0.9rem] font-bold text-lp-navy-deep"
+              className="inline-flex min-h-11 items-center justify-center rounded-[9px] bg-lp-gold px-5 text-[0.95rem] font-bold text-lp-navy-deep"
             >
               {t("apply")}
             </a>
+            {/* self-start so the toggle keeps its content width instead of
+                stretching across the column like the two buttons above it. */}
+            <div className="self-start pt-1">
+              <LocaleToggle />
+            </div>
           </div>
         </div>
       </div>
