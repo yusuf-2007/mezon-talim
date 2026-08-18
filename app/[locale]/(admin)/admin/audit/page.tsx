@@ -22,10 +22,10 @@ export default async function AdminAuditPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">{t("colWhen")}</th>
-              <th className="px-4 py-3 font-medium">{t("colActor")}</th>
-              <th className="px-4 py-3 font-medium">{t("colAction")}</th>
-              <th className="px-4 py-3 font-medium">{t("colEntity")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colWhen")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colActor")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colAction")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colEntity")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">

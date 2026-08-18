@@ -17,18 +17,351 @@
     "en": "English"
   },
   "Landing": {
-    "heroTitle": "Learn AAOIFI Shariah Standards in Uzbek",
-    "heroSubtitle": "Structured video lessons, practical quizzes and a final exam — completed with a recognized certificate.",
-    "browseCourses": "Browse courses",
-    "aboutAaoifi": "About AAOIFI",
-    "affiliationNote": "In official partnership with AAOIFI",
-    "valueVideoTitle": "Video lessons",
-    "valueVideoBody": "Structured, Uzbek-language video lessons for every topic.",
-    "valueAssessTitle": "Assessment",
-    "valueAssessBody": "Reinforce your knowledge with lesson quizzes, module tests and a final exam.",
-    "valueCertTitle": "Certificate",
-    "valueCertBody": "Complete the course successfully and earn a verifiable certificate.",
-    "comingSoon": "The platform is under development."
+    "nav": {
+      "course": "Course",
+      "aaoifi": "About AAOIFI",
+      "teachers": "Instructors",
+      "faq": "FAQ",
+      "apply": "Request a consultation",
+      "login": "Log in",
+      "menu": "Menu",
+      "logoAlt": "Mezon Ta’lim",
+      "ruSoon": "Coming soon"
+    },
+    "hero": {
+      "eyebrow": "The official AAOIFI-standard training centre in Uzbekistan",
+      "title": "Prepare for the AAOIFI CPSS certificate in Uzbek",
+      "tagline": "The standard is international. The language is ours.",
+      "lead": "30 lessons, 15 weeks, ~90 hours. Built for banking and finance professionals — 70% online, designed around a working schedule.",
+      "ctaPrimary": "Request a consultation",
+      "ctaSecondary": "Watch a free lesson",
+      "cohortLabel": "Next cohort",
+      "cohortDate": "[COHORT DATE]",
+      "cohortNote": "limited places",
+      "photoAlt": "Photo of an in-person class",
+      "badgeTitle": "58 Shari’ah standards",
+      "badgeSub": "~90 hours of teaching"
+    },
+    "chain": {
+      "aaoifiTitle": "AAOIFI",
+      "aaoifiSub": "The international standard",
+      "kengashTitle": "Mezon Kengashi",
+      "kengashSub": "Practice — official representative",
+      "talimTitle": "Mezon Ta’lim",
+      "talimSub": "Knowledge — the training centre",
+      "statement": "Mezon Ta’lim is the education centre of Mezon Kengashi, AAOIFI’s official representative in Uzbekistan.",
+      "edge": "A competitor can buy the standard and read it. We have applied it — running audits in Uzbekistan and sitting on the Shari’ah board — ",
+      "edgeStrong": "our examples come from delivered projects, not textbooks.",
+      "heading": "The status chain between AAOIFI, Mezon Kengashi and Mezon Ta’lim"
+    },
+    "whyNow": {
+      "eyebrow": "Why now",
+      "title": "The market opened; the talent isn’t there",
+      "d1Value": "29.06.2026",
+      "d1Body": "The Islamic finance law came into force — banks are required to comply with AAOIFI standards",
+      "d2Value": "4×",
+      "d2Body": "Portfolio growth: ~$7M in 2025 → ~$32M in the first five months of 2026",
+      "d3Value": "2030",
+      "d3Body": "Roadmap: at least one Islamic “window” by the end of 2026, independent Islamic banks by 2030",
+      "d4Value": "Talent shortage",
+      "d4Body": "Banks are opening “windows” — and lack staff who understand Shari’ah-compliant products",
+      "source": "Source: legislation of the Republic of Uzbekistan and Central Bank data ·",
+      "sourceLinks": "[SOURCE LINKS]"
+    },
+    "quote": {
+      "text": "The fee paid for itself 200% over… Near the end of the course I signed a Musharaka contract and started a venture. I found the gaps in my contracts and agreements, and fixed them.",
+      "initials": "AM",
+      "name": "Akbarbek Mustaqimov",
+      "role": "Chief accountant, “Hisobchilar Uyushmasi”",
+      "label": "Graduate of the Islamic Finance in Business course"
+    },
+    "course": {
+      "eyebrow": "Flagship programme",
+      "title": "AAOIFI CPSS preparation course",
+      "lead": "The programme is built on AAOIFI’s 58 Shari’ah standards. Not dry theory — worked examples from delivered projects.",
+      "structureLabel": "Course structure",
+      "outcomesLabel": "What you’ll be able to do",
+      "facts": [
+        {
+          "k": "Lessons",
+          "v": "30 lessons"
+        },
+        {
+          "k": "Duration",
+          "v": "15 weeks"
+        },
+        {
+          "k": "Schedule",
+          "v": "2 lessons a week"
+        },
+        {
+          "k": "Total",
+          "v": "~90 hours"
+        },
+        {
+          "k": "Format",
+          "v": "70% online / 30% in person"
+        },
+        {
+          "k": "Language",
+          "v": "Uzbek"
+        },
+        {
+          "k": "Coverage",
+          "v": "58 Shari’ah standards"
+        },
+        {
+          "k": "Cohort",
+          "v": "[COHORT DATES]"
+        }
+      ],
+      "priceLabel": "Price",
+      "price": "[PRICE]",
+      "priceNote": "Instalments and corporate invoicing available.",
+      "outcomes": [
+        {
+          "t": "Systematic CPSS exam preparation",
+          "d": "Not scattered material — a route built from start to finish."
+        },
+        {
+          "t": "Assess Shari’ah compliance",
+          "d": "Check a product or contract against the standards yourself."
+        },
+        {
+          "t": "Work in an Islamic “window”",
+          "d": "The practical knowledge needed to work in a bank’s Islamic division."
+        },
+        {
+          "t": "Understand contracts properly",
+          "d": "Murabaha, ijara, mudaraba and the rest — the mechanics, not just the names."
+        }
+      ],
+      "includesLabel": "Included",
+      "includes": [
+        "Online + in-person lessons",
+        "Curator support",
+        "Weekly quizzes",
+        "Mock exams",
+        "Bilingual terminology glossary"
+      ],
+      "curators": "5 curators — around 20 students each. You won’t be left on your own.",
+      "cta": "Request a consultation"
+    },
+    "bridge": {
+      "eyebrow": "The language bridge",
+      "title": "Lessons in Uzbek. The exam — in English and Arabic.",
+      "body": "We don’t hide this. That’s why the programme has a language bridge built in: bilingual terminology, dedicated practice with exam-language question wording, and a language-level check at the start of the course.",
+      "rows": [
+        {
+          "tag": "UZ",
+          "t": "Lessons, explanation, discussion",
+          "d": "You grasp the substance in your own language"
+        },
+        {
+          "tag": "UZ/EN",
+          "t": "Bilingual terminology glossary",
+          "d": "Every term is reinforced in both languages"
+        },
+        {
+          "tag": "EN",
+          "t": "Practice with exam questions",
+          "d": "You get used to the exam-language phrasing"
+        }
+      ]
+    },
+    "teachers": {
+      "eyebrow": "Instructors",
+      "title": "Practitioners, not theorists",
+      "portraitAlt": "Portrait",
+      "list": [
+        {
+          "name": "Muxtorjon Akramov",
+          "role": "Director and lead trainer, Mezon Ta’lim",
+          "creds": [
+            "AAOIFI CPSS certificate holder",
+            "MA, International Islamic Academy of Uzbekistan",
+            "Participant in AAOIFI programmes in Turkey and Qatar"
+          ]
+        },
+        {
+          "name": "Muzaffar Xusnidinov",
+          "role": "Director, Mezon Kengashi",
+          "creds": [
+            "CSAA (AAOIFI), CAP",
+            "MBA (Finance, Korea University)",
+            "UNDP national consultant on Green Sukuk",
+            "PwC and Deloitte experience"
+          ]
+        },
+        {
+          "name": "Xondamir Nusratxo’jayev",
+          "role": "International Islamic finance and banking expert",
+          "creds": [
+            "AAOIFI Financial Council member, 2016–2023",
+            "26 years’ experience",
+            "Co-author of AAOIFI accounting standards"
+          ]
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "Graduates",
+      "title": "Results you can measure",
+      "lead": "The comments below are from graduates of the “Islamic Finance in Business” course. Once the first CPSS cohort finishes, this section will be filled with CPSS graduates.",
+      "sourceLabel": "Graduate of the Islamic Finance in Business course",
+      "tier1": [
+        {
+          "initials": "AM",
+          "name": "Akmal Mirzabayev",
+          "role": "Co-founder of the “Hesap” startup",
+          "quote": "“I used to know Islamic finance in fragments, but here I got systematic, evidence-based knowledge. I now make financial decisions far more consciously.”"
+        },
+        {
+          "initials": "BA",
+          "name": "Bahodir Akbarov",
+          "role": "Founder, “Defast Cargo Logistics”",
+          "quote": "“It was a Mudaraba agreement with a foreign partner… It turned out there were things to correct, and we corrected them. We could answer the misplaced requirements with confidence.”"
+        }
+      ],
+      "tier2": [
+        {
+          "quote": "“A lot changed in my business — it turned out we had a great many errors”",
+          "name": "Azizov A."
+        },
+        {
+          "quote": "“I understood the murabaha side much better”",
+          "name": "Odilov D."
+        },
+        {
+          "quote": "“When I read the books on my own, I didn’t understand them”",
+          "name": "Sulxiya G."
+        },
+        {
+          "quote": "“The knowledge I gained is beyond price”",
+          "name": "Oybek M."
+        }
+      ]
+    },
+    "certificates": {
+      "eyebrow": "Certificate",
+      "title": "Two documents — two different things",
+      "leadBefore": "The CPSS certificate is awarded by AAOIFI, through its own exam. Mezon Ta’lim ",
+      "leadStrong": "prepares",
+      "leadAfter": " you for that exam. Those who complete the course receive Mezon Ta’lim’s course-completion certificate.",
+      "separator": "separate documents",
+      "aaoifiLabel": "Awarded by AAOIFI",
+      "aaoifiTitle": "The CPSS international certificate",
+      "aaoifiBody": "Awarded through AAOIFI’s own exam. We prepare you for that exam — the programme is built entirely on AAOIFI’s Shari’ah standards.",
+      "aaoifiChip": "International document",
+      "mezonLabel": "Awarded by Mezon Ta’lim",
+      "mezonTitle": "Course-completion certificate",
+      "mezonBody": "Issued to those who complete the course. This is not an AAOIFI certificate — it confirms that you finished the programme.",
+      "mezonChip": "Internal document"
+    },
+    "bim": {
+      "eyebrow": "Second course · for entrepreneurs",
+      "title": "Islamic Finance in Business",
+      "body": "A systematic answer to “is my money halal?”. 12 lessons, 1.5–2 months, no prior knowledge required.",
+      "lessons": "12",
+      "lessonsLabel": "lessons",
+      "months": "1.5–2",
+      "monthsLabel": "months",
+      "cohort": "BIM-5",
+      "cohortLabel": "cohort",
+      "cta": "Learn more"
+    },
+    "b2b": {
+      "eyebrow": "For organisations",
+      "title": "Prepare your staff for the Islamic “window”",
+      "body": "For banks and financial institutions — group enrolment, corporate invoicing and an adapted schedule.",
+      "cta": "Request a consultation",
+      "item1Title": "Group enrolment",
+      "item1Body": "One application and one invoice for several employees",
+      "item2Title": "Corporate invoicing",
+      "item2Body": "Bank payment and all the accounting paperwork",
+      "item3Title": "Adapted schedule",
+      "item3Body": "Lesson times that fit your working hours"
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "Is the certificate recognised?",
+          "a": "CPSS is AAOIFI’s international certificate, and AAOIFI itself awards it through an exam. Mezon Ta’lim prepares you for that exam — the programme is built entirely on AAOIFI’s Shari’ah standards."
+        },
+        {
+          "q": "What language is the exam in?",
+          "a": "The AAOIFI exam is currently held in English and Arabic. Lessons are in Uzbek, and alongside them the course drills bilingual terminology and exam-language question wording separately."
+        },
+        {
+          "q": "Is my English good enough?",
+          "a": "Your language level is assessed at the start of the course. The language bridge is inside the programme — we work on terminology and exam phrasing separately."
+        },
+        {
+          "q": "Will I have the time?",
+          "a": "2 lessons a week, 70% online — the programme is designed precisely for people who are working. About 6 hours a week of lessons and independent study."
+        },
+        {
+          "q": "Isn’t it expensive?",
+          "a": "The strongest answer is what graduates got out of it. Among them are participants whose fee paid for itself 200% over, who signed a Musharaka contract during the course, and who corrected a Mudaraba agreement with a foreign partner."
+        },
+        {
+          "q": "Can we send staff as an organisation?",
+          "a": "Yes. Group enrolment, corporate invoicing and an adapted schedule are available — see the “For organisations” section."
+        }
+      ]
+    },
+    "apply": {
+      "eyebrow": "Next step",
+      "title": "Leave a request — we’ll take it from there",
+      "lead": "We’ll hold a short consultation: whether the programme suits you, whether your language level is sufficient, and whether there’s a place in the next cohort.",
+      "cohortLabel": "Next cohort",
+      "cohortDate": "[COHORT DATE]",
+      "cohortMeta": "15 weeks · 30 lessons",
+      "cohortNote": "Places are limited — 5 curators, around 20 students each. If the cohort is full, you’ll be added to the waiting list.",
+      "waitlist": "Join the waiting list"
+    },
+    "form": {
+      "title": "Request a consultation",
+      "lead": "No obligation. We’ll be in touch within a day.",
+      "name": "Full name",
+      "namePlaceholder": "Your name",
+      "phone": "Phone",
+      "phonePlaceholder": "+998 __ ___ __ __",
+      "org": "Workplace",
+      "orgOptional": "— optional",
+      "orgPlaceholder": "Bank or organisation",
+      "consent": "I agree to receive SMS messages about the course",
+      "submit": "Request a consultation",
+      "submitting": "Sending…",
+      "privacy": "Your details are not shared with third parties.",
+      "successTitle": "Your request has been received",
+      "successBody": "We’ll call the number you gave within a day.",
+      "failed": "Couldn’t send. Please try again shortly.",
+      "tooMany": "Too many attempts. Please try again later.",
+      "notRushing": "Not in a hurry yet?",
+      "telegram": "Telegram channel · free intro lesson",
+      "errName": "Please enter your full name.",
+      "errPhone": "The phone number must start with +998.",
+      "errOrg": "That workplace name is too long."
+    },
+    "footer": {
+      "tagline": "Mezon Ta’lim is the education centre of Mezon Kengashi, AAOIFI’s official representative in Uzbekistan.",
+      "entity": "[LLC NAME · TIN]",
+      "address": "[ADDRESS]",
+      "coursesLabel": "Courses",
+      "cpss": "AAOIFI CPSS preparation course",
+      "bim": "Islamic Finance in Business",
+      "aaoifi": "About AAOIFI",
+      "faq": "FAQ",
+      "contactLabel": "Contact",
+      "phone": "[PHONE]",
+      "email": "[EMAIL]",
+      "telegram": "Telegram channel",
+      "site": "mezontalim.uz",
+      "rights": "© 2026 Mezon Ta’lim. All rights reserved."
+    }
   },
   "Footer": {
     "tagline": "An online learning platform for AAOIFI Shariah Standards.",
@@ -71,6 +404,7 @@
     "otpSent": "Verification code sent",
     "otpInvalid": "The code is invalid or has expired",
     "otpDisabled": "Phone login is not available yet",
+    "otpSendFailed": "Could not send the code. Please try again shortly.",
     "forbiddenTitle": "Access denied",
     "forbiddenBody": "You don't have permission to access this page.",
     "backHome": "Back to home"
@@ -611,7 +945,8 @@
     "pollCorner": "Corner card",
     "pollCornerSub": "A small, unobtrusive card in the bottom-right.",
     "messagesTitle": "Messages",
-    "selectLesson": "Select a lesson"
+    "selectLesson": "Select a lesson",
+    "dashboardHeading": "Overview"
   },
   "Student": {
     "navHome": "Home",

@@ -25,7 +25,7 @@ export function LanguageSwitcher() {
             locale={locale}
             aria-current={isActive ? "true" : undefined}
             className={cn(
-              "rounded-[6px] px-2.5 py-1 font-medium uppercase transition-colors",
+              "flex min-h-11 min-w-11 items-center justify-center rounded-[6px] px-3 font-medium uppercase transition-colors",
               isActive
                 ? "bg-navy-800 text-white"
                 : "text-slate-500 hover:text-navy-800",

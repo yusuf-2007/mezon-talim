@@ -117,7 +117,7 @@ export function NotificationDropdown({
         aria-expanded={open}
         aria-haspopup="true"
         aria-controls="notification-panel"
-        className="relative flex size-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-bg hover:text-navy-800"
+        className="relative flex size-11 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-bg hover:text-navy-800"
       >
         <Bell className="size-5" />
         {unread > 0 && (

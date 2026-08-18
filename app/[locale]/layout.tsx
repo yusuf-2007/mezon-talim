@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import { Inter, Manrope, Source_Serif_4, Spectral } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
 import { routing, type Locale } from "@/lib/i18n/routing";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { OccupationPoll } from "@/components/audience/occupation-poll";
 import "../globals.css";
 
 // Inter for body/UI, Source Serif 4 for headings. Both carry Latin-extended
@@ -20,6 +17,24 @@ const inter = Inter({
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  display: "swap",
+});
+
+// Landing-page pair (Claude Design, "Landing Page CPSS"): Spectral for editorial
+// headings, Manrope for UI/body. Both carry latin-ext (oʻ gʻ) and Cyrillic, so
+// the Russian fast-follow needs no font change. Scoped to the marketing page —
+// the app itself stays on Inter + Source Serif 4 (design-system §2).
+const spectral = Spectral({
+  variable: "--font-spectral",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  display: "swap",
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin", "latin-ext", "cyrillic"],
   display: "swap",
 });
@@ -56,18 +71,15 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${sourceSerif.variable} h-full antialiased`}
+      className={`${inter.variable} ${sourceSerif.variable} ${spectral.variable} ${manrope.variable} h-full antialiased`}
       // Some browser extensions inject attributes (e.g. webcrx="") on <html>
       // before React hydrates; ignore those harmless mismatches.
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-bg text-ink">
-        <NextIntlClientProvider>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-          <OccupationPoll />
-        </NextIntlClientProvider>
+        {/* Chrome lives in the route-group layouts (components/site-shell.tsx)
+            so the landing page can ship its own marketing header/footer. */}
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
         <Analytics />
       </body>
     </html>

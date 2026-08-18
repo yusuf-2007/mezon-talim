@@ -40,9 +40,9 @@ export async function CourseCard({ course }: { course: CatalogCourse }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-heading text-lg font-semibold text-navy-800">
+        <h2 className="font-heading text-lg font-semibold text-navy-800">
           {pickLocale(course.title, locale)}
-        </h3>
+        </h2>
         {course.summary && (
           <p className="mt-1.5 line-clamp-2 text-sm text-slate-500">
             {pickLocale(course.summary, locale)}

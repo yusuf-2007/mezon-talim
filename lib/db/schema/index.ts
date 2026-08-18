@@ -14,4 +14,5 @@ export * from "./certificate";
 export * from "./system";
 export * from "./audience";
 export * from "./community";
+export * from "./marketing";
 

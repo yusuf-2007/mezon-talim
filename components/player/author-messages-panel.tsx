@@ -88,7 +88,7 @@ export function AuthorMessagesPanel({
               <p className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-navy-800">
                 {thread[0].studentName ?? "—"}
                 {threadAwaiting(thread) && (
-                  <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-500">
+                  <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-500">
                     {t("msgAwaiting")}
                   </span>
                 )}

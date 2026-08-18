@@ -205,7 +205,7 @@ function PrereqRow({
   return (
     <li className="flex items-center gap-2.5">
       <span
-        className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] text-white ${
+        className={`flex size-5 shrink-0 items-center justify-center rounded-full text-xs text-white ${
           met ? "bg-success" : "bg-line"
         }`}
         aria-hidden

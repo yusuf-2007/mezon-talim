@@ -31,3 +31,4 @@ export { notificationsRepository } from "./notifications";
 export { analyticsRepository } from "./analytics";
 export { auditRepository } from "./audit";
 export { userAvatarsRepository } from "./user-avatars";
+export { applicationsRepository } from "./applications";

@@ -162,7 +162,14 @@ export async function requestOtpAction(
   const parsed = requestOtpSchema.safeParse({ phone: formData.get("phone") });
   if (!parsed.success) return fieldErrors(parsed.error);
 
-  await requestPhoneOtp(parsed.data.phone);
+  try {
+    await requestPhoneOtp(parsed.data.phone);
+  } catch (err) {
+    // Eskiz being down, out of balance, or rejecting an unapproved template
+    // must not surface as a server error — the student just retries.
+    console.error("phone OTP send failed:", err);
+    return { error: t("otpSendFailed") };
+  }
   return { ok: true, message: t("otpSent") };
 }
 

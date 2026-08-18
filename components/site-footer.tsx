@@ -22,12 +22,12 @@ export async function SiteFooter() {
           <BrandWordmark tone="light" />
           <p className="max-w-sm text-sm text-navy-100/80">{t("tagline")}</p>
         </div>
-        <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        <nav className="flex flex-wrap gap-x-6 text-sm">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="text-navy-100/80 transition-colors hover:text-white"
+              className="flex min-h-11 items-center text-navy-100/80 transition-colors hover:text-white"
             >
               {l.label}
             </Link>

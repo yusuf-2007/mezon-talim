@@ -22,12 +22,21 @@ export async function requestPhoneOtp(phone: string): Promise<void> {
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   const codeHash = await hashPassword(code);
   const expiresAt = new Date(Date.now() + OTP_TTL_MS);
-  await phoneOtpsRepository.create(phone, codeHash, expiresAt);
+  const row = await phoneOtpsRepository.create(phone, codeHash, expiresAt);
 
-  await getSmsSender().send({
-    to: phone,
-    text: `Mezon Ta'lim: tasdiqlash kodi ${code}. 5 daqiqa amal qiladi.`,
-  });
+  try {
+    await getSmsSender().send({
+      to: phone,
+      text: `Mezon Ta'lim: tasdiqlash kodi ${code}. 5 daqiqa amal qiladi.`,
+    });
+  } catch (err) {
+    // The row is written before the send, so a failed delivery would otherwise
+    // leave an "active" code the student never received — and the resend
+    // cooldown above would then silently swallow their retry for a minute.
+    // Burn it so the next attempt issues a fresh code.
+    await phoneOtpsRepository.markConsumed(row.id);
+    throw err;
+  }
 }
 
 /** Returns true and consumes the code on success. */

@@ -56,12 +56,12 @@ export default async function AdminUsersPage({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">{t("colName")}</th>
-              <th className="px-4 py-3 font-medium">{t("colRole")}</th>
-              <th className="px-4 py-3 font-medium">{t("colCourses")}</th>
-              <th className="px-4 py-3 font-medium">{t("colRegistered")}</th>
-              <th className="px-4 py-3 font-medium">{t("colStatus")}</th>
-              <th className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colName")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colRole")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colCourses")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colRegistered")}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
