@@ -37,7 +37,7 @@
       "ctaSecondary": "Watch a free lesson",
       "cohortLabel": "Next cohort",
       "cohortDate": "[COHORT DATE]",
-      "cohortNote": "· limited places",
+      "cohortNote": "limited places",
       "photoAlt": "Photo of an in-person class",
       "badgeTitle": "58 Shari’ah standards",
       "badgeSub": "~90 hours of teaching"
@@ -117,7 +117,7 @@
       ],
       "priceLabel": "Price",
       "price": "[PRICE]",
-      "priceNote": "· instalments and corporate invoicing available",
+      "priceNote": "Instalments and corporate invoicing available.",
       "outcomes": [
         {
           "t": "Systematic CPSS exam preparation",

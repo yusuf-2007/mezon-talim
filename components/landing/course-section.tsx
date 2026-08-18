@@ -56,17 +56,20 @@ export async function CourseSection() {
                 </div>
               ))}
             </dl>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="text-[0.85rem] text-lp-muted">
+            {/* Price is the last row of the same table rather than a detached
+                afterthought below it, and its note sits under the row instead
+                of trailing off the end of it. */}
+            <div className="flex items-baseline justify-between gap-5 border-b border-lp-line-soft py-[15px]">
+              <span className="text-[0.95rem] text-lp-slate">
                 {t("priceLabel")}
               </span>
-              <Bracket className="px-3 py-[5px] text-[0.85rem]">
+              <Bracket className="px-3 py-[3px] text-[0.85rem]">
                 {t("price")}
               </Bracket>
-              <span className="text-[0.85rem] text-lp-muted">
-                {t("priceNote")}
-              </span>
             </div>
+            <p className="mt-3 text-[0.85rem] leading-[1.5] text-lp-muted">
+              {t("priceNote")}
+            </p>
           </Reveal>
 
           <Reveal>

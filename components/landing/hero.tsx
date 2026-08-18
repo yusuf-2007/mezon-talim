@@ -37,16 +37,18 @@ export async function Hero() {
             {t("lead")}
           </p>
 
-          <div className="mt-[34px] flex flex-wrap gap-[13px]">
+          {/* Below 620 the two CTAs stacked at their content widths, which read
+              as unresolved. They match width there and sit inline above it. */}
+          <div className="mt-[34px] flex flex-wrap gap-[13px] max-[620px]:flex-col">
             <a
               href="#ariza"
-              className="lp-gold rounded-[11px] bg-lp-gold px-7 py-[15px] text-base font-bold text-lp-navy-deep shadow-[0_6px_20px_rgb(248_184_1/0.32)]"
+              className="lp-gold rounded-[11px] bg-lp-gold px-7 py-[15px] text-center text-base font-bold text-lp-navy-deep shadow-[0_6px_20px_rgb(248_184_1/0.32)]"
             >
               {t("ctaPrimary")}
             </a>
             <a
               href="#ariza"
-              className="rounded-[11px] border-[1.5px] border-white/30 bg-white/7 px-[26px] py-3.5 text-base font-semibold text-white transition-colors hover:bg-white/15"
+              className="rounded-[11px] border-[1.5px] border-white/30 bg-white/7 px-[26px] py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-white/15"
             >
               {t("ctaSecondary")}
             </a>
@@ -59,7 +61,11 @@ export async function Hero() {
             <Bracket tone="navy" className="px-3 py-1 text-[0.85rem]">
               {t("cohortDate")}
             </Bracket>
-            <span className="text-[0.85rem] text-lp-on-navy-dim">
+            {/* The note carries a leading middot as an inline separator; when
+                the row wrapped it became a stray bullet, so it now stays
+                attached to the date chip. */}
+            <span className="flex items-center gap-1.5 text-[0.85rem] whitespace-nowrap text-lp-on-navy-dim">
+              <span aria-hidden>&middot;</span>
               {t("cohortNote")}
             </span>
           </div>

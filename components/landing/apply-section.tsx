@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { ApplyForm } from "./apply-form";
+import { WaitlistButton } from "./waitlist-button";
 import { Bracket } from "./bracket";
 import { Reveal } from "./reveal";
 
@@ -38,25 +39,7 @@ export async function ApplySection() {
                 <p className="mb-[18px] text-[0.9rem] leading-[1.55] text-lp-on-navy-dim">
                   {t("cohortNote")}
                 </p>
-                <a
-                  href="#ariza"
-                  className="inline-flex items-center gap-2.5 rounded-[10px] border-[1.5px] border-white/28 bg-white/8 px-[18px] py-[11px] text-[0.9rem] font-semibold text-white transition-colors hover:bg-white/15"
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="text-lp-gold"
-                    aria-hidden
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                  {t("waitlist")}
-                </a>
+                <WaitlistButton label={t("waitlist")} targetId="lp-apply-name" />
               </div>
             </div>
           </Reveal>

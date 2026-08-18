@@ -33,7 +33,7 @@ export function ApplyForm() {
   const [phone, setPhone] = useState("");
   const [organization, setOrganization] = useState("");
   const [smsConsent, setSmsConsent] = useState(false);
-  const nameId = useId();
+  const nameId = "lp-apply-name";
   const phoneId = useId();
   const orgId = useId();
   const consentId = useId();
@@ -145,9 +145,12 @@ export function ApplyForm() {
           />
         </div>
 
+        {/* Consent reads as part of the form rather than an afterthought: it
+            sits on the wash ground with the same border language as the fields,
+            and the whole row is the tap target. */}
         <label
           htmlFor={consentId}
-          className="flex min-h-11 cursor-pointer items-center gap-2.5 py-1 text-[0.85rem] leading-[1.5] text-lp-slate"
+          className="-mt-1 flex min-h-11 cursor-pointer items-center gap-3 rounded-[10px] border border-lp-line bg-lp-wash px-3.5 py-2.5 text-[0.85rem] leading-[1.5] text-lp-slate transition-colors hover:border-lp-navy/30"
         >
           <input
             id={consentId}
@@ -155,7 +158,7 @@ export function ApplyForm() {
             type="checkbox"
             checked={smsConsent}
             onChange={(e) => setSmsConsent(e.target.checked)}
-            className="mt-0.5 h-5 w-5 shrink-0 accent-lp-navy"
+            className="h-[18px] w-[18px] shrink-0 rounded-[4px] accent-lp-navy"
           />
           <span>{t("consent")}</span>
         </label>

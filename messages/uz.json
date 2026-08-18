@@ -37,7 +37,7 @@
       "ctaSecondary": "Bepul darsni ko’rish",
       "cohortLabel": "Keyingi oqim",
       "cohortDate": "[OQIM SANASI]",
-      "cohortNote": "· joylar cheklangan",
+      "cohortNote": "joylar cheklangan",
       "photoAlt": "Oflayn dars / auditoriya fotosi",
       "badgeTitle": "58 ta Shariat standarti",
       "badgeSub": "~90 soat dars"
@@ -117,7 +117,7 @@
       ],
       "priceLabel": "Narx",
       "price": "[NARX]",
-      "priceNote": "· bo’lib to’lash va korporativ schyot-faktura mavjud",
+      "priceNote": "Bo‘lib to‘lash va korporativ schyot-faktura mavjud.",
       "outcomes": [
         {
           "t": "CPSS imtihoniga tizimli tayyorgarlik",
