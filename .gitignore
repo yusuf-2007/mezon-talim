@@ -59,3 +59,6 @@ __pycache__/
 # Playwright
 /test-results/
 /playwright-report/
+
+# Impeccable design-hook cache (machine-local)
+.impeccable/hook.cache.json

@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-17T00:00:00.000Z",
+  "title": "Design System: Mezon Ta'lim",
+  "extensions": {
+    "colorMeta": {
+      "institutional-navy": {
+        "role": "primary",
+        "displayName": "Institutional Navy",
+        "canonical": "#023a69",
+        "tonalRamp": ["#010f1c", "#011e38", "#012a4d", "#023a69", "#0b4c82", "#3a7ab0", "#7fa8cd", "#c6d6e6"]
+      },
+      "certificate-gold": {
+        "role": "secondary",
+        "displayName": "Certificate Gold",
+        "canonical": "#f8b801",
+        "tonalRamp": ["#3d2e00", "#5c4500", "#8a5b00", "#c08e00", "#f8b801", "#fbd968", "#fef3d2", "#fffaec"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0e2233",
+        "tonalRamp": ["#0e2233", "#46586b", "#8a97a6", "#a9b4c0", "#dce3ec", "#e2e7ee", "#eff2f6", "#f3f6fa"]
+      },
+      "wash": {
+        "role": "neutral",
+        "displayName": "Cool Wash",
+        "canonical": "#f3f6fa",
+        "tonalRamp": ["#46586b", "#8a97a6", "#a9b4c0", "#dce3ec", "#e2e7ee", "#eff2f6", "#f3f6fa", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "One per page — the hero proposition. Spectral 600, tight leading." },
+      "headline": { "displayName": "Headline", "purpose": "Section openers, always preceded by a gold eyebrow label." },
+      "quote": { "displayName": "Quote", "purpose": "Testimonials. The system's only italic besides the hero tagline." },
+      "body": { "displayName": "Body", "purpose": "Working prose in Manrope, capped at 46–70ch by role." },
+      "label": { "displayName": "Label", "purpose": "Eyebrows and metadata. Wide 0.16em tracking, uppercase." },
+      "datum": { "displayName": "Datum", "purpose": "Large figures in the market-data strip — findings, not UI." }
+    },
+    "shadows": [
+      { "name": "rest", "value": "0 2px 10px rgb(2 58 105 / 0.05)", "purpose": "Content cards on a wash ground. Separates without lifting." },
+      { "name": "raised", "value": "0 6px 24px rgb(2 58 105 / 0.09)", "purpose": "The panel that is the point of its section, e.g. the lead form." },
+      { "name": "hover-lift", "value": "0 14px 32px rgb(2 58 105 / 0.13)", "purpose": "Pointer response on interactive cards, paired with translateY(-2px)." },
+      { "name": "floating", "value": "0 16px 36px rgb(1 20 40 / 0.34)", "purpose": "Elements overhanging their container, e.g. the hero credential badge." },
+      { "name": "deep", "value": "0 24px 60px rgb(1 20 40 / 0.5)", "purpose": "Media framed on a navy band." },
+      { "name": "gold-rest", "value": "0 6px 20px rgb(248 184 1 / 0.32)", "purpose": "Primary action at rest — lit, not merely raised." },
+      { "name": "gold-hover", "value": "0 10px 26px rgb(248 184 1 / 0.42)", "purpose": "Primary action on hover." }
+    ],
+    "motion": [
+      { "name": "ease-lift", "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "Card lift and scroll reveal. Decisive out, soft in." },
+      { "name": "duration-state", "value": "0.2s", "purpose": "Button and link state changes." },
+      { "name": "duration-lift", "value": "0.25s", "purpose": "Card elevation changes." },
+      { "name": "duration-reveal", "value": "0.5s", "purpose": "Scroll-reveal fade and 12px rise." }
+    ],
+    "breakpoints": [
+      { "name": "stack", "value": "980px" },
+      { "name": "single", "value": "620px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one gold action per section. Lifts and brightens its glow on hover.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Ariza qoldirish</a>",
+      "css": ".ds-btn-primary { display:inline-block; background:#f8b801; color:#011e38; font-family:Manrope,system-ui,sans-serif; font-weight:700; font-size:1rem; border-radius:11px; padding:15px 28px; text-decoration:none; box-shadow:0 6px 20px rgb(248 184 1 / 0.32); transition:transform .2s ease, box-shadow .2s ease; } .ds-btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 26px rgb(248 184 1 / 0.42); } .ds-btn-primary:focus-visible { outline:3px solid rgb(2 58 105 / 0.5); outline-offset:2px; }"
+    },
+    {
+      "name": "Outline Button (on navy)",
+      "kind": "button",
+      "refersTo": "button-outline-on-navy",
+      "description": "Secondary action inside a navy band.",
+      "html": "<a class=\"ds-btn-outline-navy\" href=\"#\">Bepul darsni ko’rish</a>",
+      "css": ".ds-btn-outline-navy { display:inline-block; background:rgb(255 255 255 / 0.07); color:#fff; font-family:Manrope,system-ui,sans-serif; font-weight:600; font-size:1rem; border:1.5px solid rgb(255 255 255 / 0.3); border-radius:11px; padding:14px 26px; text-decoration:none; transition:background .2s ease; } .ds-btn-outline-navy:hover { background:rgb(255 255 255 / 0.15); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Form field with a gold focus ring — focus is an invitation to act.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-i\">Telefon</label><input class=\"ds-field\" id=\"ds-i\" type=\"tel\" placeholder=\"+998 __ ___ __ __\" />",
+      "css": ".ds-field-label { display:block; font-family:Manrope,system-ui,sans-serif; font-size:.82rem; font-weight:600; color:#0e2233; margin-bottom:6px; } .ds-field { width:100%; font-family:Manrope,system-ui,sans-serif; font-size:.95rem; color:#0e2233; background:#fff; border:1.5px solid #e2e7ee; border-radius:10px; padding:12px 14px; outline:none; transition:border-color .2s ease, box-shadow .2s ease; } .ds-field::placeholder { color:#a9b4c0; } .ds-field:focus { border-color:#023a69; box-shadow:0 0 0 3px rgb(248 184 1 / 0.35); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Testimonial and content card. Rest shadow at idle, lifts on hover.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-quote\">«O’zim kitoblarni o’qiganda tushunmadim.»</p><div class=\"ds-card-meta\">Sulxiya G.</div></div>",
+      "css": ".ds-card { background:#fff; border:1px solid #e2e7ee; border-radius:16px; padding:28px; box-shadow:0 2px 10px rgb(2 58 105 / 0.05); transition:transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease; } .ds-card:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgb(2 58 105 / 0.13); } .ds-card-quote { font-family:Spectral,Georgia,serif; font-style:italic; font-size:1.1rem; line-height:1.5; color:#0e2233; margin:0 0 16px; } .ds-card-meta { font-family:Manrope,system-ui,sans-serif; font-size:.82rem; font-weight:700; color:#8a97a6; }"
+    },
+    {
+      "name": "Eyebrow Label",
+      "kind": "custom",
+      "refersTo": "eyebrow",
+      "description": "The system's paragraph mark. Precedes every section headline.",
+      "html": "<div class=\"ds-eyebrow\">Asosiy dastur</div><h2 class=\"ds-headline\">AAOIFI CPSS tayyorlov kursi</h2>",
+      "css": ".ds-eyebrow { font-family:Manrope,system-ui,sans-serif; font-size:.74rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#c08e00; margin-bottom:14px; } .ds-headline { font-family:Spectral,Georgia,serif; font-size:clamp(1.9rem,3.4vw,2.6rem); font-weight:600; line-height:1.14; letter-spacing:-.015em; color:#023a69; margin:0; }"
+    },
+    {
+      "name": "Placeholder Token",
+      "kind": "custom",
+      "refersTo": "placeholder-token",
+      "description": "A fact not yet supplied. Deliberately conspicuous — it should look slightly uncomfortable.",
+      "html": "<span class=\"ds-placeholder\">[NARX]</span>",
+      "css": ".ds-placeholder { display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.86rem; font-weight:600; color:#8a5b00; background:#fffaec; border:1px dashed #c08e00; border-radius:6px; padding:5px 12px; }"
+    },
+    {
+      "name": "Metadata Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill for package contents and status marks.",
+      "html": "<span class=\"ds-chip\">Haftalik quizlar</span><span class=\"ds-chip ds-chip-status\"><span class=\"ds-dot\"></span>Xalqaro hujjat</span>",
+      "css": ".ds-chip { display:inline-flex; align-items:center; gap:8px; font-family:Manrope,system-ui,sans-serif; font-size:.82rem; color:#46586b; background:#fff; border:1px solid #e2e7ee; border-radius:999px; padding:5px 12px; margin-right:8px; } .ds-chip-status { background:#e7eef4; border-color:transparent; color:#023a69; font-weight:700; font-size:.79rem; padding:6px 14px; } .ds-dot { width:7px; height:7px; border-radius:50%; background:#023a69; }"
+    },
+    {
+      "name": "Sticky Navigation",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Translucent blurred bar over a hairline rule. The primary action never collapses into the menu.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-nav-mark\">MEZON <b>TA’LIM</b></span><span class=\"ds-nav-links\"><a href=\"#\">Kurs</a><a href=\"#\">Ustozlar</a><a href=\"#\">Savol-javob</a></span><a class=\"ds-nav-cta\" href=\"#\">Ariza qoldirish</a></nav>",
+      "css": ".ds-nav { display:flex; align-items:center; justify-content:space-between; gap:20px; background:rgb(255 255 255 / 0.94); backdrop-filter:blur(12px); border-bottom:1px solid #e2e7ee; padding:13px 24px; font-family:Manrope,system-ui,sans-serif; } .ds-nav-mark { font-family:Spectral,Georgia,serif; font-weight:600; font-size:1.1rem; color:#023a69; } .ds-nav-mark b { color:#c08e00; } .ds-nav-links { display:flex; gap:28px; } .ds-nav-links a { font-size:.92rem; font-weight:600; color:#46586b; text-decoration:none; transition:color .2s ease; } .ds-nav-links a:hover { color:#023a69; } .ds-nav-cta { background:#f8b801; color:#011e38; font-weight:700; font-size:.88rem; border-radius:9px; padding:10px 18px; text-decoration:none; box-shadow:0 4px 14px rgb(248 184 1 / 0.28); }"
+    },
+    {
+      "name": "Status Chain Node",
+      "kind": "custom",
+      "refersTo": "status-chain",
+      "description": "Renders an institutional relationship precisely. Terminal node is boxed in gold on cream.",
+      "html": "<div class=\"ds-chain\"><div class=\"ds-chain-node\"><div class=\"ds-chain-name\">AAOIFI</div><div class=\"ds-chain-sub\">Xalqaro standart</div></div><span class=\"ds-chain-sep\"></span><div class=\"ds-chain-node ds-chain-node-terminal\"><div class=\"ds-chain-name\">Mezon Ta’lim</div><div class=\"ds-chain-sub ds-chain-sub-terminal\">Bilim — ta’lim markazi</div></div></div>",
+      "css": ".ds-chain { display:flex; align-items:center; gap:20px; } .ds-chain-node { text-align:center; padding:16px 12px; } .ds-chain-node-terminal { border:1.5px solid #f8b801; border-radius:12px; background:#fffcf4; } .ds-chain-name { font-family:Spectral,Georgia,serif; font-weight:600; font-size:1.5rem; color:#023a69; margin-bottom:7px; } .ds-chain-sub { font-family:Manrope,system-ui,sans-serif; font-size:.85rem; color:#8a97a6; } .ds-chain-sub-terminal { color:#8a5b00; font-weight:600; } .ds-chain-sep { width:30px; height:1px; background:#e8d9a8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Mizan",
+    "overview": "Mezon — mīzān — is the balance: the scale by which a thing is measured and found sound. The name is not decoration, it is the design brief. This system behaves like a precision instrument: everything is aligned to something, nothing is placed for atmosphere, and weight is distributed on purpose. Hairlines do the work that boxes would do in a lesser system. Where another education brand would reach for enthusiasm, this one reaches for exactness, because the product's entire claim is that its examples come from audits actually performed and standards actually applied.\n\nThe register is institutional but not cold. Spectral gives the headings the authority of a printed record; Manrope keeps the working text plain and current. Navy carries the structure and gold marks only what has been attested or what the visitor should do next. Density is generous — this is read by working professionals deciding whether to spend real money and fifteen weeks, and crowding the page reads as pressure.\n\nRestraint here is a credibility strategy, not a taste preference. The audience includes compliance-minded bank staff who are professionally trained to distrust overstatement. A page that oversells is a page they discount.",
+    "keyCharacteristics": [
+      "Serif authority over sans-serif working text — a printed-record voice",
+      "Hairline rules and tonal washes instead of boxes and fills",
+      "Gold is rare and load-bearing; navy is the ground",
+      "Unresolved facts are shown as visible bracketed tokens, never quietly invented",
+      "Alignment is exact; optical drift is a defect, not a style"
+    ],
+    "rules": [
+      { "name": "The Attestation Rule", "body": "Gold marks two things only: the action you want taken, and a credential that has been earned. It is never used to make a section look livelier. If a screen has more than two gold elements, one of them is decoration and should be removed.", "section": "colors" },
+      { "name": "The Never-White-On-Gold Rule", "body": "Certificate Gold carries Navy Deep text, always. White on #f8b801 fails WCAG AA and is the single most likely accessibility regression in this palette.", "section": "colors" },
+      { "name": "The Two-Ramp Rule", "body": "Light fields and navy fields have separate text ramps. Reaching for Slate on navy, or On-Navy-Dim on white, is always wrong.", "section": "colors" },
+      { "name": "The Eyebrow-Before-Headline Rule", "body": "Every section headline is preceded by a Label-styled eyebrow in Gold Deep. It is the system's paragraph mark: it tells the scanning reader a new argument has started.", "section": "typography" },
+      { "name": "The One Italic Rule", "body": "Italic Spectral is reserved for quoted human speech and the hero tagline. Nothing else in the system is italic.", "section": "typography" },
+      { "name": "The Hairline Rule", "body": "Structure is expressed with 1px rules and background changes before it is expressed with borders and boxes. A bordered box inside a bordered section is one box too many.", "section": "layout" },
+      { "name": "The Tinted-Shadow Rule", "body": "No shadow uses neutral black. Navy on light, near-black navy over media, gold under gold. A grey drop shadow is the tell of a generic template.", "section": "elevation" },
+      { "name": "The Two-Step Rule", "body": "Interactive lift is translateY(-2px), never more. The movement should be felt as confirmation, not seen as animation.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do open every section with a Gold Deep eyebrow label above the headline.",
+      "Do keep gold to at most two elements per section — the action and, at most, one credential mark.",
+      "Do put Navy Deep text on every gold surface, without exception.",
+      "Do use the separate on-navy text ramp (#c6d6e6 / #8fa8c0 / #5e7a96) on dark bands rather than the light-field greys.",
+      "Do tint every shadow navy, or gold beneath gold.",
+      "Do render unsupplied facts as bracketed placeholder tokens.",
+      "Do alternate section grounds (white → wash → navy) so position is legible from colour.",
+      "Do cap prose at 46–56ch for leads and 70ch for long answers.",
+      "Do set both --font-lp-heading and --font-lp-body; a Spectral heading over a system-sans body is the system half-applied."
+    ],
+    "donts": [
+      "Don't use a neutral grey drop shadow anywhere.",
+      "Don't put white text on Certificate Gold.",
+      "Don't introduce a third typeface, or use Inter/Source Serif 4 in new work — those are the legacy application scale this system supersedes.",
+      "Don't italicise anything except quoted speech and the hero tagline.",
+      "Don't exceed translateY(-2px) on hover, or add easing longer than 0.25s.",
+      "Don't build a centred hero over three equal flat cards; the approved world is asymmetric and hairline-structured.",
+      "Don't add countdown timers, scarcity badges, discount flags, or stacked testimonial carousels.",
+      "Don't apply dense Islamic geometric tiling, arabesque borders, calligraphy as ornament, or mosque silhouettes. The corner bracket is the permitted geometry.",
+      "Don't reach for stock photography of handshakes, skylines, or trading floors.",
+      "Don't invent a number, date, price, or claim to fill a placeholder."
+    ]
+  }
+}
