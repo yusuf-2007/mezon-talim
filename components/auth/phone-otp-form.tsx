@@ -76,6 +76,8 @@ export function PhoneOtpForm({ otpEnabled }: { otpEnabled: boolean }) {
               name="code"
               inputMode="numeric"
               autoComplete="one-time-code"
+              maxLength={4}
+              pattern="[0-9]{4}"
               required
             />
             <FieldError errors={verifyState.fieldErrors?.code} />

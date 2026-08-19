@@ -43,6 +43,6 @@ export const requestOtpSchema = z.object({ phone: phoneSchema });
 
 export const verifyOtpSchema = z.object({
   phone: phoneSchema,
-  code: z.string().trim().regex(/^\d{6}$/, "Kod 6 ta raqamdan iborat"),
+  code: z.string().trim().regex(/^\d{4}$/, "Kod 4 ta raqamdan iborat"),
 });
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;

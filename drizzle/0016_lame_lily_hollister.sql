@@ -1,0 +1,1 @@
+ALTER TABLE "phone_otps" ADD COLUMN "attempts" integer DEFAULT 0 NOT NULL;

@@ -33,6 +33,20 @@ export const phoneOtpsRepository = {
     return row ?? null;
   },
 
+  /**
+   * Atomically count one wrong guess and return the new total. Incrementing in
+   * SQL (rather than read-modify-write) keeps concurrent guesses from sharing a
+   * stale count, which is exactly what a brute-force attempt looks like.
+   */
+  async recordFailedAttempt(id: string): Promise<number> {
+    const [row] = await db
+      .update(phoneOtps)
+      .set({ attempts: sql`${phoneOtps.attempts} + 1` })
+      .where(eq(phoneOtps.id, id))
+      .returning({ attempts: phoneOtps.attempts });
+    return row?.attempts ?? 0;
+  },
+
   async markConsumed(id: string) {
     await db
       .update(phoneOtps)

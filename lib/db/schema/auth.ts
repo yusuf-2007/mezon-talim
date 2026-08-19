@@ -101,6 +101,10 @@ export const phoneOtps = pgTable("phone_otps", {
   codeHash: text("code_hash").notNull(),
   expiresAt: timestamptz("expires_at").notNull(),
   consumedAt: timestamptz("consumed_at"),
+  // Wrong guesses against this code. Codes are 4 digits (10 000 combinations),
+  // so an uncapped verify endpoint is walkable inside the 5-minute window;
+  // the code is burned once this hits MAX_OTP_ATTEMPTS.
+  attempts: integer("attempts").notNull().default(0),
   createdAt: createdAt(),
 });
 
