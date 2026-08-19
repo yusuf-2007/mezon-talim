@@ -154,6 +154,13 @@ export function certificateEmail(
  * an authorization-code message must name the resource AND the purpose of the
  * code or the operator drops it (Eskiz "My texts" clause 2).
  *
+ * This string must match Eskiz template 86318 character for character:
+ *   Mezon Ta'lim (mezontalim.uz) saytiga kirish uchun tasdiqlash kodi: %d Kod 5 daqiqa amal qiladi.
+ * Note there is no full stop after the code — the moderator's %d absorbed the
+ * one that was submitted, and %d matches digits only, so sending "1234." would
+ * miss the pattern. A missed pattern is accepted by the API and dropped by the
+ * operator, i.e. it fails silently.
+ *
  * Every character here must stay inside the GSM 03.38 set. The apostrophe in
  * "Ta'lim" is deliberately ASCII U+0027, not the orthographically correct
  * Uzbek U+02BB and not a curly U+2019: one non-GSM character moves the whole
@@ -162,7 +169,7 @@ export function certificateEmail(
  * `npm run check:sms` guards both properties. See docs/eskiz-setup.md.
  */
 export function otpSms(code: string): string {
-  return `Mezon Ta'lim (mezontalim.uz) saytiga kirish uchun tasdiqlash kodi: ${code}. Kod 5 daqiqa amal qiladi.`;
+  return `Mezon Ta'lim (mezontalim.uz) saytiga kirish uchun tasdiqlash kodi: ${code} Kod 5 daqiqa amal qiladi.`;
 }
 
 /** Short payment-confirmation SMS. */
