@@ -149,6 +149,22 @@ export function certificateEmail(
   };
 }
 
+/**
+ * Login OTP SMS. Wording is fixed by Eskiz moderation, not by us:
+ * an authorization-code message must name the resource AND the purpose of the
+ * code or the operator drops it (Eskiz "My texts" clause 2).
+ *
+ * Every character here must stay inside the GSM 03.38 set. The apostrophe in
+ * "Ta'lim" is deliberately ASCII U+0027, not the orthographically correct
+ * Uzbek U+02BB and not a curly U+2019: one non-GSM character moves the whole
+ * message to the Unicode tariff, dropping the limit from 160 to 70, which
+ * makes this 98-character body cost two SMS on every single login.
+ * `npm run check:sms` guards both properties. See docs/eskiz-setup.md.
+ */
+export function otpSms(code: string): string {
+  return `Mezon Ta'lim (mezontalim.uz) saytiga kirish uchun tasdiqlash kodi: ${code}. Kod 5 daqiqa amal qiladi.`;
+}
+
 /** Short payment-confirmation SMS. */
 export function paymentConfirmSms(
   locale: Locale,
