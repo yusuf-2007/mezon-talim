@@ -480,8 +480,6 @@
     "reorderSaving": "Сохранение…",
     "reorderFailed": "Не удалось сохранить порядок",
     "reorderStale": "Список изменился — обновите страницу",
-    "reorderMoveUp": "Вверх",
-    "reorderMoveDown": "Вниз",
     "reorderedTo": "{title}: позиция {position}",
     "cancel": "Отмена",
     "category": "Категория",

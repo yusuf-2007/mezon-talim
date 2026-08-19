@@ -480,8 +480,6 @@
     "reorderSaving": "Saqlanmoqda…",
     "reorderFailed": "Tartibni saqlab bo'lmadi",
     "reorderStale": "Ro'yxat o'zgargan — sahifani yangilang",
-    "reorderMoveUp": "Yuqoriga",
-    "reorderMoveDown": "Pastga",
     "reorderedTo": "{title}: {position}-o'rin",
     "cancel": "Bekor qilish",
     "category": "Kategoriya",

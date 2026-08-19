@@ -101,14 +101,6 @@ export function SortableLessons({
     commit(arrayMove(order, from, to), String(active.id));
   }
 
-  /** Keyboard/button nudge — the same commit path as a drop. */
-  function move(id: string, delta: -1 | 1) {
-    const from = order.indexOf(id);
-    const to = from + delta;
-    if (from < 0 || to < 0 || to >= order.length) return;
-    commit(arrayMove(order, from, to), id);
-  }
-
   return (
     <div>
       <p id={`${listId}-hint`} className="mt-3 text-xs text-slate-500">
@@ -131,14 +123,8 @@ export function SortableLessons({
             aria-describedby={`${listId}-hint`}
             className={cn("mt-2 space-y-2", pending && "opacity-70")}
           >
-            {ordered.map((item, index) => (
-              <SortableLessonRow
-                key={item.id}
-                item={item}
-                index={index}
-                total={ordered.length}
-                onMove={move}
-              />
+            {ordered.map((item) => (
+              <SortableLessonRow key={item.id} item={item} />
             ))}
           </ul>
         </SortableContext>
@@ -159,17 +145,7 @@ export function SortableLessons({
   );
 }
 
-function SortableLessonRow({
-  item,
-  index,
-  total,
-  onMove,
-}: {
-  item: SortableLessonItem;
-  index: number;
-  total: number;
-  onMove: (id: string, delta: -1 | 1) => void;
-}) {
+function SortableLessonRow({ item }: { item: SortableLessonItem }) {
   const t = useTranslations("Studio");
   const {
     attributes,
@@ -190,66 +166,24 @@ function SortableLessonRow({
         isDragging && "relative z-10 opacity-90",
       )}
     >
-      <div className="flex flex-col items-center gap-1 pt-3">
-        <button
-          ref={setActivatorNodeRef}
-          type="button"
-          {...attributes}
-          {...listeners}
-          aria-label={`${t("reorderHandle")}: ${item.label}`}
-          className="grid h-11 w-8 shrink-0 cursor-grab touch-none place-items-center rounded-md text-slate-400 hover:bg-navy-50 hover:text-navy-600 focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:outline-none active:cursor-grabbing"
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-            <circle cx="5.5" cy="3" r="1.4" />
-            <circle cx="10.5" cy="3" r="1.4" />
-            <circle cx="5.5" cy="8" r="1.4" />
-            <circle cx="10.5" cy="8" r="1.4" />
-            <circle cx="5.5" cy="13" r="1.4" />
-            <circle cx="10.5" cy="13" r="1.4" />
-          </svg>
-        </button>
-        {/* Pointer-free fallback: dnd-kit's keyboard sensor needs the handle
-            focused and held, which is awkward; these are unambiguous. */}
-        <MoveButton
-          label={t("reorderMoveUp")}
-          disabled={index === 0}
-          onClick={() => onMove(item.id, -1)}
-          d="M8 4l4 5H4z"
-        />
-        <MoveButton
-          label={t("reorderMoveDown")}
-          disabled={index === total - 1}
-          onClick={() => onMove(item.id, 1)}
-          d="M8 12L4 7h8z"
-        />
-      </div>
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label={`${t("reorderHandle")}: ${item.label}`}
+        className="mt-1 grid h-11 w-7 shrink-0 cursor-grab touch-none place-items-center rounded-md text-slate-400 hover:bg-navy-50 hover:text-navy-600 focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:outline-none active:cursor-grabbing"
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+          <circle cx="5.5" cy="3" r="1.4" />
+          <circle cx="10.5" cy="3" r="1.4" />
+          <circle cx="5.5" cy="8" r="1.4" />
+          <circle cx="10.5" cy="8" r="1.4" />
+          <circle cx="5.5" cy="13" r="1.4" />
+          <circle cx="10.5" cy="13" r="1.4" />
+        </svg>
+      </button>
       <div className="min-w-0 flex-1">{item.node}</div>
     </li>
-  );
-}
-
-function MoveButton({
-  label,
-  disabled,
-  onClick,
-  d,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-  d: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      className="grid h-6 w-8 place-items-center rounded text-slate-400 hover:bg-navy-50 hover:text-navy-600 focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30"
-    >
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-        <path d={d} />
-      </svg>
-    </button>
   );
 }

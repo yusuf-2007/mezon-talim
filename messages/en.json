@@ -480,8 +480,6 @@
     "reorderSaving": "Saving…",
     "reorderFailed": "Could not save the new order",
     "reorderStale": "The list changed — refresh the page",
-    "reorderMoveUp": "Move up",
-    "reorderMoveDown": "Move down",
     "reorderedTo": "{title}: position {position}",
     "cancel": "Cancel",
     "category": "Category",
