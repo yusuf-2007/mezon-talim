@@ -8,6 +8,31 @@ import { z } from "zod";
  * Provider secrets (Bunny, Click, Payme, Resend, Eskiz, MinIO) are optional
  * here and become required as each integration lands in its phase.
  */
+/**
+ * Boolean env flag.
+ *
+ * Values arrive as raw strings from wherever the process was launched, and
+ * hosting dashboards are a common source of near-misses: a value pasted from a
+ * `.env` snippet keeps its quotes, and copied text keeps trailing whitespace.
+ * Both used to fail the enum and crash the build with a message that named the
+ * variable but not the actual mistake. Normalise first, then validate — a
+ * genuinely wrong value ("yes", "1") still fails loudly.
+ */
+function boolFlag(fallback: "true" | "false") {
+  return z
+    .preprocess(
+      (v) => {
+        if (typeof v !== "string") return v;
+        const cleaned = v.trim().replace(/^["']|["']$/g, "").trim().toLowerCase();
+        // Treat a blank value as "not set" so the default applies, matching how
+        // an empty optional string is handled elsewhere in this schema.
+        return cleaned === "" ? undefined : cleaned;
+      },
+      z.enum(["true", "false"]).default(fallback),
+    )
+    .transform((v) => v === "true");
+}
+
 const envSchema = z.object({
   // --- Core ---
   DATABASE_URL: z.url(),
@@ -17,10 +42,7 @@ const envSchema = z.object({
   // --- Storage (MinIO, in-country) ---
   MINIO_ENDPOINT: z.string().optional(),
   MINIO_PORT: z.coerce.number().optional(),
-  MINIO_USE_SSL: z
-    .enum(["true", "false"])
-    .transform((v) => v === "true")
-    .optional(),
+  MINIO_USE_SSL: boolFlag("false"),
   MINIO_ACCESS_KEY: z.string().optional(),
   MINIO_SECRET_KEY: z.string().optional(),
   MINIO_BUCKET: z.string().optional(),
@@ -57,10 +79,7 @@ const envSchema = z.object({
   // Phone-OTP login. Keep OFF until Eskiz onboarding (sender name + approved
   // OTP template) is complete; email+password works without it. See the
   // phase2-auth-sequencing decision.
-  OTP_LOGIN_ENABLED: z
-    .enum(["true", "false"])
-    .default("false")
-    .transform((v) => v === "true"),
+  OTP_LOGIN_ENABLED: boolFlag("false"),
 });
 
 export type Env = z.infer<typeof envSchema>;
