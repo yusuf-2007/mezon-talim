@@ -5,6 +5,7 @@ import {
   createLessonAction,
   deleteLessonAction,
   deleteModuleAction,
+  reorderLessonsAction,
   updateLessonAction,
   updateModuleAction,
 } from "@/lib/content/actions";
@@ -12,6 +13,7 @@ import { deleteVideoQuestionAction } from "@/lib/content/video-question-actions"
 import { pickLocale } from "@/lib/i18n/localized";
 import { ModuleHeader } from "./module-header";
 import { AddLesson, LessonRow } from "./lesson-list";
+import { SortableLessons } from "./sortable-lessons";
 import { VideoQuestionsEditor } from "./video-questions-editor";
 
 function fmtTime(t: number): string {
@@ -58,35 +60,42 @@ export async function ModuleCard({
       {lessons.length === 0 ? (
         <p className="mt-3 text-sm text-slate-500">{t("noLessons")}</p>
       ) : (
-        <ul className="mt-3 space-y-2">
-          {await Promise.all(
+        // Rows stay server-rendered and are handed to the client wrapper as
+        // nodes, so adding drag-to-reorder does not pull the lesson forms or
+        // the video-question editor into the client bundle.
+        <SortableLessons
+          action={reorderLessonsAction.bind(null, courseId, module.id)}
+          items={await Promise.all(
             lessons.map(async (lesson) => {
               const vqs = await videoQuestionsRepository.listForLesson(lesson.id);
-              return (
-                <LessonRow
-                  key={lesson.id}
-                  lesson={lesson}
-                  updateAction={updateLessonAction.bind(null, courseId, lesson.id)}
-                  deleteAction={deleteLessonAction.bind(null, courseId, lesson.id)}
-                  videoQuestionsCount={vqs.length}
-                  videoQuestionsSlot={
-                    <VideoQuestionsEditor
-                      lessonId={lesson.id}
-                      deleteAction={deleteVideoQuestionAction}
-                      questions={vqs.map((q) => ({
-                        id: q.id,
-                        time: fmtTime(q.timestampSeconds),
-                        prompt: pickLocale(q.prompt, "uz") ?? "",
-                        options: q.options.map((o) => pickLocale(o, "uz") ?? ""),
-                        correctIndex: q.correctIndex,
-                      }))}
-                    />
-                  }
-                />
-              );
+              return {
+                id: lesson.id,
+                label: lesson.title.uz,
+                node: (
+                  <LessonRow
+                    lesson={lesson}
+                    updateAction={updateLessonAction.bind(null, courseId, lesson.id)}
+                    deleteAction={deleteLessonAction.bind(null, courseId, lesson.id)}
+                    videoQuestionsCount={vqs.length}
+                    videoQuestionsSlot={
+                      <VideoQuestionsEditor
+                        lessonId={lesson.id}
+                        deleteAction={deleteVideoQuestionAction}
+                        questions={vqs.map((q) => ({
+                          id: q.id,
+                          time: fmtTime(q.timestampSeconds),
+                          prompt: pickLocale(q.prompt, "uz") ?? "",
+                          options: q.options.map((o) => pickLocale(o, "uz") ?? ""),
+                          correctIndex: q.correctIndex,
+                        }))}
+                      />
+                    }
+                  />
+                ),
+              };
             }),
           )}
-        </ul>
+        />
       )}
 
       <div className="mt-4">

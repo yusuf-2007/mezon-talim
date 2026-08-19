@@ -14,6 +14,7 @@ import {
   courseUpsertSchema,
   lessonUpsertSchema,
   moduleUpsertSchema,
+  reorderSchema,
 } from "./schemas";
 import type { LocalizedText } from "@/lib/db/schema";
 
@@ -36,6 +37,17 @@ function loc(uz: string, ru?: string): LocalizedText {
 function optionalLoc(uz?: string, ru?: string): LocalizedText | null {
   if (!uz && !ru) return null;
   return loc(uz ?? "", ru);
+}
+
+/**
+ * Refresh both authoring surfaces after a curriculum write.
+ *
+ * The Studio and the Admin render the same CourseEditor at different paths, so
+ * revalidating only /studio left an admin looking at their own stale edit.
+ */
+function revalidateCourse(courseId: string): void {
+  revalidatePath(`/studio/courses/${courseId}`);
+  revalidatePath(`/admin/courses/${courseId}`);
 }
 
 // ── Course ───────────────────────────────────────────────────────────────────
@@ -105,7 +117,7 @@ export async function updateCourseAction(
     certificateEnabled: d.certificateEnabled,
   });
 
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
   revalidatePath("/studio");
   return {};
 }
@@ -116,7 +128,7 @@ export async function setCourseStatusAction(
 ): Promise<void> {
   await requireCourseEditor(courseId);
   await coursesRepository.setStatus(courseId, status);
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
   revalidatePath("/studio");
 }
 
@@ -142,7 +154,7 @@ export async function createModuleAction(
     courseId,
     loc(parsed.data.titleUz, parsed.data.titleRu),
   );
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
   return {};
 }
 
@@ -160,7 +172,7 @@ export async function updateModuleAction(
     moduleId,
     loc(parsed.data.titleUz, parsed.data.titleRu),
   );
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
   return {};
 }
 
@@ -170,7 +182,7 @@ export async function deleteModuleAction(
 ): Promise<void> {
   await requireCourseEditor(courseId);
   await modulesRepository.remove(moduleId);
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
 }
 
 // ── Lesson ───────────────────────────────────────────────────────────────────
@@ -194,7 +206,7 @@ export async function createLessonAction(
     durationSeconds: d.durationSeconds ?? null,
     isPreview: d.isPreview,
   });
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
   return {};
 }
 
@@ -216,7 +228,58 @@ export async function updateLessonAction(
     durationSeconds: d.durationSeconds ?? null,
     isPreview: d.isPreview,
   });
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
+  return {};
+}
+
+/**
+ * Persist a drag-and-drop reordering of one module's lessons.
+ *
+ * Lesson order is the curriculum: `getCurriculum` flattens lessons in
+ * order_index sequence to compute sequential unlock (B2), so this rewrites what
+ * students may open next, not just a display list.
+ *
+ * Three checks before the write, because `lessonsRepository.reorder` scopes
+ * only to the module and would otherwise trust whatever it is handed:
+ *  - the module must belong to `courseId` (requireCourseEditor authorizes the
+ *    course, so an unchecked moduleId would let an editor of one course
+ *    reorder another's lessons);
+ *  - the ids must be unique;
+ *  - they must be exactly the module's current lessons — a partial list would
+ *    leave duplicate or gapped order_index values, i.e. an ambiguous
+ *    curriculum.
+ */
+export async function reorderLessonsAction(
+  courseId: string,
+  moduleId: string,
+  ids: string[],
+): Promise<ContentFormState> {
+  await requireCourseEditor(courseId);
+  const t = await getTranslations("Studio");
+
+  const parsed = reorderSchema.safeParse({ ids });
+  if (!parsed.success) return { error: t("reorderFailed") };
+
+  const parentModule = await modulesRepository.findById(moduleId);
+  if (!parentModule || parentModule.courseId !== courseId) {
+    return { error: t("reorderFailed") };
+  }
+
+  const current = await lessonsRepository.listByModule(moduleId);
+  const currentIds = new Set(current.map((l) => l.id));
+  const nextIds = new Set(parsed.data.ids);
+  const sameSet =
+    nextIds.size === parsed.data.ids.length &&
+    nextIds.size === currentIds.size &&
+    [...nextIds].every((id) => currentIds.has(id));
+  if (!sameSet) {
+    // Someone else added or removed a lesson while this list was open; the
+    // client refetches on failure rather than writing a stale ordering.
+    return { error: t("reorderStale") };
+  }
+
+  await lessonsRepository.reorder(moduleId, parsed.data.ids);
+  revalidateCourse(courseId);
   return {};
 }
 
@@ -226,5 +289,5 @@ export async function deleteLessonAction(
 ): Promise<void> {
   await requireCourseEditor(courseId);
   await lessonsRepository.softDelete(lessonId);
-  revalidatePath(`/studio/courses/${courseId}`);
+  revalidateCourse(courseId);
 }

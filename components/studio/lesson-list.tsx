@@ -19,7 +19,12 @@ type LessonLike = {
 
 type Action = (prev: ContentFormState, fd: FormData) => Promise<ContentFormState>;
 
-/** A single lesson row with an inline edit toggle and a delete form. */
+/**
+ * A single lesson row with an inline edit toggle and a delete form.
+ *
+ * Renders a plain block, not an `<li>`: SortableLessons owns the list item so
+ * the drag handle sits outside the row's own click targets.
+ */
 export function LessonRow({
   lesson,
   updateAction,
@@ -39,7 +44,7 @@ export function LessonRow({
   const [showQuestions, setShowQuestions] = useState(false);
 
   return (
-    <li className="rounded-lg border border-line bg-surface p-3">
+    <div className="rounded-lg border border-line bg-surface p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-ink">{lesson.title.uz}</span>
@@ -82,7 +87,7 @@ export function LessonRow({
         </div>
       )}
       {showQuestions && videoQuestionsSlot}
-    </li>
+    </div>
   );
 }
 
