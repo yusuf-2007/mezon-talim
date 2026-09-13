@@ -30,11 +30,7 @@ export default async function StudentProfileEditPage() {
         email={user.email}
         hasAvatar={hasAvatar}
       />
-      <ProfileEditForm
-        fullName={user.fullName}
-        email={user.email}
-        bio={user.bio}
-      />
+      <ProfileEditForm fullName={user.fullName} bio={user.bio} />
     </div>
   );
 }

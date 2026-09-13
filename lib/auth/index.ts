@@ -1,10 +1,23 @@
 import "server-only";
 import { redirectLocalized } from "@/lib/i18n/redirect";
-import { auth } from "./config";
+import { auth, unstable_update } from "./config";
 import type { Role, SessionUser } from "./types";
 
 export type { Role, SessionUser } from "./types";
 export { signIn, signOut } from "./config";
+
+/**
+ * Force the session cookie to catch up with the database.
+ *
+ * Sessions are JWTs, so identity fields are a snapshot taken at sign-in: adding
+ * an email or a phone, or renaming, leaves the cookie describing an account
+ * shape that no longer exists. Any action that changes one of those fields must
+ * call this. The jwt callback re-reads the row rather than trusting a patch, so
+ * there is nothing to pass here.
+ */
+export async function refreshSession(): Promise<void> {
+  await unstable_update({ user: {} });
+}
 
 /**
  * Auth access helpers — the ONLY way app code reads the current user or guards

@@ -16,6 +16,7 @@ import type { Locale } from "@/lib/i18n/routing";
 export default async function StudentProfilePage() {
   const sessionUser = await requireUser();
   const t = await getTranslations("Student");
+  const tAcc = await getTranslations("Account");
   const locale = (await getLocale()) as Locale;
 
   const [user, enrolled, certs, hasAvatar] = await Promise.all([
@@ -41,7 +42,9 @@ export default async function StudentProfilePage() {
     { label: t("statCompleted"), value: cards.filter(Boolean).length },
     { label: t("statCertificates"), value: activeCerts.length },
   ];
-  const name = user.fullName || user.email || "—";
+  // A phone-first account has no email, so the fallback chain has to reach
+  // the number before giving up — otherwise the whole page headlines "—".
+  const name = user.fullName || user.email || user.phone || "—";
   const fmtDate = (d: Date) =>
     new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
 
@@ -61,8 +64,8 @@ export default async function StudentProfilePage() {
             <Badge className="bg-navy-100 text-navy-800">{t("studentBadge")}</Badge>
           </div>
           <p className="text-sm text-slate-500">
-            {user.email}
-            {user.emailVerified && (
+            {user.email ?? user.phone ?? ""}
+            {user.email && user.emailVerified && (
               <span className="ml-2 text-success">✓ {t("emailVerified")}</span>
             )}
           </p>
@@ -110,11 +113,21 @@ export default async function StudentProfilePage() {
         <dl className="mt-4 divide-y divide-line text-sm">
           <Row label={t("fullNameLabel")} value={user.fullName || "—"} />
           <Row
+            label={tAcc("phoneLabel")}
+            value={user.phone ? `${user.phone}${user.phoneVerified ? " ✓" : ""}` : tAcc("notSet")}
+          />
+          <Row
             label={t("emailLabel")}
-            value={`${user.email || "—"}${user.emailVerified ? " ✓" : ""}`}
+            value={user.email ? `${user.email}${user.emailVerified ? " ✓" : ""}` : tAcc("notSet")}
           />
           <Row label={t("accountType")} value={t("studentBadge")} />
         </dl>
+        <Link
+          href="/dashboard/settings"
+          className="mt-4 inline-block text-sm text-navy-600 hover:underline"
+        >
+          {tAcc("credentialsTitle")} →
+        </Link>
       </div>
 
       {/* Quick actions */}

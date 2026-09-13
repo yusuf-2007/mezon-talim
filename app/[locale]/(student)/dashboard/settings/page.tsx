@@ -2,15 +2,20 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { usersRepository } from "@/lib/db/repositories/users";
+import { emailVerificationsRepository } from "@/lib/db/repositories/email-verifications";
 import { updateNotificationPrefsAction } from "@/lib/account/actions";
+import { env } from "@/lib/env";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { ChangePasswordForm } from "@/components/student/change-password-form";
+import { AccountCredentials } from "@/components/student/account-credentials";
 
 export default async function StudentSettingsPage() {
   const sessionUser = await requireUser();
   const t = await getTranslations("Student");
-  const user = await usersRepository.findById(sessionUser.id);
+  const [user, pending] = await Promise.all([
+    usersRepository.findById(sessionUser.id),
+    emailVerificationsRepository.findActiveForUser(sessionUser.id),
+  ]);
   if (!user) notFound();
 
   return (
@@ -19,15 +24,16 @@ export default async function StudentSettingsPage() {
         {t("settingsTitle")}
       </h1>
 
-      {/* Security */}
-      <section className="rounded-xl border border-line bg-surface p-6 shadow-sm">
-        <h2 className="font-heading text-lg font-semibold text-navy-800">
-          {t("security")}
-        </h2>
-        <div className="mt-4">
-          <ChangePasswordForm />
-        </div>
-      </section>
+      {/* Sign-in credentials: phone, email, password */}
+      <AccountCredentials
+        email={user.email}
+        emailVerified={Boolean(user.emailVerified)}
+        pendingEmail={pending?.email ?? null}
+        phone={user.phone}
+        phoneVerified={Boolean(user.phoneVerified)}
+        hasPassword={Boolean(user.passwordHash)}
+        otpEnabled={env.OTP_LOGIN_ENABLED}
+      />
 
       {/* Notifications */}
       <section className="rounded-xl border border-line bg-surface p-6 shadow-sm">

@@ -1,10 +1,12 @@
 import {
   boolean,
+  index,
   integer,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import {
@@ -121,3 +123,38 @@ export const userAvatars = pgTable("user_avatars", {
   contentType: text("content_type").notNull(),
   updatedAt: updatedAt(),
 });
+
+/**
+ * Pending email-address verifications.
+ *
+ * Deliberately NOT the Auth.js `verification_tokens` table: that one is keyed
+ * by (identifier, token) alone, which cannot express "user X wants to claim
+ * address Y" — the address being claimed is not yet on the user row, and must
+ * not be written there until the link is clicked. Keeping the claim here means
+ * an unverified address can never occupy `users.email` (and therefore can never
+ * block the real owner from registering it).
+ */
+export const emailVerifications = pgTable(
+  "email_verifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** The address being claimed, lower-cased. Not unique: two people may each
+     *  have an outstanding claim on the same address; whoever confirms first wins
+     *  and the loser's claim fails the uniqueness check at confirm time. */
+    email: citext("email").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamptz("expires_at").notNull(),
+    consumedAt: timestamptz("consumed_at"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    // Every confirmation click is a lookup by token, and it is the only way in
+    // to this table from outside — unique because the tokens are 32 random
+    // bytes, so a collision is a bug worth failing on rather than resolving.
+    uniqueIndex("email_verifications_token_hash_idx").on(t.tokenHash),
+    index("email_verifications_user_id_idx").on(t.userId),
+  ],
+);

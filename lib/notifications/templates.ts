@@ -27,6 +27,23 @@ function shell(title: string, bodyHtml: string, footer: string): string {
   </body></html>`;
 }
 
+/**
+ * Escape a value before it is interpolated into an email body.
+ *
+ * Names and course titles are author- and student-supplied, and these templates
+ * build HTML by string concatenation. An unescaped apostrophe in a name like
+ * O'Brien is enough to break the markup; an unescaped angle bracket is enough
+ * to inject it.
+ */
+function esc(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function button(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;background:${BRAND_NAVY};color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">${label}</a>`;
 }
@@ -45,7 +62,7 @@ export function welcomeEmail(
   data: { name: string; dashboardUrl: string },
 ): EmailTemplate {
   if (locale === "ru") {
-    const body = `<p>Здравствуйте, ${data.name}!</p>
+    const body = `<p>Здравствуйте, ${esc(data.name)}!</p>
       <p>Добро пожаловать в Mezon Ta'lim. Ваш аккаунт создан — начните обучение прямо сейчас.</p>
       <p style="margin-top:20px">${button(data.dashboardUrl, "Перейти к обучению")}</p>`;
     return {
@@ -54,7 +71,7 @@ export function welcomeEmail(
       text: `Здравствуйте, ${data.name}! Добро пожаловать в Mezon Ta'lim. Начните обучение: ${data.dashboardUrl}`,
     };
   }
-  const body = `<p>Assalomu alaykum, ${data.name}!</p>
+  const body = `<p>Assalomu alaykum, ${esc(data.name)}!</p>
     <p>Mezon Ta'limga xush kelibsiz. Hisobingiz yaratildi — hoziroq o'qishni boshlang.</p>
     <p style="margin-top:20px">${button(data.dashboardUrl, "O'qishni boshlash")}</p>`;
   return {
@@ -102,7 +119,7 @@ export function receiptEmail(
 ): EmailTemplate {
   if (locale === "ru") {
     const body = `<p>Спасибо за покупку!</p>
-      <p>Вы записаны на курс <b>${data.courseTitle}</b>.</p>
+      <p>Вы записаны на курс <b>${esc(data.courseTitle)}</b>.</p>
       <p>Сумма оплаты: <b>${data.amount}</b></p>
       <p style="margin-top:20px">${button(data.courseUrl, "Открыть курс")}</p>`;
     return {
@@ -112,7 +129,7 @@ export function receiptEmail(
     };
   }
   const body = `<p>Xaridingiz uchun rahmat!</p>
-    <p>Siz <b>${data.courseTitle}</b> kursiga yozildingiz.</p>
+    <p>Siz <b>${esc(data.courseTitle)}</b> kursiga yozildingiz.</p>
     <p>To'lov summasi: <b>${data.amount}</b></p>
     <p style="margin-top:20px">${button(data.courseUrl, "Kursni ochish")}</p>`;
   return {
@@ -129,7 +146,7 @@ export function certificateEmail(
 ): EmailTemplate {
   if (locale === "ru") {
     const body = `<p>Поздравляем! 🎓</p>
-      <p>Вы успешно завершили курс <b>${data.courseTitle}</b> и получили сертификат.</p>
+      <p>Вы успешно завершили курс <b>${esc(data.courseTitle)}</b> и получили сертификат.</p>
       <p>Код проверки: <b>${data.code}</b></p>
       <p style="margin-top:20px">${button(data.verifyUrl, "Открыть сертификат")}</p>`;
     return {
@@ -139,13 +156,74 @@ export function certificateEmail(
     };
   }
   const body = `<p>Tabriklaymiz! 🎓</p>
-    <p>Siz <b>${data.courseTitle}</b> kursini muvaffaqiyatli tamomladingiz va sertifikat oldingiz.</p>
+    <p>Siz <b>${esc(data.courseTitle)}</b> kursini muvaffaqiyatli tamomladingiz va sertifikat oldingiz.</p>
     <p>Tekshirish kodi: <b>${data.code}</b></p>
     <p style="margin-top:20px">${button(data.verifyUrl, "Sertifikatni ochish")}</p>`;
   return {
     subject: `Sertifikatingiz — ${data.courseTitle}`,
     html: shell("Sertifikat berildi", body, FOOTER.uz),
     text: `Tabriklaymiz! Siz "${data.courseTitle}" kursini tamomladingiz. Sertifikat (kod ${data.code}): ${data.verifyUrl}`,
+  };
+}
+
+/**
+ * Email-address confirmation link.
+ *
+ * Sent when an account claims an address — at email sign-up, or from the
+ * profile page. The address is not written to the user row until this link is
+ * followed, so the wording has to work for someone who may not yet have an
+ * account they recognise: it names the site and says what clicking does.
+ */
+export function emailVerificationEmail(
+  locale: Locale,
+  data: { name: string; verifyUrl: string; hours: number },
+): EmailTemplate {
+  if (locale === "ru") {
+    const body = `<p>Здравствуйте, ${esc(data.name)}!</p>
+      <p>Подтвердите этот адрес, чтобы привязать его к вашему аккаунту Mezon Ta'lim.</p>
+      <p style="margin-top:20px">${button(data.verifyUrl, "Подтвердить адрес")}</p>
+      <p style="color:#7a828c;font-size:13px;margin-top:20px">Ссылка действует ${data.hours} ч. Если вы этого не запрашивали, просто проигнорируйте письмо.</p>`;
+    return {
+      subject: "Подтвердите вашу почту — Mezon Ta'lim",
+      html: shell("Подтверждение адреса", body, FOOTER.ru),
+      text: `Здравствуйте, ${data.name}! Подтвердите адрес для аккаунта Mezon Ta'lim: ${data.verifyUrl} (ссылка действует ${data.hours} ч)`,
+    };
+  }
+  const body = `<p>Assalomu alaykum, ${esc(data.name)}!</p>
+    <p>Bu manzilni Mezon Ta'lim hisobingizga bog'lash uchun tasdiqlang.</p>
+    <p style="margin-top:20px">${button(data.verifyUrl, "Manzilni tasdiqlash")}</p>
+    <p style="color:#7a828c;font-size:13px;margin-top:20px">Havola ${data.hours} soat amal qiladi. Agar bu siz bo'lmasangiz, xatni e'tiborsiz qoldiring.</p>`;
+  return {
+    subject: "Elektron pochtangizni tasdiqlang — Mezon Ta'lim",
+    html: shell("Manzilni tasdiqlash", body, FOOTER.uz),
+    text: `Assalomu alaykum, ${data.name}! Mezon Ta'lim hisobingiz uchun manzilni tasdiqlang: ${data.verifyUrl} (havola ${data.hours} soat amal qiladi)`,
+  };
+}
+
+/** Password-reset link. */
+export function passwordResetEmail(
+  locale: Locale,
+  data: { name: string; resetUrl: string; hours: number },
+): EmailTemplate {
+  if (locale === "ru") {
+    const body = `<p>Здравствуйте, ${esc(data.name)}!</p>
+      <p>Вы запросили сброс пароля для Mezon Ta'lim.</p>
+      <p style="margin-top:20px">${button(data.resetUrl, "Задать новый пароль")}</p>
+      <p style="color:#7a828c;font-size:13px;margin-top:20px">Ссылка действует ${data.hours} ч. Если вы этого не запрашивали, пароль останется прежним — ничего делать не нужно.</p>`;
+    return {
+      subject: "Сброс пароля — Mezon Ta'lim",
+      html: shell("Сброс пароля", body, FOOTER.ru),
+      text: `Здравствуйте, ${data.name}! Задайте новый пароль: ${data.resetUrl} (ссылка действует ${data.hours} ч)`,
+    };
+  }
+  const body = `<p>Assalomu alaykum, ${esc(data.name)}!</p>
+    <p>Siz Mezon Ta'lim uchun parolni tiklashni so'radingiz.</p>
+    <p style="margin-top:20px">${button(data.resetUrl, "Yangi parol o'rnatish")}</p>
+    <p style="color:#7a828c;font-size:13px;margin-top:20px">Havola ${data.hours} soat amal qiladi. Agar bu siz bo'lmasangiz, parolingiz o'zgarmaydi — hech narsa qilish shart emas.</p>`;
+  return {
+    subject: "Parolni tiklash — Mezon Ta'lim",
+    html: shell("Parolni tiklash", body, FOOTER.uz),
+    text: `Assalomu alaykum, ${data.name}! Yangi parol o'rnating: ${data.resetUrl} (havola ${data.hours} soat amal qiladi)`,
   };
 }
 

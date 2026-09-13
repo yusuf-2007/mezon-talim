@@ -3,17 +3,21 @@ import { createHash, randomBytes } from "node:crypto";
 import { env } from "@/lib/env";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { verificationTokensRepository } from "@/lib/db/repositories/verification-tokens";
+import { dispatchEmail } from "@/lib/notifications/service";
+import { passwordResetEmail } from "@/lib/notifications/templates";
 import { hashPassword } from "./password";
+import type { Locale } from "@/lib/i18n/routing";
 
-const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour
+const RESET_TTL_HOURS = 1;
+const RESET_TTL_MS = RESET_TTL_HOURS * 60 * 60 * 1000;
 
 // Tokens are stored hashed; only the raw token travels in the email link.
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
 /**
- * Begin a password reset. Always resolves the same way (no account enumeration).
- * Sends a reset link via email — Resend lands in Phase 8, so for now the link is
- * logged to the server console in dev.
+ * Begin a password reset. Always resolves the same way (no account
+ * enumeration) — including for an address that has no password set, where
+ * there is nothing to reset.
  */
 export async function requestPasswordReset(email: string): Promise<void> {
   const user = await usersRepository.findByEmail(email);
@@ -23,11 +27,20 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const expires = new Date(Date.now() + RESET_TTL_MS);
   await verificationTokensRepository.create(email, sha256(token), expires);
 
-  const base = env.AUTH_URL ?? "http://localhost:3000";
-  const link = `${base}/reset/${token}?email=${encodeURIComponent(email)}`;
+  const base = (env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const locale = (user.locale ?? "uz") as Locale;
+  const link = `${base}/${locale}/reset/${token}?email=${encodeURIComponent(email)}`;
 
-  // TODO(phase-8): deliver via Resend (getEmailSender()).
-  console.info(`[dev password reset → ${email}] ${link}`);
+  await dispatchEmail(
+    user.id,
+    "password_reset",
+    email,
+    passwordResetEmail(locale, {
+      name: user.fullName || user.name || email,
+      resetUrl: link,
+      hours: RESET_TTL_HOURS,
+    }),
+  );
 }
 
 export type ResetResult = "ok" | "invalid" | "expired";

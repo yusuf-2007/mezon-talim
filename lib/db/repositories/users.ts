@@ -65,15 +65,60 @@ export const usersRepository = {
     return row;
   },
 
-  /** Create or fetch a phone-only user (used by OTP login once enabled). */
-  async findOrCreateByPhone(phone: string, locale: "uz" | "ru" = "uz") {
-    const existing = await this.findByPhone(phone);
-    if (existing) return existing;
+  /**
+   * Create a phone-verified account. The phone has already been proven by an
+   * OTP at this point, so `phone_verified` is stamped in the same insert —
+   * leaving it null here would make a phone-first account look less verified
+   * than an identical account that added its phone later from the profile.
+   */
+  async createWithPhone(input: {
+    phone: string;
+    fullName: string;
+    occupation?: OccupationValue | null;
+    locale?: "uz" | "ru";
+  }) {
     const [row] = await db
       .insert(users)
-      .values({ phone, role: "student", locale })
+      .values({
+        phone: input.phone,
+        phoneVerified: sql`now()`,
+        name: input.fullName,
+        fullName: input.fullName,
+        role: "student",
+        locale: input.locale ?? "uz",
+        occupation: input.occupation ?? null,
+      })
       .returning();
     return row;
+  },
+
+  /**
+   * Attach a proven phone number to an existing account (profile "add phone").
+   * Throws a unique violation if the number belongs to someone else — see
+   * isUniqueViolation; a pre-check alone cannot close that race.
+   */
+  async attachPhone(userId: string, phone: string) {
+    await db
+      .update(users)
+      .set({ phone, phoneVerified: sql`now()`, updatedAt: sql`now()` })
+      .where(eq(users.id, userId));
+  },
+
+  /**
+   * Set the account's email and mark it verified in one statement — the
+   * profile "add email" path, where the address is written only once its
+   * confirmation link is followed.
+   *
+   * Email sign-up is the other case, and it differs on purpose: there the
+   * address is the login credential, so it is written unverified at creation
+   * (otherwise the new account could not sign in) and `email_verified` is
+   * stamped later by the same confirmation link.
+   */
+  async setVerifiedEmail(userId: string, email: string) {
+    await db
+      .update(users)
+      .set({ email, emailVerified: sql`now()`, updatedAt: sql`now()` })
+      .where(eq(users.id, userId));
   },
 
   async setPasswordHash(userId: string, passwordHash: string) {

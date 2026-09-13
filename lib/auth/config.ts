@@ -1,6 +1,7 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { verifyOtpLogin, verifyPasswordLogin } from "./verify";
+import { usersRepository } from "@/lib/db/repositories/users";
+import { verifyPasswordLogin, verifyPhoneTicket } from "./verify";
 import type { Role } from "./types";
 
 /**
@@ -8,8 +9,11 @@ import type { Role } from "./types";
  * the Credentials provider and matching CLAUDE.md §3.
  *
  * Two Credentials providers:
- *  - "password"  → email + argon2 password (primary email path).
- *  - "phone-otp" → phone + SMS OTP, gated by OTP_LOGIN_ENABLED (Eskiz).
+ *  - "password"     → email + argon2 password (the secondary path).
+ *  - "phone-ticket" → a signed ticket proving a just-verified phone number,
+ *    gated by OTP_LOGIN_ENABLED (Eskiz). This is the primary path in UZ and
+ *    covers both sign-in and sign-up; see ./phone-ticket for why the OTP code
+ *    itself is not the credential presented here.
  *
  * Route protection is enforced in server components via lib/auth helpers
  * (getCurrentUser / requireRole), not in the proxy — so this Node-only config
@@ -39,7 +43,7 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   session: { strategy: "jwt" },
   trustHost: true,
   logger: {
@@ -65,29 +69,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorize: (creds) => verifyPasswordLogin(creds),
     }),
     Credentials({
-      id: "phone-otp",
-      name: "Phone OTP",
+      id: "phone-ticket",
+      name: "Phone",
       credentials: {
-        phone: { label: "Phone", type: "tel" },
-        code: { label: "Code", type: "text" },
+        ticket: { label: "Ticket", type: "text" },
+        fullName: { label: "Full name", type: "text" },
+        occupation: { label: "Occupation", type: "text" },
       },
-      authorize: (creds) => verifyOtpLogin(creds),
+      authorize: (creds) => verifyPhoneTicket(creds),
     }),
   ],
   callbacks: {
-    jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         // Sign-in: copy our domain fields onto the token.
         token.id = user.id as string;
         token.role = user.role ?? "student";
         token.fullName = user.fullName ?? user.name ?? null;
+        token.email = user.email ?? null;
         token.phone = user.phone ?? null;
         token.locale = user.locale ?? "uz";
       }
-      if (trigger === "update" && session) {
-        if (typeof session.fullName === "string") token.fullName = session.fullName;
-        if (session.locale === "uz" || session.locale === "ru") {
-          token.locale = session.locale;
+
+      // A JWT session is a snapshot, so anything that changes an identity field
+      // — adding an email or a phone, renaming, an admin changing a role —
+      // leaves the cookie describing an account that no longer exists in that
+      // shape. Rather than trust the caller to hand over the right patch (which
+      // is how a half-updated token gets written), re-read the row and take the
+      // database's word for all of it.
+      if (trigger === "update" && token.id) {
+        const fresh = await usersRepository.findById(token.id as string);
+        if (fresh) {
+          token.role = fresh.role;
+          token.fullName = fresh.fullName;
+          token.email = fresh.email;
+          token.phone = fresh.phone;
+          token.locale = fresh.locale === "ru" ? "ru" : "uz";
         }
       }
       return token;
@@ -96,6 +113,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = token.id as string;
       session.user.role = (token.role as Role) ?? "student";
       session.user.fullName = (token.fullName as string | null) ?? null;
+      // Auth.js types `email` as a required string; a phone-only account has
+      // none, and the app reads it through getCurrentUser() which narrows it
+      // back to `string | null`.
+      session.user.email = (token.email as string | null) ?? null as unknown as string;
       session.user.phone = (token.phone as string | null) ?? null;
       session.user.locale = (token.locale as "uz" | "ru") ?? "uz";
       return session;

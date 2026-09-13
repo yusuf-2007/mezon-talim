@@ -8,13 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+/**
+ * Name and bio only. Email, phone and password are credentials, and they now
+ * live together on the settings page — editing them needs verification steps
+ * that do not belong in a form whose Save button means "write these fields".
+ */
 export function ProfileEditForm({
   fullName,
-  email,
   bio,
 }: {
   fullName: string | null;
-  email: string | null;
   bio: string | null;
 }) {
   const t = useTranslations("Student");
@@ -37,13 +40,6 @@ export function ProfileEditForm({
         <Input name="fullName" defaultValue={fullName ?? ""} />
       </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-navy-800">
-          {t("emailLabel")}
-        </label>
-        <Input value={email ?? ""} disabled />
-        <p className="mt-1 text-xs text-slate-500">{t("emailLocked")}</p>
-      </div>
 
       <div>
         <label className="mb-1 block text-sm font-medium text-navy-800">
