@@ -75,18 +75,35 @@ export async function addEmailAction(
   return { ok: true, message: t("emailClaimSent", { email: parsed.data.email }) };
 }
 
-/** Re-send the link for the claim already on file. */
-export async function resendEmailVerificationAction(): Promise<void> {
+/**
+ * Send (or re-send) the confirmation link for the address already on file.
+ *
+ * Covers two cases the "add email" form does not. One is an outstanding claim
+ * whose link was lost. The other is an address already *on* the account but
+ * unverified — every account that predates verification, and every email
+ * sign-up between creation and the first click. Without this, the only route to
+ * a verified badge was retyping your own address into a form labelled "change
+ * email", which reads like a different operation entirely.
+ */
+export async function sendEmailVerificationAction(
+  _prev: CredentialFormState,
+): Promise<CredentialFormState> {
   const user = await requireUser();
+  const t = await getTranslations("Account");
+
   const pending = await emailVerificationsRepository.findActiveForUser(user.id);
   const target = pending?.email ?? user.email;
-  if (!target) return;
+  if (!target) return { error: t("noEmailYet") };
 
   const limited = await checkRateLimit(`email:resend:${user.id}`, 5, 60 * MIN);
-  if (!limited.ok) return;
+  if (!limited.ok) return { error: t("tooManyAttempts") };
 
-  await requestEmailVerification(user.id, target);
+  const result = await requestEmailVerification(user.id, target);
+  if (result === "already-yours") return { error: t("emailAlreadyVerified") };
+  if (result === "taken") return { error: t("emailTaken") };
+
   revalidateAccount();
+  return { ok: true, message: t("verificationSent", { email: target }) };
 }
 
 // ── Phone ───────────────────────────────────────────────────────────────────

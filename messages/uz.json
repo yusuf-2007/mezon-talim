@@ -484,7 +484,12 @@
     "save": "Saqlash",
     "cancel": "Bekor qilish",
     "sendCode": "Kod yuborish",
-    "confirm": "Tasdiqlash"
+    "confirm": "Tasdiqlash",
+    "verify": "Tasdiqlash",
+    "verificationSent": "Tasdiqlash havolasi {email} manziliga yuborildi. Pochtangizni tekshiring.",
+    "emailAlreadyVerified": "Bu manzil allaqachon tasdiqlangan",
+    "noEmailYet": "Avval email manzilingizni qoʻshing",
+    "unverifiedHint": "Bu manzil hali tasdiqlanmagan. Tasdiqlash havolasini yuborishimiz mumkin."
   },
   "Studio": {
     "title": "Studiya",

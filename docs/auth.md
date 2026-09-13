@@ -72,6 +72,39 @@ Tokens are stored hashed and are single-use. A spent token whose address is
 already on the account reports success rather than an error: mail scanners follow
 links before a person sees them, and so does a double-click.
 
+An address that is on the account but unconfirmed gets a **Verify** button on the
+settings row. Two situations produce one — an account older than verification
+itself, and an email sign-up between creation and the first click — and without
+that button the only route to a verified badge was retyping your own address into
+a form labelled "change email", which reads like a different operation entirely.
+
+## Where email links point
+
+Every outbound email builds its links from `publicBaseUrl()` (`lib/base-url.ts`):
+`AUTH_URL` if set, else the stable production domain Vercel injects as
+`VERCEL_PROJECT_PRODUCTION_URL`, else localhost.
+
+That fallback chain matters more than it looks. The rule used to be written out
+three times and ended at `http://localhost:3000`, and `AUTH_URL` is not set in
+production — so **every** link in **every** email was pointing at localhost:
+welcome, receipt, certificate verification, password reset, and address
+confirmation. It looks perfectly correct in a server log and is dead in an inbox.
+
+Deliberately not `VERCEL_URL`: that is the per-deployment hostname and changes on
+every push, so a link built from it rots as soon as the next deploy lands — and an
+emailed link may be clicked weeks later.
+
+## Email delivery is config-gated
+
+`getEmailSender()` returns the Resend sender only when `RESEND_API_KEY` is set;
+otherwise it returns `ConsoleEmailSender`, which writes the message to the server
+log and returns a fake id. Every send is still recorded in `notifications` as
+`sent`, because from the app's point of view it succeeded.
+
+So with no key configured, nothing is broken and nothing is delivered. All six
+templates — welcome, verification, password reset, receipt, certificate, and the
+instructor digest — are in this state until the key exists.
+
 ## Rate limits
 
 Every one of these was absent before the rework.
@@ -106,9 +139,16 @@ back into `+998 90 123 45 67`.
 
 ## Tests
 
-`tests/e2e/phone-auth.spec.ts` covers the flow end to end. It seeds a known code
+`tests/e2e/phone-auth.spec.ts` and `tests/e2e/email-verify.spec.ts` cover both
+credentials end to end. It seeds a known code
 straight into `phone_otps` rather than reading a live one back from anywhere —
 the real hashed, single-use, time-boxed verification path stays under test
 without adding a way to read codes, which would be worth more to an attacker than
 the test is worth to us. Seeding also survives the resend cooldown, which leaves
 the seeded code in place.
+
+The email suite seeds tokens the same way and for the same reason — the row holds
+only a SHA-256, so there is nothing to read back. It covers the Verify button on
+an unconfirmed address, the confirm path, a spent link reporting success rather
+than an error, and the invariant that an unconfirmed address never reaches
+`users.email`.

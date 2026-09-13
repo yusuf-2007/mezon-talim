@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { env } from "@/lib/env";
+import { publicBaseUrl } from "@/lib/base-url";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { verificationTokensRepository } from "@/lib/db/repositories/verification-tokens";
 import { dispatchEmail } from "@/lib/notifications/service";
@@ -27,7 +27,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const expires = new Date(Date.now() + RESET_TTL_MS);
   await verificationTokensRepository.create(email, sha256(token), expires);
 
-  const base = (env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = publicBaseUrl();
   const locale = (user.locale ?? "uz") as Locale;
   const link = `${base}/${locale}/reset/${token}?email=${encodeURIComponent(email)}`;
 

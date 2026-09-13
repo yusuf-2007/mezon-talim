@@ -484,7 +484,12 @@
     "save": "Save",
     "cancel": "Cancel",
     "sendCode": "Send code",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "verify": "Verify",
+    "verificationSent": "A confirmation link was sent to {email}. Check your inbox.",
+    "emailAlreadyVerified": "That address is already verified",
+    "noEmailYet": "Add an email address first",
+    "unverifiedHint": "This address is not confirmed yet. We can send a confirmation link."
   },
   "Studio": {
     "title": "Studio",

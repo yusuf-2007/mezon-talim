@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import {
   addEmailAction,
   confirmPhoneChangeAction,
-  resendEmailVerificationAction,
+  sendEmailVerificationAction,
   sendPhoneChangeCodeAction,
   setPasswordAction,
   type CredentialFormState,
@@ -63,6 +63,9 @@ function Row({
   value,
   status,
   actionLabel,
+  /** An extra control beside the edit button — e.g. "verify this address". */
+  secondaryAction,
+  note,
   open,
   onToggle,
   children,
@@ -71,6 +74,8 @@ function Row({
   value: string;
   status?: { text: string; tone: "ok" | "warn" | "muted" };
   actionLabel: string;
+  secondaryAction?: React.ReactNode;
+  note?: React.ReactNode;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
@@ -95,11 +100,13 @@ function Row({
               {status.text}
             </span>
           )}
+          {secondaryAction}
           <Button type="button" variant="outline" size="sm" onClick={onToggle}>
             {actionLabel}
           </Button>
         </div>
       </div>
+      {note}
       {open && <div className="mt-4 max-w-md">{children}</div>}
     </div>
   );
@@ -223,6 +230,14 @@ function EmailRow({ email, emailVerified, pendingEmail }: CredentialState) {
   const t = useTranslations("Account");
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(addEmailAction, initial);
+  const [sendState, sendAction, sending] = useActionState(
+    sendEmailVerificationAction,
+    initial,
+  );
+
+  // An address on the account but unconfirmed needs a way forward that is not
+  // "change email" — it is the same address, and nothing about it is changing.
+  const needsVerifying = Boolean(email) && !emailVerified;
 
   return (
     <Row
@@ -235,20 +250,39 @@ function EmailRow({ email, emailVerified, pendingEmail }: CredentialState) {
             : { text: t("unverified"), tone: "warn" }
           : undefined
       }
+      secondaryAction={
+        needsVerifying ? (
+          <form action={sendAction}>
+            <Button type="submit" size="sm" disabled={sending}>
+              {t("verify")}
+            </Button>
+          </form>
+        ) : undefined
+      }
+      note={
+        needsVerifying || sendState.ok || sendState.error ? (
+          <p
+            className={`mt-2 text-sm ${sendState.error ? "text-danger" : sendState.ok ? "text-success" : "text-slate-500"}`}
+          >
+            {sendState.error ?? sendState.message ?? t("unverifiedHint")}
+          </p>
+        ) : undefined
+      }
       actionLabel={email ? t("changeEmail") : t("addEmail")}
       open={open}
       onToggle={() => setOpen((v) => !v)}
     >
       <div className="space-y-3">
-        {/* An address claimed but not confirmed is shown here rather than in the
-            row above, because it is genuinely not on the account yet. */}
+        {/* A claim is shown here, not in the row above, because until it is
+            confirmed the address is genuinely not on the account. */}
         {pendingEmail && !state.ok && (
           <div className="rounded-lg border border-line bg-slate-50 p-3">
             <p className="text-sm text-ink">{t("pendingEmail", { email: pendingEmail })}</p>
-            <form action={resendEmailVerificationAction}>
+            <form action={sendAction}>
               <button
                 type="submit"
-                className="mt-1 text-sm font-medium text-navy-600 hover:underline"
+                disabled={sending}
+                className="mt-1 text-sm font-medium text-navy-600 hover:underline disabled:opacity-50"
               >
                 {t("resendLink")}
               </button>

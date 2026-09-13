@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { env } from "@/lib/env";
+import { publicBaseUrl } from "@/lib/base-url";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { emailVerificationsRepository } from "@/lib/db/repositories/email-verifications";
 import { isUniqueViolation } from "@/lib/db/errors";
@@ -24,7 +24,7 @@ const TTL_MS = EMAIL_VERIFY_TTL_HOURS * 60 * 60 * 1000;
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
 function baseUrl(): string {
-  return (env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return publicBaseUrl();
 }
 
 export type RequestEmailResult = "sent" | "taken" | "already-yours";

@@ -13,7 +13,7 @@ import { usersRepository } from "@/lib/db/repositories/users";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { formatTiyin } from "@/lib/payments";
 import { pickLocale } from "@/lib/i18n/localized";
-import { env } from "@/lib/env";
+import { publicBaseUrl } from "@/lib/base-url";
 import type { Locale } from "@/lib/i18n/routing";
 
 /**
@@ -25,7 +25,7 @@ import type { Locale } from "@/lib/i18n/routing";
  */
 
 function baseUrl(): string {
-  return (env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return publicBaseUrl();
 }
 
 function localePath(locale: Locale, path: string): string {
