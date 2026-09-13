@@ -59,5 +59,12 @@ export default async function globalSetup() {
   }
 
   await wipeCommunity(sql);
+
+  // Clear the limiter. It is Postgres-backed and windowed over minutes, so it
+  // outlives a test run: the suite signs the same handful of accounts in
+  // repeatedly, and a second run started inside the window would begin with the
+  // budget already spent and fail at login — as would a CI retry.
+  await sql`delete from rate_limits`;
+
   await sql.end();
 }

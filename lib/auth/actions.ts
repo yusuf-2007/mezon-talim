@@ -7,7 +7,7 @@ import { redirectLocalized } from "@/lib/i18n/redirect";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { isUniqueViolation } from "@/lib/db/errors";
 import { notifyWelcome } from "@/lib/notifications/service";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, clearRateLimit } from "@/lib/rate-limit";
 import { requestIp } from "@/lib/request-ip";
 import { env } from "@/lib/env";
 import { signIn, signOut } from "./config";
@@ -275,6 +275,11 @@ export async function loginAction(
     if (e instanceof AuthError) return { error: t("invalidCredentials") };
     throw e;
   }
+
+  // The password was right, so this was never a guess: release the per-address
+  // budget. The per-IP counter deliberately stays — owning one account should
+  // not buy unlimited attempts against everyone else's.
+  await clearRateLimit(`login:${parsed.data.email}`);
 
   const user = await usersRepository.findByEmail(parsed.data.email);
   return redirectLocalized(landingPathForRole(user?.role ?? "student"));

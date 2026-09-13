@@ -1,5 +1,5 @@
 import "server-only";
-import { lt, sql } from "drizzle-orm";
+import { eq, lt, sql } from "drizzle-orm";
 import { db } from "../client";
 import { rateLimits } from "../schema";
 
@@ -26,6 +26,11 @@ export const rateLimitsRepository = {
       })
       .returning({ count: rateLimits.count, windowStart: rateLimits.windowStart });
     return row;
+  },
+
+  /** Forget one counter outright, e.g. once a login proves it was not a guess. */
+  async clear(key: string): Promise<void> {
+    await db.delete(rateLimits).where(eq(rateLimits.key, key));
   },
 
   /** Drop counters whose window ended over a day ago (opportunistic sweep). */

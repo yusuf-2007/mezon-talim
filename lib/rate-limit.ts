@@ -37,6 +37,25 @@ export async function checkRateLimit(
   }
 }
 
+/**
+ * Forget a counter.
+ *
+ * A brute-force budget exists to bound *guessing*, and a correct password is
+ * proof the attempt was not a guess — so counting successes against it only
+ * punishes people who sign in often, and eventually locks them out for being
+ * legitimate users.
+ *
+ * Fail-open like the rest of this module: a limiter that cannot be cleared
+ * should not break the sign-in that just succeeded.
+ */
+export async function clearRateLimit(key: string): Promise<void> {
+  try {
+    await rateLimitsRepository.clear(key);
+  } catch (err) {
+    console.error("[rate-limit] clear failed — counter left in place:", err);
+  }
+}
+
 const MIN = 60_000;
 
 /** Per-action exam limits (spec 1.5). Keyed by action + user id. */

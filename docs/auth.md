@@ -123,6 +123,18 @@ money on a prepaid Eskiz balance, and the 60-second per-number cooldown inside
 `requestPhoneOtp` would happily let one source spend the balance across ten
 thousand different numbers.
 
+A successful email login **clears** its per-address counter. These budgets exist
+to bound guessing, and a correct password is proof the attempt was not a guess —
+counting successes against it only penalises people who sign in often, and
+eventually locks out someone for being a legitimate heavy user. The per-IP
+counter is deliberately left alone: owning one account should not buy unlimited
+attempts against everyone else's.
+
+Because the limiter is Postgres-backed and windowed over minutes, it also
+outlives a test run — `tests/e2e/global-setup` clears the table, or a second run
+started inside the window would begin with the budget already spent and fail at
+login, as would a CI retry.
+
 Separately, a code is burned after 5 wrong guesses (`phone_otps.attempts`). A
 4-digit code is only 10 000 combinations, which is walkable inside its 5-minute
 life. That cap is deliberately **not** built on `checkRateLimit`, which is
