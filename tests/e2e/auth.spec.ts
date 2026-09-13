@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { PASSWORD, USERS } from "./db";
-import { login } from "./helpers";
+import { login, openEmailForm } from "./helpers";
 
 test.describe("authentication", () => {
   test("student logs in and lands on the dashboard", async ({ page }) => {
@@ -17,9 +17,10 @@ test.describe("authentication", () => {
 
   test("wrong password stays on the login page", async ({ page }) => {
     await page.goto("/uz/login");
+    await openEmailForm(page);
     await page.fill("input[name=email]", USERS.studentA.email);
     await page.fill("input[name=password]", "wrong-password-123");
-    await page.click("button[type=submit]");
+    await page.locator("form:has(input[name=password]) button[type=submit]").click();
     await page.waitForTimeout(3000);
     await expect(page).toHaveURL(/\/login/);
   });
