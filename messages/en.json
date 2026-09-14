@@ -603,7 +603,8 @@
     "devEnrollNote": "Payment system not configured — dev mode.",
     "byLine": "Author",
     "noLessons": "This course has no lessons yet.",
-    "lessonsLabel": "lessons"
+    "lessonsLabel": "lessons",
+    "paymentsSoon": "Payments are coming soon. Until then, contact us to enrol."
   },
   "Player": {
     "backToCourse": "Course page",

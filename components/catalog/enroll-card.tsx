@@ -68,6 +68,12 @@ export async function EnrollCard({
               </form>
             )}
           </>
+        ) : process.env.NODE_ENV === "production" ? (
+          // No provider configured on the live site: say so, rather than
+          // offer the development free-enrol that used to sit here.
+          <p className="rounded-lg border border-line bg-slate-50 p-3 text-center text-sm text-slate-600">
+            {t("paymentsSoon")}
+          </p>
         ) : (
           // No provider configured → dev-only free enroll (Phase 5 fallback).
           <form action={devEnrollAction.bind(null, courseId)}>

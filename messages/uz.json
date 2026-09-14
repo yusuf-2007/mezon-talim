@@ -603,7 +603,8 @@
     "devEnrollNote": "To'lov tizimi sozlanmagan — dev rejimi.",
     "byLine": "Muallif",
     "noLessons": "Bu kursda hali darslar yo'q.",
-    "lessonsLabel": "dars"
+    "lessonsLabel": "dars",
+    "paymentsSoon": "Toʻlov tez orada ishga tushadi. Hozircha kursga yozilish uchun biz bilan bogʻlaning."
   },
   "Player": {
     "backToCourse": "Kurs sahifasi",

@@ -97,6 +97,19 @@ export const notificationsRepository = {
     return row ?? null;
   },
 
+  /** Has this user already received `type` about `courseId`? (payload.courseId) */
+  async existsForCourse(userId: string, type: string, courseId: string) {
+    const [row] = await db
+      .select({ id: notifications.id })
+      .from(notifications)
+      .where(
+        sql`${notifications.userId} = ${userId} and ${notifications.type} = ${type}
+            and ${notifications.payload}->>'courseId' = ${courseId}`,
+      )
+      .limit(1);
+    return Boolean(row);
+  },
+
   async listForUser(userId: string) {
     return db
       .select()

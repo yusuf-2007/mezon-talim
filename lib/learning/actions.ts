@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { remindFinalExamIfDue } from "./exam-reminder";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { redirectLocalized } from "@/lib/i18n/redirect";
@@ -37,6 +38,12 @@ async function assertLessonEnrollment(userId: string, lessonId: string) {
 // ── Enrollment (DEV ONLY — replaced by payments in Phase 5) ───────────────────
 
 export async function devEnrollAction(courseId: string): Promise<void> {
+  // A free enrol is a development convenience and nothing else. It used to be
+  // reachable on the live site whenever no payment provider was configured —
+  // which is to say, on the live site.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Free enrollment is not available in production");
+  }
   const user = await requireUser();
   const course = await coursesRepository.findById(courseId);
   if (!course || course.status !== "published") {
@@ -82,6 +89,8 @@ export async function completeLessonAction(
     parsed.data.lessonId,
     parsed.data.selfAssessment ?? null,
   );
+  // If that was the last lesson and a final exam is waiting, say so by SMS.
+  await remindFinalExamIfDue(user.id, courseId);
   revalidatePath(`/learn/${courseId}/${parsed.data.lessonId}`);
   return { ok: true };
 }

@@ -83,12 +83,14 @@ export async function sendTrackedSms(input: {
   type: string;
   to: string;
   text: string;
+  /** Extra context kept on the row, e.g. the course a reminder was about. */
+  payload?: Record<string, unknown>;
 }): Promise<void> {
   const row = await notificationsRepository.record({
     userId: input.userId,
     channel: "sms",
     type: input.type,
-    payload: { to: input.to },
+    payload: { ...(input.payload ?? {}), to: input.to },
   });
   try {
     const { id } = await getSmsSender().send({
@@ -109,10 +111,11 @@ async function dispatchSms(
   type: string,
   to: string | null,
   text: string,
+  payload?: Record<string, unknown>,
 ): Promise<void> {
   if (!to) return; // no phone on file
   try {
-    await sendTrackedSms({ userId, type, to, text });
+    await sendTrackedSms({ userId, type, to, text, payload });
   } catch (err) {
     console.error(`notification sms '${type}' failed:`, err);
   }
@@ -200,12 +203,20 @@ export async function notifyCertificateIssued(
   }
 }
 
-/** Exam-reminder SMS (used by reminder jobs; available now for manual sends). */
+/**
+ * Exam-reminder SMS. Sent once per student per course, the moment the last
+ * lesson is completed and a scored final exam is still unpassed — see
+ * lib/learning/exam-reminder. Idempotent: a second call for the same pair is a
+ * no-op, so callers do not have to remember whether they already fired.
+ */
 export async function notifyExamReminder(
   userId: string,
   courseId: string,
 ): Promise<void> {
   try {
+    if (await notificationsRepository.existsForCourse(userId, "exam_reminder", courseId)) {
+      return;
+    }
     const [user, course] = await Promise.all([
       usersRepository.findById(userId),
       coursesRepository.findById(courseId),
@@ -217,6 +228,7 @@ export async function notifyExamReminder(
       "exam_reminder",
       user.phone,
       examReminderSms(locale, { courseTitle: pickLocale(course.title, locale) }),
+      { courseId },
     );
   } catch (err) {
     console.error("notifyExamReminder failed (non-fatal):", err);
