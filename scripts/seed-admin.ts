@@ -5,8 +5,9 @@
  *
  *   npm run db:seed
  *
- * Configure via env (falls back to dev defaults):
- *   SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, SEED_ADMIN_NAME
+ * Configure via env:
+ *   SEED_ADMIN_PASSWORD  (required — no default, see below)
+ *   SEED_ADMIN_EMAIL, SEED_ADMIN_NAME  (optional)
  */
 import "dotenv/config";
 import { eq } from "drizzle-orm";
@@ -22,8 +23,34 @@ if (!DATABASE_URL) {
 }
 
 const email = process.env.SEED_ADMIN_EMAIL ?? "admin@mezontalim.uz";
-const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!";
 const fullName = process.env.SEED_ADMIN_NAME ?? "Mezon Super Admin";
+
+/**
+ * No default password.
+ *
+ * This used to fall back to a literal, which put the working credential for a
+ * super_admin account into a public repository — and the account it creates has
+ * full control of users, courses and payment records. A default that is
+ * convenient in development is indistinguishable from a backdoor once someone
+ * runs the script against production, which is exactly what happened.
+ *
+ * Refusing to run is the only safe behaviour: there is no password this script
+ * can invent that is both usable and not written down somewhere.
+ */
+const suppliedPassword = process.env.SEED_ADMIN_PASSWORD;
+if (!suppliedPassword) {
+  console.error(
+    "SEED_ADMIN_PASSWORD is not set.\n" +
+      "Set it to a password you generate, e.g.\n" +
+      "  SEED_ADMIN_PASSWORD=\"$(openssl rand -base64 24)\" npm run db:seed",
+  );
+  process.exit(1);
+}
+if (suppliedPassword.length < 12) {
+  console.error("SEED_ADMIN_PASSWORD must be at least 12 characters.");
+  process.exit(1);
+}
+const password: string = suppliedPassword;
 
 const ARGON2_OPTS = {
   memoryCost: 19456,
@@ -62,7 +89,8 @@ async function main() {
     console.info(`✓ Created super_admin: ${email}`);
   }
 
-  console.info(`  Password: ${password}  (change after first login)`);
+  // Deliberately not echoed: the caller supplied it and CI logs are kept.
+  console.info("  Password: the SEED_ADMIN_PASSWORD you supplied.");
   await sql.end();
 }
 
