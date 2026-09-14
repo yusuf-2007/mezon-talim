@@ -20,6 +20,12 @@ export interface EmailMessage {
 export interface SmsMessage {
   to: string; // E.164
   text: string;
+  /**
+   * Where the gateway should post its delivery report. Optional because the
+   * dev console sender has nothing to report, and because a send must still
+   * work if we cannot build a URL for it.
+   */
+  callbackUrl?: string;
 }
 
 export interface EmailSender {

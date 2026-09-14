@@ -1022,7 +1022,20 @@
     "pollCornerSub": "A small, unobtrusive card in the bottom-right.",
     "messagesTitle": "Messages",
     "selectLesson": "Select a lesson",
-    "dashboardHeading": "Overview"
+    "dashboardHeading": "Overview",
+    "navNotifications": "Delivery",
+    "notifTitle": "Message delivery",
+    "notifSubtitle": "What actually happened to each SMS and email. “Sent” means the provider accepted it; “delivered” means it reached the recipient.",
+    "notifColChannel": "Channel",
+    "notifColType": "Type",
+    "notifColTo": "To",
+    "notifColStatus": "Status",
+    "notifEmpty": "Nothing has been sent yet.",
+    "notifStatus_queued": "Queued",
+    "notifStatus_sent": "Sent",
+    "notifStatus_delivered": "Delivered",
+    "notifStatus_rejected": "Rejected",
+    "notifStatus_failed": "Failed"
   },
   "Student": {
     "navHome": "Home",

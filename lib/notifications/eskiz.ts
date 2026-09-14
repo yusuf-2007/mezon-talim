@@ -84,6 +84,9 @@ class EskizSmsSender implements SmsSender {
     body.set("mobile_phone", message.to.replace(/^\+/, ""));
     body.set("message", message.text);
     if (env.ESKIZ_FROM) body.set("from", env.ESKIZ_FROM);
+    // Without this the queued id is the last we ever hear: Eskiz reports the
+    // operator's verdict — DELIVRD, REJECTD, EXPIRED — only to this URL.
+    if (message.callbackUrl) body.set("callback_url", message.callbackUrl);
 
     const res = await fetch(`${ESKIZ_BASE}/message/sms/send`, {
       method: "POST",

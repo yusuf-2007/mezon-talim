@@ -1022,7 +1022,20 @@
     "pollCornerSub": "Небольшое ненавязчивое окно в правом нижнем углу.",
     "messagesTitle": "Сообщения",
     "selectLesson": "Выберите урок",
-    "dashboardHeading": "Общие показатели"
+    "dashboardHeading": "Общие показатели",
+    "navNotifications": "Отправленные",
+    "notifTitle": "Доставка сообщений",
+    "notifSubtitle": "Реальный статус SMS и писем. «Отправлено» значит, что оператор принял сообщение; «доставлено» — что оно дошло до получателя.",
+    "notifColChannel": "Канал",
+    "notifColType": "Тип",
+    "notifColTo": "Получатель",
+    "notifColStatus": "Статус",
+    "notifEmpty": "Отправленных сообщений пока нет.",
+    "notifStatus_queued": "В очереди",
+    "notifStatus_sent": "Отправлено",
+    "notifStatus_delivered": "Доставлено",
+    "notifStatus_rejected": "Отклонено",
+    "notifStatus_failed": "Ошибка"
   },
   "Student": {
     "navHome": "Главная",

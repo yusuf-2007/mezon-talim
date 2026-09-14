@@ -24,6 +24,7 @@ export function AdminNav({ canManage }: { canManage: boolean }) {
     { href: "/admin/certificates", label: t("navCertificates"), show: canManage },
     { href: "/admin/analytics", label: t("navAnalytics"), show: true },
     { href: "/admin/audience", label: t("navAudience"), show: true },
+    { href: "/admin/notifications", label: t("navNotifications"), show: canManage },
     { href: "/admin/audit", label: t("navAudit"), show: canManage },
   ].filter((i) => i.show);
 

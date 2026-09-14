@@ -149,6 +149,55 @@ become `+998901234567`. The number is the account's unique key, so accepting two
 spellings as two accounts would be worse than rejecting either. Display groups it
 back into `+998 90 123 45 67`.
 
+## Delivery reporting
+
+`notifications` holds one row per send attempt, and its status means something
+specific:
+
+| status | meaning |
+|---|---|
+| `queued` | row written, not yet dispatched |
+| `sent` | the provider's API accepted it |
+| `delivered` | the provider confirmed it reached the handset or inbox |
+| `rejected` | the provider or operator dropped it after accepting |
+| `failed` | our own send call threw |
+
+The distinction between `sent` and `delivered` is the whole point. Eskiz returns
+a queued id and the operator can still refuse the message half a second later —
+that has already happened in production, to a real login code. Resend likewise
+accepts mail that bounces afterwards. Before this existed both looked identical
+to success, so a student who never received a code was invisible: the table said
+`sent` and there was nothing else to consult.
+
+Outcomes arrive by webhook:
+
+- **`/api/webhooks/eskiz`** — Eskiz does not sign its callbacks, so the proof is
+  an HMAC we put in the per-message `callback_url` ourselves. Each URL names one
+  notification, which means a leaked URL is worth exactly one row's status
+  rather than the whole table, and the handler never lets the request body
+  choose which row it touches.
+- **`/api/webhooks/resend`** — signed with Svix and verified in the route
+  (HMAC over `id.timestamp.body`, with a five-minute replay window). Here the
+  signature is the entire authentication, so an unverified body never reaches
+  the database.
+
+A report is refused if the row is already `delivered` or `failed`: providers
+retry and reorder their events, and a late bounce for a message we know arrived
+would turn a correct record into a wrong one.
+
+Login codes go through this too, which required `notifications.user_id` to
+become nullable — a sign-up code goes to a number with no account yet, and those
+are precisely the sends worth auditing, since a code that never lands is a
+person who cannot register at all.
+
+`/admin/notifications` shows the log with a per-status summary.
+
+Both webhooks need configuration that lives outside this repo: Eskiz needs
+nothing (the callback URL is sent per message), and Resend needs a webhook
+pointed at `/api/webhooks/resend` with its signing secret in
+`RESEND_WEBHOOK_SECRET`. Without that secret the endpoint refuses every request
+rather than trusting unsigned events.
+
 ## Tests
 
 `tests/e2e/phone-auth.spec.ts` and `tests/e2e/email-verify.spec.ts` cover both
@@ -164,3 +213,8 @@ only a SHA-256, so there is nothing to read back. It covers the Verify button on
 an unconfirmed address, the confirm path, a spent link reporting success rather
 than an error, and the invariant that an unconfirmed address never reaches
 `users.email`.
+
+`tests/e2e/delivery-status.spec.ts` covers both webhooks, weighted towards what
+happens when a report is *not* genuine: a forged token, a token issued for a
+different message, an unsigned event, and a validly signed header paired with a
+swapped body.

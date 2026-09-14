@@ -99,6 +99,9 @@ const envSchema = z.object({
   // --- Email (Resend — external, non-personal delivery) ---
   RESEND_API_KEY: optionalText(),
   RESEND_FROM_EMAIL: optionalText(),
+  // Svix signing secret for /api/webhooks/resend. Without it the endpoint
+  // refuses every request rather than trusting unsigned delivery events.
+  RESEND_WEBHOOK_SECRET: optionalText(),
 
   // --- SMS (Eskiz — in-country) ---
   ESKIZ_EMAIL: optionalText(),

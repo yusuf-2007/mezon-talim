@@ -1,7 +1,6 @@
 import "server-only";
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { env } from "@/lib/env";
+import { signPayload, signatureMatches } from "@/lib/signing";
 
 /**
  * Proof that a phone number was verified by OTP moments ago.
@@ -26,31 +25,11 @@ import { env } from "@/lib/env";
 const COOKIE_NAME = "mt_phone_ticket";
 const TTL_MS = 10 * 60 * 1000;
 
-function secret(): string {
-  // Auth.js already requires this in production; failing loudly here beats
-  // silently signing tickets with a constant an attacker could guess.
-  const s = env.AUTH_SECRET;
-  if (!s) throw new Error("AUTH_SECRET is required to issue phone tickets");
-  return s;
-}
-
 const b64url = (b: Buffer) => b.toString("base64url");
-
-function sign(payload: string): string {
-  return b64url(createHmac("sha256", secret()).update(payload).digest());
-}
-
-/** Constant-time compare that tolerates a length mismatch without throwing. */
-function signatureMatches(expected: string, actual: string): boolean {
-  const a = Buffer.from(expected);
-  const b = Buffer.from(actual);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
-}
 
 export async function issuePhoneTicket(phone: string): Promise<void> {
   const payload = `${phone}.${Date.now() + TTL_MS}`;
-  const token = `${b64url(Buffer.from(payload))}.${sign(payload)}`;
+  const token = `${b64url(Buffer.from(payload))}.${signPayload(payload)}`;
   const jar = await cookies();
   jar.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -90,7 +69,7 @@ export function parsePhoneTicket(token: string): string | null {
   } catch {
     return null;
   }
-  if (!signatureMatches(sign(payload), provided)) return null;
+  if (!signatureMatches(payload, provided)) return null;
 
   // Only split the payload once the signature checks out, so nothing derived
   // from unverified bytes is ever trusted.

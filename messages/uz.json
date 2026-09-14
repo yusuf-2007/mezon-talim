@@ -1022,7 +1022,20 @@
     "pollCornerSub": "Pastki o‘ng burchakda kichik, xalaqit bermaydigan oyna.",
     "messagesTitle": "Xabarlar",
     "selectLesson": "Darsni tanlang",
-    "dashboardHeading": "Umumiy ko‘rsatkichlar"
+    "dashboardHeading": "Umumiy ko‘rsatkichlar",
+    "navNotifications": "Yuborilganlar",
+    "notifTitle": "Xabarlar yetkazilishi",
+    "notifSubtitle": "SMS va emaillarning haqiqiy holati. “Yuborildi” — operator qabul qildi, degani; “yetkazildi” — qurilmaga yetib bordi, degani.",
+    "notifColChannel": "Kanal",
+    "notifColType": "Turi",
+    "notifColTo": "Kimga",
+    "notifColStatus": "Holati",
+    "notifEmpty": "Hozircha yuborilgan xabarlar yoʻq.",
+    "notifStatus_queued": "Navbatda",
+    "notifStatus_sent": "Yuborildi",
+    "notifStatus_delivered": "Yetkazildi",
+    "notifStatus_rejected": "Rad etildi",
+    "notifStatus_failed": "Xatolik"
   },
   "Student": {
     "navHome": "Asosiy",

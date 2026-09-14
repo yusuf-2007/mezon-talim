@@ -127,6 +127,20 @@
       "when": 1789131996828,
       "tag": "0017_ambiguous_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1789348867592,
+      "tag": "0018_bored_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1789348970560,
+      "tag": "0019_busy_bloodscream",
+      "breakpoints": true
     }
   ]
 }

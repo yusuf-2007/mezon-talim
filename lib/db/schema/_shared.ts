@@ -104,8 +104,19 @@ export const notificationChannel = pgEnum("notification_channel", [
   "telegram",
 ]);
 
+/**
+ * Lifecycle of one notification.
+ *
+ * `sent` means the provider's API accepted it, which is NOT delivery — Eskiz
+ * returns a queued id and the operator may still drop the message seconds
+ * later, and Resend accepts mail that later bounces. Those outcomes only arrive
+ * by webhook, so they get their own terminal states rather than leaving every
+ * accepted send looking successful forever.
+ */
 export const notificationStatus = pgEnum("notification_status", [
-  "queued",
-  "sent",
-  "failed",
+  "queued", // row written, not yet dispatched
+  "sent", // provider accepted it
+  "delivered", // provider confirmed it reached the handset/inbox
+  "rejected", // provider or operator dropped it after accepting
+  "failed", // our send call threw
 ]);

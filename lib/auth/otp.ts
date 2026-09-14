@@ -2,7 +2,8 @@ import "server-only";
 import { randomInt } from "node:crypto";
 import { hashPassword, verifyPassword } from "./password";
 import { phoneOtpsRepository } from "@/lib/db/repositories/phone-otps";
-import { getSmsSender } from "@/lib/notifications";
+import { sendTrackedSms } from "@/lib/notifications/service";
+import { usersRepository } from "@/lib/db/repositories/users";
 import { otpSms } from "@/lib/notifications/templates";
 
 const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -38,6 +39,10 @@ export async function requestPhoneOtp(phone: string): Promise<void> {
     return;
   }
 
+  // Attribution only — a sign-up code goes to a number with no account yet,
+  // and that is not a reason to leave the send unlogged.
+  const user = await usersRepository.findByPhone(phone);
+
   const code = String(randomInt(0, 10 ** OTP_DIGITS)).padStart(OTP_DIGITS, "0");
   const codeHash = await hashPassword(code);
   const expiresAt = new Date(Date.now() + OTP_TTL_MS);
@@ -46,7 +51,18 @@ export async function requestPhoneOtp(phone: string): Promise<void> {
   try {
     // Body lives with the other Eskiz-moderated templates; it must match the
     // approved text exactly or the operator silently drops it.
-    await getSmsSender().send({ to: phone, text: otpSms(code) });
+    //
+    // Routed through the notification log rather than the sender directly, so a
+    // code that the operator drops after accepting is visible afterwards. This
+    // is the send where that matters most: a student who never receives one
+    // cannot get in at all, and has no way to tell us anything except "it
+    // doesn't work".
+    await sendTrackedSms({
+      userId: user?.id ?? null,
+      type: "login_otp",
+      to: phone,
+      text: otpSms(code),
+    });
   } catch (err) {
     // The row is written before the send, so a failed delivery would otherwise
     // leave an "active" code the student never received — and the resend

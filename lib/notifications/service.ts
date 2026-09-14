@@ -14,6 +14,7 @@ import { coursesRepository } from "@/lib/db/repositories/courses";
 import { formatTiyin } from "@/lib/payments";
 import { pickLocale } from "@/lib/i18n/localized";
 import { publicBaseUrl } from "@/lib/base-url";
+import { deliveryCallbackUrl } from "./callback";
 import type { Locale } from "@/lib/i18n/routing";
 
 /**
@@ -53,16 +54,52 @@ export async function dispatchEmail(
     payload: { to, subject: tpl.subject },
   });
   try {
-    await getEmailSender().send({
+    const { id } = await getEmailSender().send({
       to,
       subject: tpl.subject,
       html: tpl.html,
       text: tpl.text,
     });
-    await notificationsRepository.markSent(row.id);
+    // Keep the provider's id: a bounce arrives later carrying only that, and
+    // without it the event has no row to attach to.
+    await notificationsRepository.markSent(row.id, id);
   } catch (err) {
     console.error(`notification email '${type}' failed:`, err);
     await notificationsRepository.markFailed(row.id);
+  }
+}
+
+/**
+ * Record + send one SMS, rethrowing on failure.
+ *
+ * The login-code path needs the throw: a code that was not sent must abort the
+ * attempt, because the alternative is an "active" code the student never
+ * received, which the resend cooldown then hides for a minute. Everything else
+ * goes through dispatchSms, which swallows.
+ */
+export async function sendTrackedSms(input: {
+  /** Null for a number with no account yet — every sign-up code. */
+  userId: string | null;
+  type: string;
+  to: string;
+  text: string;
+}): Promise<void> {
+  const row = await notificationsRepository.record({
+    userId: input.userId,
+    channel: "sms",
+    type: input.type,
+    payload: { to: input.to },
+  });
+  try {
+    const { id } = await getSmsSender().send({
+      to: input.to,
+      text: input.text,
+      callbackUrl: deliveryCallbackUrl(row.id),
+    });
+    await notificationsRepository.markSent(row.id, id);
+  } catch (err) {
+    await notificationsRepository.markFailed(row.id);
+    throw err;
   }
 }
 
@@ -74,18 +111,10 @@ async function dispatchSms(
   text: string,
 ): Promise<void> {
   if (!to) return; // no phone on file
-  const row = await notificationsRepository.record({
-    userId,
-    channel: "sms",
-    type,
-    payload: { to },
-  });
   try {
-    await getSmsSender().send({ to, text });
-    await notificationsRepository.markSent(row.id);
+    await sendTrackedSms({ userId, type, to, text });
   } catch (err) {
     console.error(`notification sms '${type}' failed:`, err);
-    await notificationsRepository.markFailed(row.id);
   }
 }
 

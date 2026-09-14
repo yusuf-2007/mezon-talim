@@ -32,8 +32,14 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: false,
     timeout: 180_000,
-    // Phone login is flag-gated in production; the suite covers it, so the
-    // server under test always has it on.
-    env: { ...process.env, OTP_LOGIN_ENABLED: "true" } as Record<string, string>,
+    env: {
+      ...process.env,
+      // Phone login is flag-gated in production; the suite covers it, so the
+      // server under test always has it on.
+      OTP_LOGIN_ENABLED: "true",
+      // A fixed Svix secret so the delivery-webhook spec can sign requests the
+      // way Resend would. Base64 of "mezon-e2e-test-secret".
+      RESEND_WEBHOOK_SECRET: "whsec_bWV6b24tZTJlLXRlc3Qtc2VjcmV0",
+    } as Record<string, string>,
   },
 });
