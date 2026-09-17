@@ -133,6 +133,7 @@ typography:
 rounded:
   xs: "6px"
   sm: "9px"
+  field: "10px"
   md: "12px"
   lg: "16px"
   xl: "18px"
