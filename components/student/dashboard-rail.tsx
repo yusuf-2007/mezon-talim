@@ -61,8 +61,9 @@ export function isRailActive(pathname: string, href: string): boolean {
  *
  * Navy rather than the app's usual white chrome: the student area is where
  * someone spends an hour at a time, and a dark rail pushes the reading surface
- * forward instead of competing with it. The lattice is the same Mezon motif the
- * landing page uses, at 5% so it reads as texture rather than pattern.
+ * forward instead of competing with it. Flat navy, no motif: the comp tiled a
+ * faint diamond lattice here, but at full size it reads as a visible grid
+ * rather than texture. The landing page reached the same conclusion.
  */
 export function DashboardRail({
   name,
@@ -83,16 +84,6 @@ export function DashboardRail({
   return (
     <aside className="hidden bg-lp-navy lg:block">
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden px-3.5 pb-4 pt-5">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-100"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44'><path d='M22 1 L43 22 L22 43 L1 22 Z' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1'/></svg>\")",
-            backgroundSize: "44px 44px",
-          }}
-        />
-
         <div className="relative flex h-full min-h-0 flex-col">
           <Link
             href="/dashboard"

@@ -9,7 +9,6 @@ import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/student/page-header";
-import { Lattice } from "@/components/student/lattice";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -106,7 +105,6 @@ export default async function MyCoursesPage() {
                   className="relative block overflow-hidden rounded-[10px] bg-lp-navy-dark"
                   style={{ aspectRatio: "16/10" }}
                 >
-                  <Lattice size={30} opacity={0.1} />
                   <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-white/20">
                     <span
                       className={cn("block h-full", r.done ? "bg-lp-navy" : "bg-lp-gold")}

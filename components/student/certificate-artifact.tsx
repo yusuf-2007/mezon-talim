@@ -1,6 +1,6 @@
 import { getLocale } from "next-intl/server";
 import { pickLocale } from "@/lib/i18n/localized";
-import { Lattice, CornerMarks } from "./lattice";
+import { CornerMarks } from "./corner-marks";
 import type { LocalizedText } from "@/lib/db/schema";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -42,7 +42,6 @@ export async function CertificateArtifact({
           className="absolute inset-x-0 top-0 h-[7px]"
           style={{ background: "linear-gradient(90deg,#023a69,#f8b801)" }}
         />
-        <Lattice size={30} opacity={0.05} color="%23023A69" />
         <div className="relative flex h-full flex-col justify-between px-[8%] pb-[6%] pt-[8%] text-center">
           <div>
             <p

@@ -9,7 +9,6 @@ import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/student/page-header";
-import { Lattice } from "@/components/student/lattice";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -81,7 +80,6 @@ export default async function DashboardCatalogPage() {
                 className="relative block overflow-hidden rounded-[10px] bg-lp-navy-dark"
                 style={{ aspectRatio: "16/10" }}
               >
-                <Lattice size={30} opacity={0.1} />
                 {(owned || hasPreview) && (
                   <span
                     className={cn(

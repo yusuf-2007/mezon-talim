@@ -14,7 +14,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/student/page-header";
 import { CertificateArtifact } from "@/components/student/certificate-artifact";
-import { Lattice, CornerMarks } from "@/components/student/lattice";
+import { CornerMarks } from "@/components/student/corner-marks";
 import { APP_TIME_ZONE, cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -202,7 +202,6 @@ function ResumePanel({
 
   return (
     <section className="relative overflow-hidden rounded-[18px] bg-lp-navy shadow-[0_16px_40px_rgba(1,20,40,.22)]">
-      <Lattice size={46} opacity={0.06} />
       <div
         aria-hidden
         className="pointer-events-none absolute -right-20 -top-36 size-[400px] rounded-full"
@@ -256,7 +255,6 @@ function ResumePanel({
 
         <Link href={href} className="relative block">
           <div className="relative aspect-video overflow-hidden rounded-[16px] bg-lp-navy-dark shadow-[0_18px_44px_rgba(1,20,40,.45)]">
-            <Lattice size={36} opacity={0.1} />
             <span className="absolute inset-0 grid place-items-center">
               <span className="grid size-14 place-items-center rounded-full border-[1.5px] border-white/50 bg-white/15 backdrop-blur-sm">
                 <Play className="size-5 fill-white text-white" />

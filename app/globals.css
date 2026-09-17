@@ -280,8 +280,10 @@
     border-color: var(--color-danger);
   }
 
-  /* The design tiled a faint diamond lattice over every navy band; dropped in
-     favour of flat colour. To restore it, add a ::before with
+  /* The design tiled a faint diamond lattice over every navy surface, here and
+     in the student dashboard; both dropped it in favour of flat colour, because
+     at 1:1 the 1px stroke reads as a grid rather than as texture. To restore it,
+     add a ::before with
      background-image: url("data:image/svg+xml,…<path d='M23 1 L45 23 L23 45 L1 23 Z'
      stroke='%23ffffff' stroke-opacity='0.06'/>…") at background-size:46px. */
 
