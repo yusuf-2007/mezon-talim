@@ -5,8 +5,9 @@ import {
   type OccupationBreakdown,
 } from "@/lib/db/repositories/audience";
 import { settingsRepository } from "@/lib/db/repositories/settings";
-import { StatCard } from "@/components/admin/stat-card";
 import { PollVariantControl } from "@/components/admin/poll-variant-control";
+import { AdminPageHeader } from "@/components/admin/page-header";
+import { Card, CardHead, Empty, KpiStrip } from "@/components/admin/ui";
 
 const OCC_ORDER = [
   "student",
@@ -16,12 +17,14 @@ const OCC_ORDER = [
   "other",
 ] as const;
 
+/** One colour per occupation, held constant across both cards so the two
+    breakdowns can be compared by eye rather than by reading every label. */
 const OCC_COLORS: Record<string, string> = {
-  student: "bg-navy-600",
-  business_owner: "bg-gold-500",
-  corporate_employee: "bg-navy-800",
-  educator: "bg-success",
-  other: "bg-slate-400",
+  student: "bg-lp-navy-mid",
+  business_owner: "bg-lp-gold",
+  corporate_employee: "bg-lp-navy",
+  educator: "bg-lp-success-dot",
+  other: "bg-lp-line-strong",
 };
 
 export default async function AdminAudiencePage() {
@@ -45,37 +48,48 @@ export default async function AdminAudiencePage() {
       : 0;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold text-navy-800">
-          {t("audienceTitle")}
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">{t("audienceSubtitle")}</p>
-      </div>
+    <>
+      <AdminPageHeader
+        eyebrow={t("navAudience")}
+        title={t("audienceTitle")}
+        userId={viewer.id}
+        role={viewer.role}
+      />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label={t("audResponses")}
-          value={String(totals.answered)}
-          sub={t("audRecent") + `: +${recent}`}
-        />
-        <StatCard
-          label={t("audResponseRate")}
-          value={`${responseRate}%`}
-          sub={`${t("audAnswered")} ${totals.answered} · ${t("audSkipped")} ${totals.skipped}`}
-        />
-        <StatCard
-          label={t("audRegistrants")}
-          value={String(registrants.reduce((n, r) => n + r.count, 0))}
-          sub={t("audRegistrantsSub")}
+      <div className="mb-[18px]">
+        <KpiStrip
+          cells={[
+            {
+              label: t("audResponses"),
+              value: String(totals.answered),
+              sub: `${t("audRecent")}: +${recent}`,
+            },
+            {
+              label: t("audResponseRate"),
+              value: `${responseRate}%`,
+              sub: `${t("audAnswered")} ${totals.answered} · ${t("audSkipped")} ${totals.skipped}`,
+            },
+            {
+              label: t("audRegistrants"),
+              value: String(registrants.reduce((n, r) => n + r.count, 0)),
+              sub: t("audRegistrantsSub"),
+            },
+            {
+              label: t("audPollVariant"),
+              value: pollVariant.toUpperCase(),
+              sub: t("audPollVariantSub"),
+            },
+          ]}
         />
       </div>
 
       {viewer.role === "super_admin" && (
-        <PollVariantControl current={pollVariant} />
+        <div className="mb-[18px]">
+          <PollVariantControl current={pollVariant} />
+        </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-[18px] lg:grid-cols-2">
         <BreakdownCard
           title={t("audVisitors")}
           subtitle={t("audVisitorsSub")}
@@ -91,7 +105,7 @@ export default async function AdminAudiencePage() {
           emptyLabel={t("audNoData")}
         />
       </div>
-    </div>
+    </>
   );
 }
 
@@ -112,27 +126,25 @@ function BreakdownCard({
   const byOcc = new Map(data.map((r) => [r.occupation, r.count]));
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-5 shadow-sm">
-      <h2 className="font-heading text-lg font-semibold text-navy-800">{title}</h2>
-      <p className="text-xs text-slate-500">{subtitle}</p>
+    <Card>
+      <CardHead eyebrow={subtitle} title={title} />
 
       {total === 0 ? (
-        <p className="py-10 text-center text-sm text-slate-500">{emptyLabel}</p>
+        <Empty>{emptyLabel}</Empty>
       ) : (
-        <ul className="mt-5 space-y-3">
+        <ul className="space-y-3 px-6 py-5">
           {OCC_ORDER.map((o) => {
             const c = byOcc.get(o) ?? 0;
             const pct = total > 0 ? Math.round((c / total) * 100) : 0;
             return (
               <li key={o}>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-ink">{label(o)}</span>
-                  <span className="tabular-nums text-slate-500">
-                    {c}{" "}
-                    <span className="text-xs text-slate-400">({pct}%)</span>
+                <div className="flex items-center justify-between text-[.88rem]">
+                  <span className="text-lp-ink">{label(o)}</span>
+                  <span className="text-lp-slate tabular-nums">
+                    {c} <span className="text-[.8rem] text-lp-muted">({pct}%)</span>
                   </span>
                 </div>
-                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-navy-100">
+                <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-lp-line-soft">
                   <div
                     className={`h-full rounded-full ${OCC_COLORS[o]}`}
                     style={{ width: `${pct}%` }}
@@ -143,6 +155,6 @@ function BreakdownCard({
           })}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }

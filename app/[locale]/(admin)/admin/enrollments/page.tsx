@@ -5,24 +5,40 @@ import { usersRepository } from "@/lib/db/repositories/users";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
-import { Pencil } from "lucide-react";
 import { removeEnrollmentAction } from "@/lib/admin/actions";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
-import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/admin/stat-card";
 import { UserAvatar } from "@/components/admin/user-avatar";
 import { ConfirmSubmit } from "@/components/studio/confirm-submit";
 import { CourseFilter } from "@/components/admin/course-filter";
 import { EnrollStudentsDialog } from "@/components/admin/enroll-students-dialog";
+import { AdminPageHeader } from "@/components/admin/page-header";
+import {
+  Bar,
+  Card,
+  CardToolbar,
+  Empty,
+  GhostLink,
+  KpiStrip,
+  StatusDot,
+  Table,
+  type DotTone,
+} from "@/components/admin/ui";
 import type { Locale } from "@/lib/i18n/routing";
 
+/**
+ * Who is on which course, and how far they have got.
+ *
+ * Scoped to one course at a time rather than listing every enrolment: progress
+ * only means anything against a particular curriculum, and "40%" across two
+ * courses of different lengths is a number with no referent.
+ */
 export default async function AdminEnrollmentsPage({
   searchParams,
 }: {
   searchParams: Promise<{ courseId?: string }>;
 }) {
-  await requireRole("super_admin");
+  const me = await requireRole("super_admin");
   const t = await getTranslations("Admin");
   const locale = (await getLocale()) as Locale;
   const { courseId } = await searchParams;
@@ -30,31 +46,30 @@ export default async function AdminEnrollmentsPage({
   const courses = await coursesRepository.listAll();
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-heading text-2xl font-semibold text-navy-800">
-          {t("enrollmentsTitle")}
-        </h1>
-      </div>
-
-      {/* Course selector — applies on selection, no submit button */}
-      <CourseFilter
-        courses={courses.map((c) => ({
-          id: c.id,
-          label: pickLocale(c.title, locale),
-        }))}
-        current={courseId ?? ""}
-        placeholder={t("enrollmentsSelectCourse")}
+    <>
+      <AdminPageHeader
+        eyebrow={t("navEnrollments")}
+        title={t("enrollmentsTitle")}
+        userId={me.id}
+        role={me.role}
       />
 
+      <div className="mb-[18px]">
+        <CourseFilter
+          courses={courses.map((c) => ({ id: c.id, label: pickLocale(c.title, locale) }))}
+          current={courseId ?? ""}
+          placeholder={t("enrollmentsSelectCourse")}
+        />
+      </div>
+
       {!courseId ? (
-        <div className="rounded-xl border border-line bg-surface p-8 text-center text-slate-500 shadow-sm">
-          {t("selectCourse")}
-        </div>
+        <Card>
+          <Empty>{t("selectCourse")}</Empty>
+        </Card>
       ) : (
         <CourseRoster courseId={courseId} t={t} courses={courses} locale={locale} />
       )}
-    </div>
+    </>
   );
 }
 
@@ -65,7 +80,7 @@ async function CourseRoster({
   locale,
 }: {
   courseId: string;
-  t: Awaited<ReturnType<typeof getTranslations>>;
+  t: Awaited<ReturnType<typeof getTranslations<"Admin">>>;
   courses: Awaited<ReturnType<typeof coursesRepository.listAll>>;
   locale: Locale;
 }) {
@@ -81,9 +96,7 @@ async function CourseRoster({
     lessonIds.length > 0
       ? await lessonProgressRepository.completedCountsForLessons(lessonIds)
       : [];
-  const completedByUser = new Map<string, number>(
-    completedRows.map((r) => [r.userId, r.completed]),
-  );
+  const completedByUser = new Map(completedRows.map((r) => [r.userId, r.completed]));
 
   const enrolledIds = new Set(roster.map((r) => r.user.id));
   const candidates = allUsers
@@ -91,117 +104,95 @@ async function CourseRoster({
     .map((u) => ({ id: u.id, label: `${u.fullName} (${u.email})` }));
 
   const course = courses.find((c) => c.id === courseId);
-  const courseTitle = course ? pickLocale(course.title, locale) : "";
+  const finished = roster.filter(
+    ({ user }) => totalLessons > 0 && (completedByUser.get(user.id) ?? 0) >= totalLessons,
+  ).length;
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard label={t("colCourse")} value={courseTitle} />
-        <StatCard label={t("statEnrolled")} value={String(roster.length)} />
-        <StatCard label={t("statLessons")} value={String(totalLessons)} />
+    <>
+      <div className="mb-[18px]">
+        <KpiStrip
+          cells={[
+            {
+              label: t("colCourse"),
+              value: course ? pickLocale(course.title, locale) : "—",
+            },
+            { label: t("statEnrolled"), value: String(roster.length) },
+            { label: t("statLessons"), value: String(totalLessons) },
+            { label: t("completedLabel"), value: String(finished), tone: "green" },
+          ]}
+        />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-heading text-lg font-semibold text-navy-800">
-          {t("addStudents")}
-        </h2>
-        <EnrollStudentsDialog courseId={courseId} users={candidates} />
-      </div>
+      <Card>
+        <CardToolbar>
+          <p className="text-[.88rem] font-semibold text-lp-ink">{t("addStudents")}</p>
+          <EnrollStudentsDialog courseId={courseId} users={candidates} />
+        </CardToolbar>
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-4 py-3 font-medium">{t("colStudent")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colProgress")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colEnrollStatus")}</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {roster.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                  {t("noRoster")}
-                </td>
-              </tr>
-            ) : (
-              roster.map(({ enrollment, user, hasAvatar }) => {
-                const completed = completedByUser.get(user.id) ?? 0;
-                const pct =
-                  totalLessons > 0
-                    ? Math.round((completed / totalLessons) * 100)
-                    : 0;
-                const statusLabel =
-                  pct >= 100
-                    ? t("completedLabel")
-                    : pct <= 0
-                      ? t("notStarted")
-                      : t("inProgressLabel");
-                return (
-                  <tr key={enrollment.id}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <UserAvatar
-                          name={user.fullName}
-                          email={user.email}
-                          src={hasAvatar ? `/api/avatars/${user.id}` : null}
-                        />
-                        <div className="min-w-0">
-                          <Link
-                            href={`/admin/users/${user.id}`}
-                            className="block truncate font-medium text-ink hover:text-navy-600"
-                          >
-                            {user.fullName || "—"}
-                          </Link>
-                          <p className="truncate text-xs text-slate-500">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-full max-w-[160px] overflow-hidden rounded-full bg-navy-100">
-                          <div
-                            className="h-full rounded-full bg-success"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="shrink-0 tabular-nums text-slate-600">
-                          {pct}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-ink">{statusLabel}</span>
-                      <span className="ml-1 text-xs text-slate-400">
-                        ({enrollment.status})
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          render={<Link href={`/admin/users/${user.id}`} />}
-                          variant="ghost"
-                          size="sm"
-                          className="text-navy-600"
-                        >
-                          <Pencil className="size-3.5" />
-                          {t("edit")}
-                        </Button>
-                        <form
-                          action={removeEnrollmentAction.bind(null, user.id, courseId)}
-                        >
-                          <ConfirmSubmit label={t("remove")} />
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <Table
+          empty={t("noRoster")}
+          head={[
+            { label: t("colStudent") },
+            { label: t("colProgress") },
+            { label: t("colEnrollStatus") },
+            { label: t("colActions"), align: "right" },
+          ]}
+          rows={roster.map(({ enrollment, user, hasAvatar }) => {
+            const done = completedByUser.get(user.id) ?? 0;
+            const complete = totalLessons > 0 && done >= totalLessons;
+            const tone: DotTone = complete ? "green" : done > 0 ? "navy" : "grey";
+            const label = complete
+              ? t("completedLabel")
+              : done > 0
+                ? t("inProgressLabel")
+                : t("notStarted");
+            return [
+              <span key="s" className="flex items-center gap-3">
+                <UserAvatar
+                  name={user.fullName}
+                  email={user.email}
+                  src={hasAvatar ? `/api/avatars/${user.id}` : null}
+                />
+                <span className="block min-w-0">
+                  <Link
+                    href={`/admin/users/${user.id}`}
+                    className="block truncate font-semibold text-lp-ink hover:text-lp-navy-mid"
+                  >
+                    {user.fullName || "—"}
+                  </Link>
+                  <span className="block truncate text-[.8rem] text-lp-muted">
+                    {user.email}
+                  </span>
+                </span>
+              </span>,
+              <span key="p" className="flex items-center gap-2.5">
+                <Bar
+                  value={done}
+                  max={totalLessons}
+                  tone={complete ? "green" : "navy"}
+                  className="w-full max-w-[9rem]"
+                />
+                <span className="shrink-0 text-[.82rem] text-lp-slate tabular-nums">
+                  {done} / {totalLessons}
+                </span>
+              </span>,
+              <span key="st" className="flex flex-wrap items-center gap-2">
+                <StatusDot tone={tone}>{label}</StatusDot>
+                {enrollment.status !== "active" && (
+                  <span className="text-[.78rem] text-lp-muted">{enrollment.status}</span>
+                )}
+              </span>,
+              <span key="a" className="flex items-center justify-end gap-3">
+                <GhostLink href={`/admin/users/${user.id}`}>{t("edit")}</GhostLink>
+                <form action={removeEnrollmentAction.bind(null, user.id, courseId)}>
+                  <ConfirmSubmit label={t("remove")} />
+                </form>
+              </span>,
+            ];
+          })}
+        />
+      </Card>
+    </>
   );
 }

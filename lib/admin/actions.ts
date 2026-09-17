@@ -196,12 +196,24 @@ export async function resetProgressAction(
   revalidatePath(`/admin/users/${userId}`);
 }
 
-/** Manually issue a certificate (admin override of the exam-pass gate). Audited. */
+/**
+ * Issue a certificate directly, without waiting for the exam-pass gate.
+ *
+ * Two callers: the account page, where this is an admin override, and the
+ * issuance queue, where the student has passed and a person is confirming the
+ * spelling of the name before it is printed on something publicly verifiable.
+ *
+ * Idempotent — the queue can be open in two tabs, and a second issue would
+ * mint a second code for the same course.
+ */
 export async function issueCertificateAction(
   userId: string,
   courseId: string,
 ): Promise<void> {
   const actor = await requireRole("super_admin");
+  const existing = await certificatesRepository.findForUserCourse(userId, courseId);
+  if (existing) return;
+
   const cert = await issueManual(userId, courseId);
   await auditRepository.record({
     actorUserId: actor.id,
@@ -211,6 +223,7 @@ export async function issueCertificateAction(
   });
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath("/admin/certificates");
+  revalidatePath("/admin");
 }
 
 /** Revoke a certificate (super_admin). Audited. */
@@ -296,3 +309,4 @@ export async function setApplicationStatusAction(
   revalidatePath("/admin/applications");
   revalidatePath("/admin");
 }
+

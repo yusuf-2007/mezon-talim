@@ -3,8 +3,12 @@ import { and, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import { db } from "../client";
 import {
   certificates,
+  courseApplications,
   courses,
   enrollments,
+  lessonProgress,
+  lessons,
+  modules,
   payments,
   users,
 } from "../schema";
@@ -16,6 +20,66 @@ import type { LocalizedText } from "../schema";
  * place so the dashboard composes a handful of typed calls.
  */
 export const analyticsRepository = {
+  /**
+   * The acquisition funnel, as far as the database can see it.
+   *
+   * The handoff's first step is landing-page visits, which nothing records —
+   * that needs web analytics, and inventing a number here would be worse than
+   * leaving the step out. Everything from "someone identified themselves"
+   * onwards is real.
+   */
+  async funnel() {
+    const [[applied], [registered], [started], [paid], [watched], [certified]] =
+      await Promise.all([
+        db.select({ n: sql<number>`count(*)` }).from(courseApplications),
+        db.select({ n: sql<number>`count(*)` }).from(users).where(eq(users.role, "student")),
+        db.select({ n: sql<number>`count(distinct ${payments.userId})` }).from(payments),
+        db
+          .select({ n: sql<number>`count(distinct ${payments.userId})` })
+          .from(payments)
+          .where(eq(payments.status, "paid")),
+        db
+          .select({ n: sql<number>`count(distinct ${lessonProgress.userId})` })
+          .from(lessonProgress),
+        db.select({ n: sql<number>`count(distinct ${certificates.userId})` }).from(certificates),
+      ]);
+
+    return [
+      { step: "applied", count: Number(applied?.n ?? 0) },
+      { step: "registered", count: Number(registered?.n ?? 0) },
+      { step: "checkout", count: Number(started?.n ?? 0) },
+      { step: "paid", count: Number(paid?.n ?? 0) },
+      { step: "watched", count: Number(watched?.n ?? 0) },
+      { step: "certified", count: Number(certified?.n ?? 0) },
+    ] as const;
+  },
+
+  /**
+   * How many students reached each lesson of a course, in order.
+   *
+   * Drop-off is the gap between consecutive lessons. Counting rows in
+   * lesson_progress means "opened it far enough for us to record something",
+   * which is the honest definition of reached given no watch-time exists.
+   */
+  async lessonDropOff(courseId: string) {
+    return db
+      .select({
+        lessonId: lessons.id,
+        title: lessons.title,
+        moduleOrder: modules.orderIndex,
+        lessonOrder: lessons.orderIndex,
+        started: sql<number>`count(distinct ${lessonProgress.userId})`,
+        completed: sql<number>`count(distinct ${lessonProgress.userId}) filter (where ${lessonProgress.completed})`,
+      })
+      .from(lessons)
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .leftJoin(lessonProgress, eq(lessonProgress.lessonId, lessons.id))
+      .where(eq(modules.courseId, courseId))
+      .groupBy(lessons.id, lessons.title, modules.orderIndex, lessons.orderIndex)
+      .orderBy(modules.orderIndex, lessons.orderIndex);
+  },
+
+
   /** Headline KPIs for the dashboard. */
   async overview() {
     const [revenue] = await db
