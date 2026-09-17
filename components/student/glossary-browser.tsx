@@ -73,7 +73,7 @@ export function GlossaryBrowser({ terms }: { terms: GlossaryTerm[] }) {
           onClick={() => setLetter(null)}
           aria-pressed={letter === null}
           className={cn(
-            "grid h-8 min-w-11 place-items-center rounded-[7px] px-2.5 text-[.8rem] font-bold transition-colors",
+            "grid h-8 min-w-11 place-items-center rounded-[6px] px-2.5 text-[.8rem] font-bold transition-colors",
             letter === null ? "bg-lp-navy text-white" : "text-lp-slate hover:bg-lp-wash",
           )}
         >
@@ -86,7 +86,7 @@ export function GlossaryBrowser({ terms }: { terms: GlossaryTerm[] }) {
             onClick={() => setLetter(letter === ch ? null : ch)}
             aria-pressed={letter === ch}
             className={cn(
-              "grid size-8 place-items-center rounded-[7px] text-[.8rem] font-bold transition-colors",
+              "grid size-8 place-items-center rounded-[6px] text-[.8rem] font-bold transition-colors",
               letter === ch ? "bg-lp-navy text-white" : "text-lp-slate hover:bg-lp-wash",
             )}
           >

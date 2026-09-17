@@ -102,8 +102,8 @@ export function DashboardRail({
               aria-hidden
               className="relative inline-block h-6 w-[30px] shrink-0"
             >
-              <span className="absolute left-0 top-0 h-6 w-[13px] -skew-x-6 rounded-l-[7px] rounded-tl-[3px] bg-[#9BB8D4]" />
-              <span className="absolute right-0 top-0 h-6 w-[13px] skew-x-6 rounded-r-[7px] rounded-tr-[3px] bg-lp-gold" />
+              <span className="absolute left-0 top-0 h-6 w-[13px] -skew-x-6 rounded-l-[6px] rounded-tl-[3px] bg-[#9BB8D4]" />
+              <span className="absolute right-0 top-0 h-6 w-[13px] skew-x-6 rounded-r-[6px] rounded-tr-[3px] bg-lp-gold" />
             </span>
             <span className="font-lp-heading text-[1.15rem] font-semibold leading-none">
               <span className="text-white">Mezon</span>{" "}

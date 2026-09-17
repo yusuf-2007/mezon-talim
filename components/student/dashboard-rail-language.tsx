@@ -20,7 +20,7 @@ export function RailLanguage() {
   return (
     <nav
       aria-label={t("label")}
-      className="flex overflow-hidden rounded-[7px] border border-white/15 bg-white/[.07] text-[.72rem] font-bold"
+      className="flex overflow-hidden rounded-[6px] border border-white/15 bg-white/[.07] text-[.72rem] font-bold"
     >
       {routing.locales.map((locale) => {
         const isActive = locale === active;

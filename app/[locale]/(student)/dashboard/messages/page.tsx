@@ -59,7 +59,7 @@ export default async function StudentMessagesPage({
             href={{ pathname: "/dashboard/messages", query: { section: s.key } }}
             aria-current={section === s.key ? "page" : undefined}
             className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-[7px] px-4 text-[.88rem] font-bold transition-colors",
+              "inline-flex min-h-11 items-center gap-2 rounded-[6px] px-4 text-[.88rem] font-bold transition-colors",
               section === s.key
                 ? "bg-lp-navy text-white"
                 : "text-lp-slate hover:bg-lp-wash",

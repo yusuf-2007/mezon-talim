@@ -255,7 +255,7 @@ function ResumePanel({
         </div>
 
         <Link href={href} className="relative block">
-          <div className="relative aspect-video overflow-hidden rounded-[14px] bg-lp-navy-dark shadow-[0_18px_44px_rgba(1,20,40,.45)]">
+          <div className="relative aspect-video overflow-hidden rounded-[16px] bg-lp-navy-dark shadow-[0_18px_44px_rgba(1,20,40,.45)]">
             <Lattice size={36} opacity={0.1} />
             <span className="absolute inset-0 grid place-items-center">
               <span className="grid size-14 place-items-center rounded-full border-[1.5px] border-white/50 bg-white/15 backdrop-blur-sm">
