@@ -1,3 +1,4 @@
+import { Check, CheckCircle2, Lock, Play, RotateCcw, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
 import { pickLocale } from "@/lib/i18n/localized";
@@ -48,7 +49,7 @@ export async function PlayerSidebar({
             <ul className="pb-2">
               {m.lessons.map((lesson) => {
                 const active = lesson.id === activeLessonId;
-                const icon = lesson.completed ? "✓" : lesson.accessible ? "▷" : "🔒";
+                const Icon = lesson.completed ? Check : lesson.accessible ? Play : Lock;
                 const content = (
                   <div
                     className={cn(
@@ -66,7 +67,7 @@ export async function PlayerSidebar({
                       )}
                       aria-hidden
                     >
-                      {icon}
+                      <Icon className="size-3" strokeWidth={2.5} />
                     </span>
                     <span className="line-clamp-2">{pickLocale(lesson.title, locale)}</span>
                   </div>
@@ -131,7 +132,7 @@ function ExamBoxCard({
       case "passed":
         return (
           <span className="inline-flex items-center gap-1.5 font-semibold text-success">
-            ✓ {tExam("examPassed")}
+            <CheckCircle2 className="size-4" /> {tExam("examPassed")}
             {examBox.bestScorePct != null && (
               <span className="tabular-nums opacity-80">· {examBox.bestScorePct}%</span>
             )}
@@ -141,14 +142,14 @@ function ExamBoxCard({
         // Took it, failed, out of attempts → still clickable to request access.
         return (
           <span className="inline-flex items-center gap-1.5 font-medium text-danger">
-            ✗ {tExam("examNotPassed")}
+            <XCircle className="size-4" /> {tExam("examNotPassed")}
           </span>
         );
       case "ready":
         return examBox.attempted ? (
           // Failed but has attempts left → retry.
           <span className="inline-flex items-center gap-1.5 font-semibold text-gold-500">
-            ↻ {tExam("examRetry")}
+            <RotateCcw className="size-4" /> {tExam("examRetry")}
             {examBox.bestScorePct != null && (
               <span className="tabular-nums opacity-80">· {examBox.bestScorePct}%</span>
             )}
@@ -156,13 +157,13 @@ function ExamBoxCard({
         ) : (
           // Never taken → start.
           <span className="inline-flex items-center gap-1.5 font-semibold text-gold-500">
-            ▷ {tExam("startFinalExam")}
+            <Play className="size-4" /> {tExam("startFinalExam")}
           </span>
         );
       case "locked":
         return (
           <span className="inline-flex items-center gap-1.5 text-slate-500">
-            🔒{" "}
+            <Lock className="size-4 shrink-0" />{" "}
             {tExam("unlockHint", {
               done: examBox.lessonsDone,
               total: examBox.lessonsTotal,

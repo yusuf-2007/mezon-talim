@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useActionState, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { addCommentAction, deleteCommentAction } from "@/lib/community/actions";
@@ -63,7 +64,7 @@ function CommentForm({
       <div className="flex justify-end gap-2">
         {onDone && (
           <Button type="button" variant="ghost" size="sm" onClick={onDone}>
-            ✕
+            <X className="size-4" aria-hidden />
           </Button>
         )}
         <Button type="submit" size="sm" disabled={pending}>

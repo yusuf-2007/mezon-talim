@@ -651,7 +651,12 @@
     "vqCorrect": "Correct!",
     "vqWrong": "Incorrect",
     "vqContinue": "Continue",
-    "vqSkip": "Skip"
+    "vqSkip": "Skip",
+    "allLessonsDone": "All lessons completed",
+    "examNextHint": "Sit the final exam to earn your certificate.",
+    "proceedToExam": "Proceed to the final exam",
+    "examAlreadyPassed": "The final exam is already passed.",
+    "viewExamResult": "View result and certificate"
   },
   "Assess": {
     "tab": "Tests",
@@ -787,7 +792,12 @@
     "qType_true_false": "True / False",
     "points": "Points",
     "examNotPassed": "Not passed",
-    "examRetry": "Retry exam"
+    "examRetry": "Retry exam",
+    "readyTitle": "Ready for the exam?",
+    "resumeTitle": "Exam in progress",
+    "readyHint": "Your answers save automatically once you start.",
+    "readyHintTimed": "You get {minutes} minutes once you start. Answers save automatically.",
+    "moduleGeneral": "General questions"
   },
   "Dashboard": {
     "title": "My courses",

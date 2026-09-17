@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
@@ -66,7 +67,7 @@ export default async function StudentProfilePage() {
           <p className="text-sm text-slate-500">
             {user.email ?? user.phone ?? ""}
             {user.email && user.emailVerified && (
-              <span className="ml-2 text-success">✓ {t("emailVerified")}</span>
+              <span className="ml-2 inline-flex items-center gap-1 text-success"><Check className="size-3.5" aria-hidden /> {t("emailVerified")}</span>
             )}
           </p>
           <p className="text-xs text-slate-500">

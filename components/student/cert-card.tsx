@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
@@ -17,9 +18,7 @@ export function CertCard({
     <li className="flex flex-col rounded-xl border border-line bg-surface p-5 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-heading text-base font-semibold text-navy-800">{title}</h3>
-        <span className="text-2xl" aria-hidden>
-          🎓
-        </span>
+        <Award className="size-6 shrink-0 text-gold-500" aria-hidden />
       </div>
       <p className="mt-2 font-mono text-xs text-slate-500">{code}</p>
       <p className="text-xs text-slate-500">{issued}</p>

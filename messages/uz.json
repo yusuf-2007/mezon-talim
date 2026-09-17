@@ -651,7 +651,12 @@
     "vqCorrect": "To'g'ri!",
     "vqWrong": "Noto'g'ri",
     "vqContinue": "Davom etish",
-    "vqSkip": "O'tkazib yuborish"
+    "vqSkip": "O'tkazib yuborish",
+    "allLessonsDone": "Barcha darslar tugallandi",
+    "examNextHint": "Endi yakuniy imtihonni topshirib, sertifikat oling.",
+    "proceedToExam": "Yakuniy imtihonga oʻtish",
+    "examAlreadyPassed": "Yakuniy imtihon muvaffaqiyatli topshirilgan.",
+    "viewExamResult": "Natija va sertifikatni koʻrish"
   },
   "Assess": {
     "tab": "Testlar",
@@ -787,7 +792,12 @@
     "qType_true_false": "To‘g‘ri / Noto‘g‘ri",
     "points": "Ball",
     "examNotPassed": "O‘tilmadi",
-    "examRetry": "Qayta urinish"
+    "examRetry": "Qayta urinish",
+    "readyTitle": "Imtihonga tayyormisiz?",
+    "resumeTitle": "Imtihon davom etmoqda",
+    "readyHint": "Boshlaganingizdan soʻng javoblaringiz avtomatik saqlanadi.",
+    "readyHintTimed": "Boshlaganingizdan soʻng {minutes} daqiqa vaqt beriladi. Javoblar avtomatik saqlanadi.",
+    "moduleGeneral": "Umumiy savollar"
   },
   "Dashboard": {
     "title": "Mening kurslarim",

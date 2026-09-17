@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -177,7 +178,8 @@ export function ExamRunner({
               flags.has(q.id) ? "text-gold-500" : "text-slate-400 hover:text-navy-600",
             )}
           >
-            {flags.has(q.id) ? "★" : "☆"} {flags.has(q.id) ? t("flagged") : t("flag")}
+            <Star className={cn("size-3.5", flags.has(q.id) && "fill-current")} />{" "}
+            {flags.has(q.id) ? t("flagged") : t("flag")}
           </button>
         </div>
 
@@ -205,7 +207,7 @@ export function ExamRunner({
                     )}
                     aria-hidden
                   >
-                    {on ? "✓" : ""}
+                    {on && <Check className="size-3" strokeWidth={3} />}
                   </span>
                   {pickLocale(o.label, locale)}
                 </button>

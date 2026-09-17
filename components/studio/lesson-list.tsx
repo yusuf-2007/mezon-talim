@@ -1,5 +1,6 @@
 "use client";
 
+import { HelpCircle, Video } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { ContentFormState } from "@/lib/content/actions";
@@ -52,7 +53,7 @@ export function LessonRow({
             <Badge className="bg-gold-100 text-navy-800">{t("previewBadge")}</Badge>
           )}
           {lesson.bunnyVideoId && (
-            <span className="text-xs text-slate-500">▶ {lesson.bunnyVideoId.slice(0, 8)}…</span>
+            <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Video className="size-3" aria-hidden /> {lesson.bunnyVideoId.slice(0, 8)}…</span>
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -65,7 +66,7 @@ export function LessonRow({
               size="sm"
               onClick={() => setShowQuestions((s) => !s)}
             >
-              ❓ {t("vqButton")}
+              <HelpCircle className="size-3.5" aria-hidden /> {t("vqButton")}
               {videoQuestionsCount > 0 && (
                 <span className="ml-1 tabular-nums">({videoQuestionsCount})</span>
               )}

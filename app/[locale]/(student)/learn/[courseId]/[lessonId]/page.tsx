@@ -1,3 +1,5 @@
+import { Lock } from "lucide-react";
+import { getFinalExamBox } from "@/lib/assessments/service";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
@@ -74,7 +76,7 @@ export default async function PlayerPage({
     return (
       <CoursePlayerShell {...shellProps}>
         <div className="rounded-xl border border-line bg-surface p-10 text-center">
-          <p className="text-4xl">🔒</p>
+          <Lock className="mx-auto size-10 text-slate-400" aria-hidden />
           <p className="mt-4 text-slate-500">
             {curriculum.enrolled ? t("locked") : t("notEnrolled")}
           </p>
@@ -100,6 +102,8 @@ export default async function PlayerPage({
       videoQuestionsRepository.listForLessonWithAnswers(lessonId, user.id),
     ]);
   const quizCount = quiz ? await questionsRepository.countByAssessment(quiz.id) : 0;
+  // Only the last lesson needs to know what follows it.
+  const examBox = nextId ? null : await getFinalExamBox(courseId, user.id);
   const lessonTitle = pickLocale(lesson.title, locale);
   const bodyText = pickLocale(full?.body, locale);
 
@@ -132,6 +136,11 @@ export default async function PlayerPage({
           completed={lesson.completed}
           prevHref={prevId ? `/learn/${courseId}/${prevId}` : null}
           nextHref={nextId ? `/learn/${courseId}/${nextId}` : null}
+          finalExam={
+            examBox && examBox.state !== "locked"
+              ? { href: `/exam/${examBox.assessmentId}`, state: examBox.state }
+              : null
+          }
         />
       </div>
 

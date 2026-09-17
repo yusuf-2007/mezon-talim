@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ export function AuthorMessagesPanel({
     return (
       <div className="space-y-4">
         <p className="flex items-center gap-1.5 text-xs text-slate-500">
-          <span aria-hidden>🔒</span> {t("msgPrivacy")}
+          <Lock className="size-3.5" aria-hidden /> {t("msgPrivacy")}
         </p>
         {messages.length === 0 ? (
           <p className="text-sm text-slate-500">{t("msgEmpty")}</p>
@@ -77,7 +78,7 @@ export function AuthorMessagesPanel({
   return (
     <div className="space-y-4">
       <p className="flex items-center gap-1.5 text-xs text-slate-500">
-        <span aria-hidden>🔒</span> {t("msgInstructorHint")}
+        <Lock className="size-3.5" aria-hidden /> {t("msgInstructorHint")}
       </p>
       {ordered.length === 0 ? (
         <p className="text-sm text-slate-500">{t("msgNoThreads")}</p>

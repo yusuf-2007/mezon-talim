@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useActionState, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { AssessFormState } from "@/lib/assessments/studio-actions";
@@ -151,7 +152,7 @@ export function QuestionEditor({
                 size="sm"
                 onClick={() => setOptions((os) => os.filter((_, j) => j !== i))}
               >
-                ✕
+                <X className="size-4" aria-hidden />
               </Button>
             )}
           </div>

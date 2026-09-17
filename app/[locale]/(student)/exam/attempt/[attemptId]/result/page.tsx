@@ -1,3 +1,4 @@
+import { ArrowLeft, Award, Check, Download, RotateCcw, Trophy, X } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
@@ -24,7 +25,6 @@ export default async function ExamResultPage({
   const { attemptId } = await params;
   const user = await requireUser();
   const t = await getTranslations("Exam");
-  const tCert = await getTranslations("Certificate");
   const locale = await getLocale();
 
   const result = await getResult(attemptId, user.id);
@@ -44,7 +44,15 @@ export default async function ExamResultPage({
           result.passed ? "border-success/40 bg-success/5" : "border-danger/40 bg-danger/5",
         )}
       >
-        <p className="text-5xl">{result.passed ? "🎉" : "📘"}</p>
+        <span
+          className={cn(
+            "mx-auto flex size-16 items-center justify-center rounded-full",
+            result.passed ? "bg-success/15 text-success" : "bg-danger/10 text-danger",
+          )}
+          aria-hidden
+        >
+          {result.passed ? <Trophy className="size-8" /> : <RotateCcw className="size-8" />}
+        </span>
         <h1 className="mt-4 font-heading text-2xl font-semibold text-navy-800">
           {result.isScored ? (result.passed ? t("passed") : t("failed")) : t("resultTitle")}
         </h1>
@@ -72,22 +80,48 @@ export default async function ExamResultPage({
             </p>
           </>
         )}
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {/* The certificate is the point of passing, so it gets two large
+            actions of its own; everything else hangs below, smaller. */}
+        <div className="mx-auto mt-6 max-w-md space-y-3">
           {certificate && (
-            <Button render={<Link href={`/verify/${certificate.verificationCode}`} />}>
-              🎓 {tCert("getCertificate")}
-            </Button>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                render={
+                  <a
+                    href={`/api/certificates/${certificate.verificationCode}/pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                  />
+                }
+                size="lg"
+              >
+                <Download className="size-4" />
+                {t("downloadCertificate")}
+              </Button>
+              <Button
+                render={<Link href={`/verify/${certificate.verificationCode}`} />}
+                size="lg"
+                variant="outline"
+              >
+                <Award className="size-4" />
+                {t("viewCertificate")}
+              </Button>
+            </div>
           )}
           {!result.passed && result.isScored && (
-            <Button render={<Link href={`/exam/${result.assessment.id}`} />} variant="outline">
+            <Button render={<Link href={`/exam/${result.assessment.id}`} />} size="lg" className="w-full">
+              <RotateCcw className="size-4" />
               {t("retry")}
             </Button>
           )}
           {course && (
             <Button
               render={<Link href={`/courses/${course.slug}`} />}
-              variant={certificate ? "outline" : "default"}
+              variant={certificate || (!result.passed && result.isScored) ? "ghost" : "default"}
+              size="sm"
+              className="w-full"
             >
+              <ArrowLeft className="size-4" />
               {t("backToCourse")}
             </Button>
           )}
@@ -110,7 +144,7 @@ export default async function ExamResultPage({
                 >
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-ink">
-                      {m.title ? pickLocale(m.title, locale) : "—"}
+                      {m.title ? pickLocale(m.title, locale) : t("moduleGeneral")}
                     </span>
                     <span
                       className={cn(
@@ -151,7 +185,7 @@ export default async function ExamResultPage({
             {result.review!.map((r, i) => (
               <li key={i} className="rounded-xl border border-line bg-surface p-4">
                 <p className="flex items-start gap-2 font-medium text-ink">
-                  <span aria-hidden>{r.correct ? "✓" : "✗"}</span>
+                  <span aria-hidden>{r.correct ? <Check className="size-4" /> : <X className="size-4" />}</span>
                   <span>{pickLocale(r.prompt, locale)}</span>
                 </p>
                 <ul className="mt-3 space-y-1.5">

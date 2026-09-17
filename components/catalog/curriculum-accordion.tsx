@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Lock, Play } from "lucide-react";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
@@ -64,7 +65,13 @@ export function CurriculumAccordion({
                       )}
                       aria-hidden
                     >
-                      {lesson.completed ? "✓" : lesson.accessible ? "▷" : "🔒"}
+                      {lesson.completed ? (
+                        <Check className="size-3" strokeWidth={2.5} />
+                      ) : lesson.accessible ? (
+                        <Play className="size-3" />
+                      ) : (
+                        <Lock className="size-3" />
+                      )}
                     </span>
                     <span
                       className={cn(

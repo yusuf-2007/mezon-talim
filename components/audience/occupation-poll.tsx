@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/lib/i18n/navigation";
@@ -189,7 +190,7 @@ export function OccupationPoll() {
         aria-label={t("skip")}
         className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:bg-bg hover:text-slate-600"
       >
-        ✕
+        <X className="size-4" aria-hidden />
       </button>
 
       <p className="font-heading text-xl font-semibold text-navy-800">{t("title")}</p>

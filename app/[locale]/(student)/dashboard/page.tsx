@@ -1,3 +1,4 @@
+import { BookOpen, Award } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { Link } from "@/lib/i18n/navigation";
@@ -36,7 +37,7 @@ export default async function DashboardHomePage() {
   const activeCerts = certs.filter((c) => !c.revokedAt);
   const completedCount = cards.filter((c) => c.pct >= 100).length;
   const inProgressCount = cards.filter((c) => c.pct > 0 && c.pct < 100).length;
-  const firstName = (user.fullName || user.email || "").split(/\s+/)[0] || "👋";
+  const firstName = (user.fullName || user.email || "").split(/\s+/)[0] || "";
 
   const tiles = [
     { label: t("statEnrolled"), value: cards.length },
@@ -84,7 +85,7 @@ export default async function DashboardHomePage() {
         </div>
         {cards.length === 0 ? (
           <div className="mt-4 rounded-xl border border-dashed border-line bg-surface p-10 text-center">
-            <p className="text-4xl">📚</p>
+            <BookOpen className="mx-auto size-10 text-slate-400" aria-hidden />
             <p className="mt-3 text-slate-500">{t("continueLearningEmpty")}</p>
             <Button render={<Link href="/catalog" />} className="mt-4">
               {t("browseCourses")}
@@ -119,7 +120,7 @@ export default async function DashboardHomePage() {
         </div>
         {activeCerts.length === 0 ? (
           <div className="mt-4 rounded-xl border border-dashed border-line bg-surface p-10 text-center">
-            <p className="text-4xl">🎓</p>
+            <Award className="mx-auto size-10 text-slate-400" aria-hidden />
             <p className="mt-3 text-slate-500">{t("certificatesEmpty")}</p>
           </div>
         ) : (

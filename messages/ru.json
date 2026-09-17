@@ -651,7 +651,12 @@
     "vqCorrect": "Верно!",
     "vqWrong": "Неверно",
     "vqContinue": "Продолжить",
-    "vqSkip": "Пропустить"
+    "vqSkip": "Пропустить",
+    "allLessonsDone": "Все уроки пройдены",
+    "examNextHint": "Осталось сдать итоговый экзамен и получить сертификат.",
+    "proceedToExam": "Перейти к итоговому экзамену",
+    "examAlreadyPassed": "Итоговый экзамен успешно сдан.",
+    "viewExamResult": "Результат и сертификат"
   },
   "Assess": {
     "tab": "Тесты",
@@ -787,7 +792,12 @@
     "qType_true_false": "Верно / Неверно",
     "points": "Баллы",
     "examNotPassed": "Не пройден",
-    "examRetry": "Повторить"
+    "examRetry": "Повторить",
+    "readyTitle": "Готовы к экзамену?",
+    "resumeTitle": "Экзамен в процессе",
+    "readyHint": "После старта ответы сохраняются автоматически.",
+    "readyHintTimed": "После старта у вас будет {minutes} минут. Ответы сохраняются автоматически.",
+    "moduleGeneral": "Общие вопросы"
   },
   "Dashboard": {
     "title": "Мои курсы",

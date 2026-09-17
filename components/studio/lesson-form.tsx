@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { ContentFormState } from "@/lib/content/actions";
@@ -56,10 +57,10 @@ function BunnyVideoPanel({
     return <StatusPill tone="muted">{t("bunnyNotConfigured")}</StatusPill>;
   }
   if (info.state === "not_found") {
-    return <StatusPill tone="error">✕ {t("bunnyNotFound")}</StatusPill>;
+    return <StatusPill tone="error"><XCircle className="size-3.5" /> {t("bunnyNotFound")}</StatusPill>;
   }
   if (info.state === "error") {
-    return <StatusPill tone="error">✕ {t("bunnyError")}</StatusPill>;
+    return <StatusPill tone="error"><XCircle className="size-3.5" /> {t("bunnyError")}</StatusPill>;
   }
 
   // state === "ok"
@@ -69,7 +70,7 @@ function BunnyVideoPanel({
       <div className="flex flex-wrap items-center gap-2">
         {ready ? (
           <StatusPill tone="success">
-            ✓ {t("bunnyReady")}
+            <CheckCircle2 className="size-3.5" /> {t("bunnyReady")}
             {info.durationSeconds > 0 && (
               <span className="ml-1 tabular-nums opacity-80">
                 · {fmtDuration(info.durationSeconds)}

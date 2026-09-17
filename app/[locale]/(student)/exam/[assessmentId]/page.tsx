@@ -1,3 +1,4 @@
+import { Check, Play } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
@@ -150,8 +151,21 @@ export default async function PreExamPage({
         </div>
       )}
 
+      {/* Action — 5 states (spec 2.2). Sits above the instructions: once the
+          requirements are met, starting is the thing to do, not the last thing
+          on the page. */}
+      <div className="mt-6">
+        <ExamAction
+          o={o}
+          assessmentId={assessmentId}
+          t={t}
+          cooldownText={cooldownText}
+          isFinal={a.type === "final_exam"}
+        />
+      </div>
+
       {/* Instructions */}
-      <div className="mt-6 rounded-xl border border-success/30 bg-success/5 p-5">
+      <div className="mt-6 rounded-xl border border-line bg-surface p-5 shadow-sm">
         <h2 className="font-medium text-navy-800">{t("instructionsTitle")}</h2>
         <ul className="mt-2 space-y-1 text-sm text-slate-600">
           <li>• {t("instrAnswerAll")}</li>
@@ -162,15 +176,6 @@ export default async function PreExamPage({
         </ul>
       </div>
 
-      {/* Action — 5 states (spec 2.2) */}
-      <div className="mt-8">
-        <ExamAction
-          o={o}
-          assessmentId={assessmentId}
-          t={t}
-          cooldownText={cooldownText}
-        />
-      </div>
     </section>
   );
 
@@ -210,7 +215,7 @@ function PrereqRow({
         }`}
         aria-hidden
       >
-        {met ? "✓" : ""}
+        {met && <Check className="size-3" strokeWidth={3} />}
       </span>
       <span className={met ? "text-ink" : "text-slate-500"}>{label}</span>
       <span className={`ml-auto text-xs ${met ? "text-success" : "text-slate-400"}`}>
@@ -225,20 +230,39 @@ function ExamAction({
   assessmentId,
   t,
   cooldownText,
+  isFinal,
 }: {
   o: NonNullable<Awaited<ReturnType<typeof getExamOverview>>>;
   assessmentId: string;
   t: Awaited<ReturnType<typeof getTranslations<"Exam">>>;
   cooldownText: string;
+  isFinal: boolean;
 }) {
-  // (a) In progress or freely startable → Start / Resume.
+  // (a) In progress or freely startable → Start / Resume, as a card that
+  // states the terms once more right next to the button that accepts them.
   if (!o.blockedReason) {
+    const a = o.assessment;
     return (
-      <form action={startExamAction.bind(null, assessmentId)}>
-        <Button type="submit" size="lg" disabled={o.questionCount === 0}>
-          {o.inProgress ? t("resume") : t("start")}
-        </Button>
-      </form>
+      <div className="rounded-xl border border-gold-400 bg-gold-100/50 p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-heading text-lg font-semibold text-navy-800">
+              {o.inProgress ? t("resumeTitle") : t("readyTitle")}
+            </p>
+            <p className="mt-0.5 text-sm text-slate-600">
+              {a.timeLimitSeconds
+                ? t("readyHintTimed", { minutes: Math.round(a.timeLimitSeconds / 60) })
+                : t("readyHint")}
+            </p>
+          </div>
+          <form action={startExamAction.bind(null, assessmentId)} className="shrink-0">
+            <Button type="submit" size="lg" disabled={o.questionCount === 0} className="w-full sm:w-auto">
+              <Play className="size-4" />
+              {o.inProgress ? t("resume") : isFinal ? t("startFinalExam") : t("start")}
+            </Button>
+          </form>
+        </div>
+      </div>
     );
   }
   // (b) Out of attempts, not passed → request access.

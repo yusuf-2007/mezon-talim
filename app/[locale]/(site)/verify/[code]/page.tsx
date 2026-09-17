@@ -1,3 +1,4 @@
+import { BadgeCheck, Ban, XCircle } from "lucide-react";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { verifyByCode } from "@/lib/certificates/service";
 import { pickLocale } from "@/lib/i18n/localized";
@@ -34,7 +35,7 @@ export default async function VerifyPage({
 
       {!result ? (
         <div className="mt-8 rounded-xl border border-danger/40 bg-danger/5 p-8 text-center">
-          <p className="text-4xl">❌</p>
+          <XCircle className="mx-auto size-10 text-danger" aria-hidden />
           <p className="mt-3 font-medium text-danger">{t("notFound")}</p>
           <p className="mt-1 text-sm text-slate-500">
             {t("notFoundHint", { code })}
@@ -50,7 +51,11 @@ export default async function VerifyPage({
           )}
         >
           <div className="text-center">
-            <p className="text-4xl">{result.valid ? "✅" : "⛔"}</p>
+            {result.valid ? (
+              <BadgeCheck className="mx-auto size-10 text-success" aria-hidden />
+            ) : (
+              <Ban className="mx-auto size-10 text-danger" aria-hidden />
+            )}
             <p
               className={cn(
                 "mt-3 font-medium",

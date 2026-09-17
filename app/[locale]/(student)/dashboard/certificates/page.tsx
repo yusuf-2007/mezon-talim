@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { certificatesRepository } from "@/lib/db/repositories/certificates";
@@ -24,7 +25,7 @@ export default async function CertificatesPage() {
 
       {certs.length === 0 ? (
         <div className="rounded-xl border border-dashed border-line bg-surface p-10 text-center">
-          <p className="text-4xl">🎓</p>
+          <Award className="mx-auto size-10 text-slate-400" aria-hidden />
           <p className="mt-3 text-slate-500">{t("noCerts")}</p>
         </div>
       ) : (

@@ -34,7 +34,7 @@ export default function GlobalError({
         }}
       >
         <div style={{ textAlign: "center", padding: "2rem" }}>
-          <p style={{ fontSize: "2.5rem", margin: 0 }}>⚠️</p>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#023a69" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
           <h1 style={{ fontSize: "1.25rem", margin: "1rem 0 0.5rem" }}>
             Xatolik yuz berdi / Something went wrong
           </h1>
