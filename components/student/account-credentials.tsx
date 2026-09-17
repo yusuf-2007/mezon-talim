@@ -37,19 +37,27 @@ export type CredentialState = {
  * for phone-first accounts that also meant no address for receipts or
  * certificates.
  */
-export function AccountCredentials(props: CredentialState) {
+export function AccountCredentials({
+  eyebrow,
+  ...props
+}: CredentialState & { eyebrow?: string }) {
   const t = useTranslations("Account");
 
   return (
-    <section className="rounded-xl border border-line bg-surface p-6 shadow-sm">
-      <h2 className="font-heading text-lg font-semibold text-navy-800">
+    <section className="rounded-2xl border border-lp-line bg-surface p-6 shadow-[0_2px_10px_rgba(2,58,105,.05)]">
+      {eyebrow && (
+        <p className="mb-1 text-[.72rem] font-bold uppercase tracking-[.14em] text-lp-gold-deep">
+          {eyebrow}
+        </p>
+      )}
+      <h2 className="font-lp-heading text-[1.2rem] font-semibold text-lp-navy">
         {t("credentialsTitle")}
       </h2>
-      <p className="mt-1 max-w-prose text-sm text-slate-500">
+      <p className="mt-1 max-w-prose text-[.88rem] leading-relaxed text-lp-slate">
         {t("credentialsSubtitle")}
       </p>
 
-      <div className="mt-5 divide-y divide-line">
+      <div className="mt-5 divide-y divide-lp-line-soft">
         <PhoneRow {...props} />
         <EmailRow {...props} />
         <PasswordRow hasPassword={props.hasPassword} />

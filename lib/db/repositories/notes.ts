@@ -17,6 +17,23 @@ export const notesRepository = {
       .orderBy(asc(notes.createdAt));
   },
 
+  /**
+   * How many notes the student has, and how many pin a video timestamp.
+   * The dashboard shows these as two separate counts because that is how the
+   * product speaks of them — notes and bookmarks — even though migration 0008
+   * folded bookmarks into notes as "a note at a moment".
+   */
+  async countsForUser(userId: string) {
+    const [row] = await db
+      .select({
+        total: sql<number>`count(*)`,
+        pinned: sql<number>`count(*) filter (where ${notes.timestampSeconds} is not null)`,
+      })
+      .from(notes)
+      .where(eq(notes.userId, userId));
+    return { total: Number(row?.total ?? 0), pinned: Number(row?.pinned ?? 0) };
+  },
+
   async create(
     userId: string,
     lessonId: string,

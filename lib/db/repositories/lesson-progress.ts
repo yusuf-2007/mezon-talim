@@ -1,7 +1,8 @@
 import "server-only";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../client";
 import { lessonProgress } from "../schema";
+import { APP_TIME_ZONE } from "@/lib/utils";
 
 /**
  * Lesson progress repository — drives sequential unlock (B2), resume (B3), and
@@ -91,6 +92,39 @@ export const lessonProgressRepository = {
   },
 
   /** Persist the last playback position for resume. */
+  /**
+   * Lessons completed per day over the last `days` days, oldest first.
+   *
+   * Deliberately counts lessons, not minutes. `savePosition` exists but is
+   * called by nothing, so no watch-time has ever been recorded and any
+   * duration shown here would be invented. A completion carries a real
+   * timestamp, so this is the strongest honest signal available — swap it for
+   * true watch-time once the player actually reports position.
+   */
+  async completionsByDay(userId: string, days = 7) {
+    const rows = await db
+      .select({
+        day: sql<string>`to_char(date_trunc('day', ${lessonProgress.updatedAt} at time zone ${APP_TIME_ZONE}), 'YYYY-MM-DD')`,
+        count: sql<number>`count(*)`,
+      })
+      .from(lessonProgress)
+      .where(
+        and(
+          eq(lessonProgress.userId, userId),
+          eq(lessonProgress.completed, true),
+          gte(
+            lessonProgress.updatedAt,
+            sql`(date_trunc('day', now() at time zone ${APP_TIME_ZONE}) - make_interval(days => ${days - 1})) at time zone ${APP_TIME_ZONE}`,
+          ),
+        ),
+      )
+      // `group by 1` (the select's first column), not a repeat of the
+      // expression: the timezone is a bind parameter, and Postgres will not
+      // treat $1 and $7 as the same thing when it matches grouping terms.
+      .groupBy(sql`1`);
+    return rows.map((r) => ({ day: r.day, count: Number(r.count) }));
+  },
+
   async savePosition(userId: string, lessonId: string, seconds: number) {
     await db
       .insert(lessonProgress)

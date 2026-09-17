@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { messagesRepository } from "@/lib/db/repositories/messages";
+import { PageHeader } from "@/components/student/page-header";
 import { commentsRepository } from "@/lib/db/repositories/comments";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
@@ -38,25 +39,45 @@ export default async function StudentMessagesPage({
     { key: "discussion", label: tPlayer("discussion") },
   ];
 
-  return (
-    <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-semibold text-navy-800">
-        {t("navMessages")}
-      </h1>
+  const awaiting = await messagesRepository.awaitingReplyCount(user.id);
 
-      <div className="flex w-fit gap-1 rounded-lg bg-bg p-1">
+  return (
+    <>
+      <PageHeader
+        eyebrow={t("navMessages")}
+        title={t("subMessages")}
+        userId={user.id}
+        role={user.role}
+      />
+
+      {/* Segmented control rather than tabs: these are two separate archives —
+          private threads and public comments — not two views of one thing. */}
+      <div className="mb-5 inline-flex rounded-[10px] border border-lp-line bg-surface p-1">
         {sections.map((s) => (
           <Link
             key={s.key}
             href={{ pathname: "/dashboard/messages", query: { section: s.key } }}
+            aria-current={section === s.key ? "page" : undefined}
             className={cn(
-              "rounded-md px-4 py-1.5 text-sm font-medium transition-colors",
+              "inline-flex min-h-11 items-center gap-2 rounded-[7px] px-4 text-[.88rem] font-bold transition-colors",
               section === s.key
-                ? "bg-surface text-navy-800 shadow-sm"
-                : "text-slate-500 hover:text-navy-600",
+                ? "bg-lp-navy text-white"
+                : "text-lp-slate hover:bg-lp-wash",
             )}
           >
             {s.label}
+            {s.key === "ask" && awaiting > 0 && (
+              <span
+                className={cn(
+                  "rounded-full px-1.5 text-[.72rem] font-extrabold",
+                  section === s.key
+                    ? "bg-white/20 text-white"
+                    : "bg-lp-gold-tint text-lp-gold-ink",
+                )}
+              >
+                {awaiting}
+              </span>
+            )}
           </Link>
         ))}
       </div>
@@ -66,7 +87,9 @@ export default async function StudentMessagesPage({
       ) : (
         <MyComments userId={user.id} locale={locale} />
       )}
-    </div>
+
+      <p className="mt-4 px-1 text-[.84rem] text-lp-muted">{t("privacyNote")}</p>
+    </>
   );
 }
 

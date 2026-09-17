@@ -12,6 +12,10 @@ import { defineConfig } from "@playwright/test";
  *
  * CI (.github/workflows/e2e.yml) does exactly this with a service container.
  */
+/** Another dev server may already hold 3000; E2E_PORT moves the suite off it. */
+const PORT = process.env.E2E_PORT ?? "3000";
+const BASE_URL = `http://localhost:${PORT}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   globalSetup: "./tests/e2e/global-setup",
@@ -23,17 +27,18 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: BASE_URL,
     trace: "retain-on-failure",
     viewport: { width: 1440, height: 1000 },
   },
   webServer: {
     command: process.env.CI ? "npm run start" : "npm run dev",
-    url: "http://localhost:3000",
+    url: BASE_URL,
     reuseExistingServer: false,
     timeout: 180_000,
     env: {
       ...process.env,
+      PORT,
       // Phone login is flag-gated in production; the suite covers it, so the
       // server under test always has it on.
       OTP_LOGIN_ENABLED: "true",

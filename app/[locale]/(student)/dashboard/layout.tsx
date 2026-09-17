@@ -1,13 +1,16 @@
-import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
+import { messagesRepository } from "@/lib/db/repositories/messages";
 import { userAvatarsRepository } from "@/lib/db/repositories/user-avatars";
-import { DashboardNav } from "@/components/student/dashboard-nav";
-import { DashboardTabs } from "@/components/student/dashboard-tabs";
+import { DashboardRail } from "@/components/student/dashboard-rail";
+import { DashboardTabBar } from "@/components/student/dashboard-tabbar";
 
 /**
- * Student dashboard shell — wraps only /dashboard/* (the player and exams keep
- * their own focused shells). Desktop gets a top nav rail; mobile gets a fixed
- * bottom-tab bar. Staff see a shortcut into Studio/Admin.
+ * Student dashboard shell.
+ *
+ * A persistent navy rail from `lg` up, a bottom tab bar below it — the player
+ * and exams keep their own focused shells, so this wraps /dashboard/* only.
+ * The rail is `h-screen sticky` and the main column scrolls independently, so
+ * navigation stays put through a long certificate or glossary list.
  */
 export default async function DashboardLayout({
   children,
@@ -15,27 +18,27 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const t = await getTranslations("Student");
-  const hasAvatar = await userAvatarsRepository.exists(user.id);
-
-  const staff =
-    user.role === "super_admin" || user.role === "accountant"
-      ? { href: "/admin", label: t("navAdmin") }
-      : user.role === "teacher"
-        ? { href: "/studio", label: t("navStudio") }
-        : null;
+  const [hasAvatar, unreadMessages] = await Promise.all([
+    userAvatarsRepository.exists(user.id),
+    messagesRepository.awaitingReplyCount(user.id),
+  ]);
   const name = user.fullName || user.email || user.phone || "—";
 
+  const railProps = {
+    name,
+    email: user.email,
+    hasAvatar,
+    userId: user.id,
+    unreadMessages,
+  };
+
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-4 sm:px-6 sm:pb-8">
-      <DashboardNav
-        userId={user.id}
-        userName={name}
-        hasAvatar={hasAvatar}
-        staff={staff}
-      />
-      <div className="mt-8">{children}</div>
-      <DashboardTabs />
+    <div className="grid min-h-screen bg-lp-wash-alt font-lp-body lg:grid-cols-[236px_1fr]">
+      <DashboardRail {...railProps} />
+      <main className="min-w-0 px-5 pb-24 pt-6 sm:px-8 lg:px-10 lg:pb-16 lg:pt-7">
+        <div className="mx-auto max-w-[1120px]">{children}</div>
+      </main>
+      <DashboardTabBar {...railProps} />
     </div>
   );
 }

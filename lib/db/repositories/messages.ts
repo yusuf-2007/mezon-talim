@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "../client";
 import { lessonMessages, lessons, modules, users } from "../schema";
@@ -82,6 +82,33 @@ export const messagesRepository = {
       .innerJoin(modules, eq(modules.id, lessons.moduleId))
       .where(eq(lessonMessages.studentId, studentId))
       .orderBy(asc(lessonMessages.createdAt), asc(lessonMessages.id));
+  },
+
+  /**
+   * Threads where the student spoke last — i.e. still waiting on the
+   * instructor. Drives the badge in the dashboard rail, so it counts threads
+   * rather than messages: three follow-ups on one question are one wait.
+   */
+  async awaitingReplyCount(studentId: string): Promise<number> {
+    const latest = db
+      .selectDistinctOn([lessonMessages.lessonId], {
+        lessonId: lessonMessages.lessonId,
+        senderId: lessonMessages.senderId,
+      })
+      .from(lessonMessages)
+      .where(eq(lessonMessages.studentId, studentId))
+      .orderBy(
+        asc(lessonMessages.lessonId),
+        desc(lessonMessages.createdAt),
+        desc(lessonMessages.id),
+      )
+      .as("latest");
+
+    const [row] = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(latest)
+      .where(eq(latest.senderId, studentId));
+    return Number(row?.n ?? 0);
   },
 
   /** Does the student have an open thread on this lesson? */

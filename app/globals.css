@@ -69,6 +69,13 @@
   --color-lp-wash: #f3f6fa; /* alternating section background */
   --color-lp-wash-alt: #f7f9fb; /* secondary certificate card */
   --color-lp-tint: #e7eef4; /* navy-tinted chips */
+  /* Status text on light. The comp pairs a #1e9e6a dot with #146b44 text —
+     the dot is decorative so it keeps the brighter green, the text is the
+     darker one because it has to clear WCAG AA (6.06:1 on white). */
+  --color-lp-success: #146b44;
+  --color-lp-success-dot: #1e9e6a;
+  --color-lp-danger: #c0453a; /* destructive action text */
+  --color-lp-danger-line: #f0c9c4; /* dashed border around destructive blocks */
 }
 
 @theme inline {

@@ -52,7 +52,8 @@ async function certificateFor(userId: string) {
 /** Start the exam and answer both questions with `answer`. */
 async function sitExam(page: Page, answer: string) {
   await page.goto(`/uz/exam/${EXAM_ID}`);
-  await page.getByRole("button", { name: uz.Exam.start, exact: true }).click();
+  // A final exam labels its own CTA; `start` is the module-test wording.
+  await page.getByRole("button", { name: uz.Exam.startFinalExam, exact: true }).click();
   await expect(page).toHaveURL(/\/exam\/attempt\//, { timeout: 30_000 });
 
   // exact: "To'g'ri javob" is a substring of "Noto'g'ri javob".

@@ -7,6 +7,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 /**
  * Name and bio only. Email, phone and password are credentials, and they now
@@ -16,9 +17,12 @@ import { Textarea } from "@/components/ui/textarea";
 export function ProfileEditForm({
   fullName,
   bio,
+  bare = false,
 }: {
   fullName: string | null;
   bio: string | null;
+  /** Drop the card chrome when the caller already provides one. */
+  bare?: boolean;
 }) {
   const t = useTranslations("Student");
   const [state, action, pending] = useActionState(
@@ -29,7 +33,10 @@ export function ProfileEditForm({
   return (
     <form
       action={action}
-      className="max-w-lg space-y-4 rounded-xl border border-line bg-surface p-6 shadow-sm"
+      className={cn(
+        "space-y-4",
+        bare ? "max-w-xl" : "max-w-lg rounded-xl border border-line bg-surface p-6 shadow-sm",
+      )}
     >
       {state.error && <p className="text-sm text-danger">{state.error}</p>}
 
