@@ -9,6 +9,7 @@ import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
+import { applicationsRepository } from "@/lib/db/repositories/applications";
 import { auditRepository } from "@/lib/db/repositories/audit";
 import { issueManual } from "@/lib/certificates/service";
 import type { Role } from "@/lib/auth/types";
@@ -260,4 +261,38 @@ export async function deleteCourseAdminAction(courseId: string): Promise<void> {
     meta: { slug: before.slug },
   });
   revalidatePath("/admin/courses");
+}
+
+const APPLICATION_STATUSES = ["new", "contacted", "enrolled", "declined"] as const;
+
+/**
+ * Move an application along the funnel (super_admin only).
+ *
+ * Audited, because "who said they rang this lead back" is exactly the kind of
+ * claim that gets disputed later. The status is validated against the enum
+ * rather than trusted: it arrives from a select in the browser.
+ */
+export async function setApplicationStatusAction(
+  applicationId: string,
+  status: string,
+): Promise<void> {
+  const actor = await requireRole("super_admin");
+  if (!(APPLICATION_STATUSES as readonly string[]).includes(status)) return;
+
+  const before = await applicationsRepository.findById(applicationId);
+  if (!before || before.status === status) return;
+
+  await applicationsRepository.setStatus(
+    applicationId,
+    status as (typeof APPLICATION_STATUSES)[number],
+  );
+  await auditRepository.record({
+    actorUserId: actor.id,
+    action: "application.status",
+    entityType: "course_application",
+    entityId: applicationId,
+    meta: { from: before.status, to: status },
+  });
+  revalidatePath("/admin/applications");
+  revalidatePath("/admin");
 }

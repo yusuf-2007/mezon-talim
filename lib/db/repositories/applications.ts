@@ -72,6 +72,64 @@ export const applicationsRepository = {
       .limit(limit);
   },
 
+  /**
+   * Filtered page of applications for the admin list.
+   *
+   * Filters are optional and compose; an absent one means "any". `total` comes
+   * back with the rows because the footer needs a page count and running the
+   * same predicate twice from the page would be easy to get subtly wrong.
+   */
+  async listFiltered(opts: {
+    status?: ApplicationStatus;
+    source?: ApplicationSource;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{ rows: CourseApplication[]; total: number }> {
+    const where = and(
+      opts.status ? eq(courseApplications.status, opts.status) : undefined,
+      opts.source ? eq(courseApplications.source, opts.source) : undefined,
+    );
+    const [rows, [totalRow]] = await Promise.all([
+      db
+        .select()
+        .from(courseApplications)
+        .where(where)
+        .orderBy(desc(courseApplications.createdAt))
+        .limit(opts.limit ?? 50)
+        .offset(opts.offset ?? 0),
+      db.select({ n: count() }).from(courseApplications).where(where),
+    ]);
+    return { rows, total: Number(totalRow?.n ?? 0) };
+  },
+
+  async findById(id: string): Promise<CourseApplication | undefined> {
+    const [row] = await db
+      .select()
+      .from(courseApplications)
+      .where(eq(courseApplications.id, id))
+      .limit(1);
+    return row;
+  },
+
+  /** Move one application along the funnel. Returns the row as it now stands. */
+  async setStatus(id: string, status: ApplicationStatus) {
+    const [row] = await db
+      .update(courseApplications)
+      .set({ status })
+      .where(eq(courseApplications.id, id))
+      .returning();
+    return row;
+  },
+
+  /** Count by source, so the filter chips can carry their own numbers. */
+  async countBySource(): Promise<{ source: ApplicationSource; count: number }[]> {
+    const rows = await db
+      .select({ source: courseApplications.source, count: count() })
+      .from(courseApplications)
+      .groupBy(courseApplications.source);
+    return rows as { source: ApplicationSource; count: number }[];
+  },
+
   /** Count by status, for the admin dashboard. */
   async countByStatus(): Promise<{ status: ApplicationStatus; count: number }[]> {
     const rows = await db

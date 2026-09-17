@@ -1101,7 +1101,20 @@
     "paymentsBannerCta": "Разобрать",
     "revenueEyebrow": "Выручка · 30 дней",
     "revenueMeta": "{count} платежей",
-    "activityTitle": "Последние действия"
+    "activityTitle": "Последние действия",
+    "appsPageTitle": "Заявки и обращения",
+    "appsColOrg": "Организация",
+    "appsColConsent": "Согласие на SMS",
+    "appsColStatus": "Статус",
+    "appsConsentYes": "Есть",
+    "appsConsentNo": "Нет",
+    "appsAllSources": "Все источники",
+    "appsSlaNote": "Новые заявки нужно обработать в течение 24 часов.",
+    "filterAll": "Все",
+    "pageOf": "Стр. {page} из {pages}",
+    "appSource_landing_bim": "Страница BIM",
+    "appSource_landing_b2b": "Страница B2B",
+    "appSource_other": "Другое"
   },
   "Student": {
     "navHome": "Главная",

@@ -9,6 +9,7 @@ import { APP_TIME_ZONE, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { RevenueBars } from "@/components/admin/revenue-bars";
+import { Card, Empty, GhostLink, Pill, Table } from "@/components/admin/ui";
 import { TimeAgo } from "@/components/time-ago";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -144,7 +145,11 @@ export default async function AdminDashboardPage() {
               <Empty>{t("appsEmpty")}</Empty>
             ) : (
               <Table
-                head={[t("appsColName"), t("appsColSource"), t("appsColWhen")]}
+                head={[
+                  { label: t("appsColName") },
+                  { label: t("appsColSource") },
+                  { label: t("appsColWhen") },
+                ]}
                 rows={d.applications.map((a) => [
                   <span key="n" className="block min-w-0">
                     <span className="block truncate font-semibold text-lp-ink">
@@ -324,34 +329,8 @@ export default async function AdminDashboardPage() {
 
 /* ── Local pieces ──────────────────────────────────────────────────── */
 
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <section
-      className={cn(
-        "overflow-hidden rounded-2xl border border-lp-line bg-surface shadow-[0_2px_10px_rgba(2,58,105,.05)]",
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}
 
-function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="px-6 py-8 text-center text-[.88rem] text-lp-muted">{children}</p>;
-}
 
-function GhostLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1.5 text-[.84rem] font-bold text-lp-navy-mid hover:underline"
-    >
-      {children}
-      <ArrowRight className="size-3.5" strokeWidth={2.2} />
-    </Link>
-  );
-}
 
 const QUEUE_TONE = {
   gold: "bg-lp-gold",
@@ -449,66 +428,8 @@ function Funnel({
   );
 }
 
-function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr>
-            {head.map((h) => (
-              <th
-                key={h}
-                className="border-b border-lp-line bg-lp-row-hover px-4 py-3 text-left text-[.74rem] font-bold uppercase tracking-[.1em] text-lp-muted"
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((cells, i) => (
-            <tr key={i} className="transition-colors hover:bg-lp-row-hover">
-              {cells.map((c, j) => (
-                <td
-                  key={j}
-                  className="border-b border-lp-line-soft px-4 py-3.5 text-[.88rem] text-lp-ink"
-                >
-                  {c}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
-const PILL_TONE = {
-  navy: "bg-lp-tint text-lp-navy",
-  gold: "bg-lp-gold-tint text-lp-gold-ink",
-  green: "bg-lp-success-tint text-lp-success",
-  grey: "bg-lp-line-soft text-lp-muted",
-} as const;
 
-function Pill({
-  tone,
-  children,
-}: {
-  tone: keyof typeof PILL_TONE;
-  children: React.ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[.74rem] font-bold",
-        PILL_TONE[tone],
-      )}
-    >
-      {children}
-    </span>
-  );
-}
 
 /**
  * How long a question has gone unanswered, coloured by the promise we make:

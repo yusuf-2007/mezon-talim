@@ -1101,7 +1101,20 @@
     "paymentsBannerCta": "Koʻrib chiqish",
     "revenueEyebrow": "Tushum · 30 kun",
     "revenueMeta": "{count} toʻlov",
-    "activityTitle": "Soʻnggi harakatlar"
+    "activityTitle": "Soʻnggi harakatlar",
+    "appsPageTitle": "Arizalar va murojaatlar",
+    "appsColOrg": "Tashkilot",
+    "appsColConsent": "SMS roziligi",
+    "appsColStatus": "Holat",
+    "appsConsentYes": "Bor",
+    "appsConsentNo": "Yoʻq",
+    "appsAllSources": "Barcha manbalar",
+    "appsSlaNote": "Yangi arizalar 24 soat ichida bogʻlanishi kutiladi.",
+    "filterAll": "Barchasi",
+    "pageOf": "{page} / {pages}-sahifa",
+    "appSource_landing_bim": "BIM sahifasi",
+    "appSource_landing_b2b": "B2B sahifasi",
+    "appSource_other": "Boshqa"
   },
   "Student": {
     "navHome": "Asosiy",
