@@ -40,6 +40,13 @@ export default defineConfig({
       // A fixed Svix secret so the delivery-webhook spec can sign requests the
       // way Resend would. Base64 of "mezon-e2e-test-secret".
       RESEND_WEBHOOK_SECRET: "whsec_bWV6b24tZTJlLXRlc3Qtc2VjcmV0",
+      // Fixed provider credentials so the payment spec can sign callbacks the
+      // way Click and Payme do. Production has real ones; these are test-only.
+      CLICK_SERVICE_ID: "12345",
+      CLICK_MERCHANT_ID: "67890",
+      CLICK_SECRET_KEY: "e2e-click-secret",
+      PAYME_MERCHANT_ID: "e2e-payme-merchant",
+      PAYME_KEY: "e2e-payme-key",
     } as Record<string, string>,
   },
 });
