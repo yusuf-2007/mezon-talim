@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "../client";
 import { lessonMessages, lessons, modules, users } from "../schema";
@@ -137,13 +137,14 @@ export const messagesRepository = {
   },
 
   /**
-   * Open threads across the whole school, oldest first — the admin queue.
+   * Threads across the whole school, one row each, carrying the latest message.
    *
-   * "Open" means the student spoke last. One row per thread carrying the
-   * student's latest message, so the admin home can show the question itself
-   * and how long it has been sitting without a second round trip.
+   * `awaiting` picks the side: true means the student spoke last and it is our
+   * turn, false means it is answered. Oldest first when awaiting, because that
+   * is the order they should be worked; newest first when answered, because
+   * that is the order they are remembered.
    */
-  async openThreadsForAdmin(limit = 20) {
+  async listThreadsForAdmin(awaiting = true, limit = 20) {
     const student = alias(users, "thread_student");
     const latest = db
       .selectDistinctOn([lessonMessages.lessonId, lessonMessages.studentId], {
@@ -178,8 +179,12 @@ export const messagesRepository = {
       .innerJoin(lessons, eq(lessons.id, latest.lessonId))
       .innerJoin(modules, eq(modules.id, lessons.moduleId))
       .innerJoin(student, eq(student.id, latest.studentId))
-      .where(eq(latest.senderId, latest.studentId))
-      .orderBy(asc(latest.createdAt))
+      .where(
+        awaiting
+          ? eq(latest.senderId, latest.studentId)
+          : ne(latest.senderId, latest.studentId),
+      )
+      .orderBy(awaiting ? asc(latest.createdAt) : desc(latest.createdAt))
       .limit(limit);
   },
 

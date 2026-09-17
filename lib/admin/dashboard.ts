@@ -59,7 +59,7 @@ export async function getAdminHome(canManage: boolean) {
   ] = await Promise.all([
     canManage ? applicationsRepository.countByStatus() : Promise.resolve([]),
     canManage ? applicationsRepository.list(6) : Promise.resolve([]),
-    canManage ? messagesRepository.openThreadsForAdmin(3) : Promise.resolve([]),
+    canManage ? messagesRepository.listThreadsForAdmin(true, 3) : Promise.resolve([]),
     canManage ? messagesRepository.unansweredCounts() : Promise.resolve([]),
     canManage ? certificatesRepository.pendingIssuance(100) : Promise.resolve([]),
     paymentsRepository.statusCounts(),
