@@ -1190,7 +1190,10 @@
     "msgsAnswered": "Answered",
     "msgsEmpty": "No questions here.",
     "msgsPickThread": "Pick a question on the left.",
-    "msgsOpenLesson": "Open the lesson"
+    "msgsOpenLesson": "Open the lesson",
+    "verifiedEmail": "Email",
+    "verifiedPhone": "Phone",
+    "verifiedNone": "Nothing on file"
   },
   "Student": {
     "navHome": "Home",

@@ -1190,7 +1190,10 @@
     "msgsAnswered": "Отвеченные",
     "msgsEmpty": "Здесь нет вопросов.",
     "msgsPickThread": "Выберите вопрос слева.",
-    "msgsOpenLesson": "Открыть урок"
+    "msgsOpenLesson": "Открыть урок",
+    "verifiedEmail": "Email",
+    "verifiedPhone": "Телефон",
+    "verifiedNone": "Нет данных"
   },
   "Student": {
     "navHome": "Главная",

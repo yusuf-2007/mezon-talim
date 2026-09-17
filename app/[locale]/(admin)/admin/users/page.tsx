@@ -42,6 +42,8 @@ export default async function AdminUsersPage({
 
   const countFor = (...roles: string[]) =>
     roleCounts.filter((r) => roles.includes(r.role)).reduce((n, r) => n + r.count, 0);
+  // Nothing proven at all — neither address nor number. An account with one
+  // of the two confirmed can still be reached, so it is not the same problem.
   const unverified = users.filter((u) => !u.emailVerified && !u.phoneVerified).length;
 
   return (
@@ -115,15 +117,24 @@ export default async function AdminUsersPage({
             </span>,
             /* Never let an admin demote themselves out of the room. */
             <RoleSelect key="r" userId={u.id} role={u.role} disabled={u.id === actor.id} />,
-            u.emailVerified || u.phoneVerified ? (
-              <StatusDot key="v" tone="green">
-                {t("verifiedYes")}
-              </StatusDot>
-            ) : (
-              <StatusDot key="v" tone="amber">
-                {t("verifiedNo")}
-              </StatusDot>
-            ),
+            /* Which credential is proven, not whether any is. The cell sits
+               beside an email address, so a bare "Verified" on a phone-only
+               account reads as a claim about the email that is not true. */
+            <span key="v" className="flex flex-wrap gap-x-3 gap-y-1">
+              {u.email && (
+                <StatusDot tone={u.emailVerified ? "green" : "amber"}>
+                  {t("verifiedEmail")}
+                </StatusDot>
+              )}
+              {u.phone && (
+                <StatusDot tone={u.phoneVerified ? "green" : "amber"}>
+                  {t("verifiedPhone")}
+                </StatusDot>
+              )}
+              {!u.email && !u.phone && (
+                <StatusDot tone="grey">{t("verifiedNone")}</StatusDot>
+              )}
+            </span>,
             <span key="c" className="text-[.86rem] text-lp-slate tabular-nums">
               {t("coursesCount", { count: u.enrollmentCount })}
             </span>,

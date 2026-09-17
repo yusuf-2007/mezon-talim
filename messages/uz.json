@@ -1190,7 +1190,10 @@
     "msgsAnswered": "Javob berilgan",
     "msgsEmpty": "Bu yerda savol yoʻq.",
     "msgsPickThread": "Chapdan savol tanlang.",
-    "msgsOpenLesson": "Darsni ochish"
+    "msgsOpenLesson": "Darsni ochish",
+    "verifiedEmail": "Email",
+    "verifiedPhone": "Telefon",
+    "verifiedNone": "Maʼlumot yoʻq"
   },
   "Student": {
     "navHome": "Asosiy",
