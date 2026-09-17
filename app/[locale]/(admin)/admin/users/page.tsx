@@ -1,15 +1,30 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { Pencil } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { Link } from "@/lib/i18n/navigation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { APP_TIME_ZONE } from "@/lib/utils";
 import { RoleSelect } from "@/components/admin/role-select";
-import { StatCard } from "@/components/admin/stat-card";
 import { UserAvatar } from "@/components/admin/user-avatar";
+import { AdminPageHeader } from "@/components/admin/page-header";
+import {
+  Card,
+  CardToolbar,
+  GhostLink,
+  KpiStrip,
+  SearchForm,
+  StatusDot,
+  Table,
+} from "@/components/admin/ui";
 import type { Locale } from "@/lib/i18n/routing";
 
+/**
+ * Everyone with an account, and the two things an admin changes about them:
+ * their role, and whether they are still active.
+ *
+ * Role is an inline select rather than a detail-page field — the job is almost
+ * always "promote this one person", and a round trip through an edit form for
+ * a single enum was the slowest part of it.
+ */
 export default async function AdminUsersPage({
   searchParams,
 }: {
@@ -24,110 +39,123 @@ export default async function AdminUsersPage({
     usersRepository.listAll({ search: q, limit: 200 }),
     usersRepository.countByRole(),
   ]);
+
   const countFor = (...roles: string[]) =>
     roleCounts.filter((r) => roles.includes(r.role)).reduce((n, r) => n + r.count, 0);
-  const fmtDate = (d: Date) =>
-    new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
+  const unverified = users.filter((u) => !u.emailVerified && !u.phoneVerified).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-heading text-2xl font-semibold text-navy-800">
-          {t("usersTitle")}
-        </h1>
-        <form className="flex gap-2">
-          <input
-            type="search"
-            name="q"
-            defaultValue={q ?? ""}
+    <>
+      <AdminPageHeader
+        eyebrow={t("navUsers")}
+        title={t("usersTitle")}
+        userId={actor.id}
+        role={actor.role}
+      />
+
+      <div className="mb-[18px]">
+        <KpiStrip
+          cells={[
+            {
+              label: t("statTotalUsers"),
+              value: String(countFor("student", "teacher", "accountant", "super_admin")),
+            },
+            { label: t("statStudents"), value: String(countFor("student")) },
+            {
+              label: t("statAdmins"),
+              value: String(countFor("super_admin", "accountant", "teacher")),
+            },
+            {
+              label: t("statUnverified"),
+              value: String(unverified),
+              tone: unverified > 0 ? "amber" : undefined,
+            },
+          ]}
+        />
+      </div>
+
+      <Card>
+        <CardToolbar>
+          <SearchForm
+            action="/admin/users"
+            defaultValue={q}
             placeholder={t("searchUsers")}
-            className="rounded-md border border-line bg-surface px-3 py-1.5 text-sm"
           />
-        </form>
-      </div>
+        </CardToolbar>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label={t("statTotalUsers")} value={String(countFor("student", "teacher", "accountant", "super_admin"))} />
-        <StatCard label={t("statAdmins")} value={String(countFor("super_admin", "accountant"))} />
-        <StatCard label={t("statStudents")} value={String(countFor("student"))} />
-      </div>
-
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-4 py-3 font-medium">{t("colName")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colRole")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colCourses")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colRegistered")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">{t("colActions")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                  {t("noUsers")}
-                </td>
-              </tr>
+        <Table
+          empty={t("noUsers")}
+          head={[
+            { label: t("colName") },
+            { label: t("colRole") },
+            { label: t("colVerified"), hide: true },
+            { label: t("colCourses"), hide: true },
+            { label: t("colRegistered"), hide: true },
+            { label: t("colStatus") },
+            { label: t("colActions"), align: "right" },
+          ]}
+          rows={users.map((u) => [
+            <span key="n" className="flex items-center gap-3">
+              <UserAvatar
+                name={u.fullName}
+                email={u.email}
+                src={u.hasAvatar ? `/api/avatars/${u.id}` : null}
+              />
+              <span className="block min-w-0">
+                <Link
+                  href={`/admin/users/${u.id}`}
+                  className="block truncate font-semibold text-lp-ink hover:text-lp-navy-mid"
+                >
+                  {u.fullName || "—"}
+                </Link>
+                <span className="block truncate text-[.8rem] text-lp-muted">
+                  {u.email || u.phone || "—"}
+                </span>
+              </span>
+            </span>,
+            /* Never let an admin demote themselves out of the room. */
+            <RoleSelect key="r" userId={u.id} role={u.role} disabled={u.id === actor.id} />,
+            u.emailVerified || u.phoneVerified ? (
+              <StatusDot key="v" tone="green">
+                {t("verifiedYes")}
+              </StatusDot>
             ) : (
-              users.map((u) => (
-                <tr key={u.id}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <UserAvatar
-                        name={u.fullName}
-                        email={u.email}
-                        src={u.hasAvatar ? `/api/avatars/${u.id}` : null}
-                      />
-                      <div className="min-w-0">
-                        <Link
-                          href={`/admin/users/${u.id}`}
-                          className="block truncate font-medium text-ink hover:text-navy-600"
-                        >
-                          {u.fullName || "—"}
-                        </Link>
-                        <p className="truncate text-xs text-slate-500">
-                          {u.email || u.phone || "—"}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <RoleSelect userId={u.id} role={u.role} disabled={u.id === actor.id} />
-                  </td>
-                  <td className="px-4 py-3 tabular-nums text-slate-600">
-                    {t("coursesCount", { count: u.enrollmentCount })}
-                  </td>
-                  <td className="px-4 py-3 tabular-nums text-slate-500">
-                    {fmtDate(u.createdAt)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {u.isActive ? (
-                      <Badge className="bg-success/10 text-success">{t("statusActive")}</Badge>
-                    ) : (
-                      <Badge className="bg-line text-slate-500">{t("statusInactive")}</Badge>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      render={<Link href={`/admin/users/${u.id}`} />}
-                      variant="ghost"
-                      size="sm"
-                      className="text-navy-600"
-                    >
-                      <Pencil className="size-3.5" />
-                      {t("edit")}
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-xs text-slate-500">{t("usersHint")}</p>
-    </div>
+              <StatusDot key="v" tone="amber">
+                {t("verifiedNo")}
+              </StatusDot>
+            ),
+            <span key="c" className="text-[.86rem] text-lp-slate tabular-nums">
+              {t("coursesCount", { count: u.enrollmentCount })}
+            </span>,
+            <span key="d" className="whitespace-nowrap text-[.84rem] text-lp-slate tabular-nums">
+              {fmt(u.createdAt, locale)}
+            </span>,
+            u.isActive ? (
+              <StatusDot key="s" tone="green">
+                {t("statusActive")}
+              </StatusDot>
+            ) : (
+              <StatusDot key="s" tone="red">
+                {t("statusInactive")}
+              </StatusDot>
+            ),
+            <span key="a" className="flex justify-end">
+              <GhostLink href={`/admin/users/${u.id}`}>{t("edit")}</GhostLink>
+            </span>,
+          ])}
+        />
+
+        <div className="border-t border-lp-line-soft bg-lp-wash-alt px-6 py-4">
+          <p className="text-[.8rem] text-lp-muted">{t("usersHint")}</p>
+        </div>
+      </Card>
+    </>
+  );
+}
+
+function fmt(d: Date, locale: Locale) {
+  return new Date(d).toLocaleDateString(
+    locale === "ru" ? "ru-RU" : locale === "en" ? "en-GB" : "uz-UZ",
+    { day: "numeric", month: "short", year: "2-digit", timeZone: APP_TIME_ZONE },
   );
 }

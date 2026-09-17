@@ -1,65 +1,129 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireRole } from "@/lib/auth";
 import { auditRepository } from "@/lib/db/repositories/audit";
-import { Badge } from "@/components/ui/badge";
+import { APP_TIME_ZONE, cn } from "@/lib/utils";
+import { AdminPageHeader } from "@/components/admin/page-header";
+import { Card, CardToolbar, FilterChips, Table } from "@/components/admin/ui";
 import type { Locale } from "@/lib/i18n/routing";
 
-export default async function AdminAuditPage() {
-  await requireRole("super_admin");
+/** The prefixes worth filtering by — what people come here asking about. */
+const TYPES = ["user", "course", "payment", "certificate", "application"] as const;
+
+/**
+ * The audit trail.
+ *
+ * Read-only by construction: nothing in the app updates or deletes a row, and
+ * the footer says so, because a log people believe can be edited is not
+ * evidence of anything.
+ *
+ * Action codes are coloured by how much they would cost to get wrong — money
+ * and revocation read red, role and application changes gold, everything else
+ * navy.
+ */
+export default async function AdminAuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
+  const me = await requireRole("super_admin");
   const t = await getTranslations("Admin");
   const locale = (await getLocale()) as Locale;
+  const { type } = await searchParams;
 
-  const entries = await auditRepository.recentWithActor(100);
-  const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ";
+  const active = (TYPES as readonly string[]).includes(type ?? "") ? type! : null;
+  const all = await auditRepository.recentWithActor(200);
+  const entries = active ? all.filter((e) => e.action.startsWith(active)) : all;
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-semibold text-navy-800">
-        {t("auditTitle")}
-      </h1>
+    <>
+      <AdminPageHeader
+        eyebrow={t("navAudit")}
+        title={t("auditTitle")}
+        userId={me.id}
+        role={me.role}
+      />
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-4 py-3 font-medium">{t("colWhen")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colActor")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colAction")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colEntity")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {entries.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                  {t("noAudit")}
-                </td>
-              </tr>
-            ) : (
-              entries.map((entry) => (
-                <tr key={entry.id}>
-                  <td className="px-4 py-3 tabular-nums text-slate-500">
-                    {new Date(entry.createdAt).toLocaleString(dateLocale)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {entry.actorName || entry.actorEmail || "system"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge className="bg-navy-100 text-navy-800 font-mono text-xs">
-                      {entry.action}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
-                    {entry.entityType
-                      ? `${entry.entityType}: ${entry.entityId?.slice(0, 8) ?? ""}`
-                      : "—"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <Card>
+        <CardToolbar>
+          <FilterChips
+            active={active}
+            hrefFor={(v) => `/admin/audit${v ? `?type=${v}` : ""}`}
+            options={[
+              { value: null, label: t("filterAll"), count: all.length },
+              ...TYPES.map((ty) => ({
+                value: ty,
+                label: t(`auditType_${ty}`),
+                count: all.filter((e) => e.action.startsWith(ty)).length,
+              })),
+            ]}
+          />
+        </CardToolbar>
+
+        <Table
+          empty={t("noAudit")}
+          head={[
+            { label: t("colWhen") },
+            { label: t("colActor") },
+            { label: t("colAction") },
+            { label: t("colEntity"), hide: true },
+          ]}
+          rows={entries.map((e) => [
+            <span key="w" className="whitespace-nowrap text-[.84rem] text-lp-slate tabular-nums">
+              {fmt(e.createdAt, locale)}
+            </span>,
+            <span key="a" className="flex items-center gap-2.5">
+              <span
+                aria-hidden
+                className={cn(
+                  "grid size-[26px] shrink-0 place-items-center rounded-full text-[.74rem] font-extrabold",
+                  e.actorName ? "bg-lp-tint text-lp-navy" : "bg-lp-line-soft text-lp-muted",
+                )}
+              >
+                {e.actorName ? e.actorName.slice(0, 1).toUpperCase() : "⚙"}
+              </span>
+              <span className="min-w-0 truncate text-[.86rem] text-lp-ink">
+                {e.actorName || e.actorEmail || t("auditSystemActor")}
+              </span>
+            </span>,
+            <span
+              key="c"
+              className={cn(
+                "inline-block whitespace-nowrap rounded-md px-2 py-1 font-mono text-[.78rem] font-bold",
+                severity(e.action),
+              )}
+            >
+              {e.action}
+            </span>,
+            <span key="e" className="font-mono text-[.78rem] text-lp-muted">
+              {e.entityType ? `${e.entityType}:${e.entityId?.slice(0, 8) ?? ""}` : "—"}
+            </span>,
+          ])}
+        />
+
+        <div className="border-t border-lp-line-soft bg-lp-wash-alt px-6 py-4">
+          <p className="text-[.8rem] text-lp-muted">{t("auditRetentionNote")}</p>
+        </div>
+      </Card>
+    </>
+  );
+}
+
+function severity(action: string) {
+  if (/fail|refund|revoke|delete/.test(action)) return "bg-lp-danger-tint text-lp-danger";
+  if (action.startsWith("application") || action.startsWith("user.role"))
+    return "bg-lp-gold-tint text-lp-gold-ink";
+  return "bg-lp-tint text-lp-navy";
+}
+
+function fmt(d: Date, locale: Locale) {
+  return new Date(d).toLocaleString(
+    locale === "ru" ? "ru-RU" : locale === "en" ? "en-GB" : "uz-UZ",
+    {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: APP_TIME_ZONE,
+    },
   );
 }

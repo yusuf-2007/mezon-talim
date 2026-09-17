@@ -1,5 +1,5 @@
 import "server-only";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "../client";
 import { notifications, users } from "../schema";
 
@@ -142,6 +142,24 @@ export const notificationsRepository = {
   },
 
   /** Counts by status over a recent window — the delivery-health summary. */
+  /**
+   * Rejections in the last `hours`. A burst inside a short window is one
+   * gateway incident rather than N unrelated failures, and the admin log says
+   * so — but only the database can answer "how many, recently".
+   */
+  async countRejectedSince(hours: number): Promise<number> {
+    const [row] = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.status, "rejected"),
+          gte(notifications.createdAt, sql`now() - make_interval(hours => ${hours})`),
+        ),
+      );
+    return Number(row?.n ?? 0);
+  },
+
   async statusCounts(limit = 500) {
     const recent = db
       .select({ status: notifications.status })

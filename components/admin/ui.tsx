@@ -308,3 +308,97 @@ export function Bar({
     </span>
   );
 }
+
+/**
+ * The KPI strip: one card divided into cells by hairlines, not four cards.
+ *
+ * Four separate cards read as four unrelated facts. One card with dividers
+ * reads as one measurement taken four ways, which is what these always are.
+ * Collapses to 2×2 before it collapses to a column.
+ */
+export function KpiStrip({
+  cells,
+}: {
+  cells: { label: string; value: string; sub?: string; tone?: "amber" | "red" | "green" }[];
+}) {
+  const toneClass = {
+    amber: "text-lp-gold-ink",
+    red: "text-lp-danger",
+    green: "text-lp-success",
+  };
+  return (
+    <Card>
+      <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+        {cells.map((c) => (
+          <div
+            key={c.label}
+            className="border-lp-line-soft px-6 py-5 sm:border-l sm:first:border-l-0 sm:[&:nth-child(3)]:border-l-0 xl:border-l xl:first:border-l-0 xl:[&:nth-child(3)]:border-l"
+          >
+            <p className="mb-1.5 text-[.74rem] font-bold uppercase tracking-[.1em] text-lp-muted">
+              {c.label}
+            </p>
+            <p
+              className={cn(
+                "font-lp-heading text-[1.9rem] font-semibold leading-none tabular-nums",
+                c.tone ? toneClass[c.tone] : "text-lp-navy",
+              )}
+            >
+              {c.value}
+            </p>
+            {c.sub && <p className="mt-1.5 text-[.8rem] text-lp-muted">{c.sub}</p>}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/** A search box that submits as a GET form, keeping the filter in the URL. */
+export function SearchForm({
+  action,
+  defaultValue,
+  placeholder,
+  hidden,
+}: {
+  action: string;
+  defaultValue?: string;
+  placeholder: string;
+  /** Other active filters, so searching does not silently drop them. */
+  hidden?: Record<string, string | undefined>;
+}) {
+  return (
+    <form action={action} className="flex min-w-[14rem] flex-1 gap-2 sm:max-w-xs">
+      {Object.entries(hidden ?? {}).map(([k, v]) =>
+        v ? <input key={k} type="hidden" name={k} value={v} /> : null,
+      )}
+      <input
+        type="search"
+        name="q"
+        defaultValue={defaultValue ?? ""}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        className="min-h-10 w-full rounded-[10px] border-[1.5px] border-lp-line bg-surface px-3 text-[.9rem] text-lp-ink outline-none transition-colors placeholder:text-lp-muted-light focus:border-lp-navy focus:ring-[3px] focus:ring-lp-gold/35"
+      />
+    </form>
+  );
+}
+
+/** The bar every list card carries above its table: filters left, tools right. */
+export function CardToolbar({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-3 border-b border-lp-line-soft px-6 py-4",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}

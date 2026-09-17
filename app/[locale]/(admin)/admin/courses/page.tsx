@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireRole } from "@/lib/auth";
 import { analyticsRepository } from "@/lib/db/repositories/analytics";
@@ -8,132 +9,150 @@ import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CourseStatusSelect } from "@/components/admin/course-status-select";
 import { ConfirmSubmit } from "@/components/studio/confirm-submit";
+import { AdminPageHeader } from "@/components/admin/page-header";
+import {
+  Card,
+  CardToolbar,
+  FilterChips,
+  GhostLink,
+  SearchForm,
+  Table,
+} from "@/components/admin/ui";
 import type { Locale } from "@/lib/i18n/routing";
 
 const STATUSES = ["draft", "published", "archived"] as const;
 
+/**
+ * Courses as a business list, not an editor.
+ *
+ * Content is authored in the Studio; what belongs here is the handful of
+ * decisions an admin makes about a course once it exists — is it live, what
+ * does it cost, is anyone buying it.
+ */
 export default async function AdminCoursesPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
-  await requireRole("super_admin");
+  const me = await requireRole("super_admin");
   const t = await getTranslations("Admin");
   const locale = (await getLocale()) as Locale;
   const { q, status } = await searchParams;
 
   const all = await analyticsRepository.allCoursesWithStats();
   const query = q?.trim().toLowerCase();
+  const active = (STATUSES as readonly string[]).includes(status ?? "") ? status! : null;
+
   const courses = all.filter((c) => {
-    if (status && status !== "all" && c.status !== status) return false;
+    if (active && c.status !== active) return false;
     if (query) {
-      const title = `${c.title.uz ?? ""} ${c.title.ru ?? ""} ${c.slug}`.toLowerCase();
-      if (!title.includes(query)) return false;
+      const hay = `${c.title.uz ?? ""} ${c.title.ru ?? ""} ${c.slug}`.toLowerCase();
+      if (!hay.includes(query)) return false;
     }
     return true;
   });
 
+  const countFor = (s: string) => all.filter((c) => c.status === s).length;
+
+  const href = (s: string | null) => {
+    const p = new URLSearchParams();
+    if (s) p.set("status", s);
+    if (q) p.set("q", q);
+    const qs = p.toString();
+    return `/admin/courses${qs ? `?${qs}` : ""}`;
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-heading text-2xl font-semibold text-navy-800">
-          {t("coursesTitle")}
-        </h1>
-        <Button render={<Link href="/admin/courses/new" />}>{t("newCourse")}</Button>
-      </div>
+    <>
+      <AdminPageHeader
+        eyebrow={t("navCourses")}
+        title={t("coursesTitle")}
+        userId={me.id}
+        role={me.role}
+        action={
+          <Button
+            render={<Link href="/admin/courses/new" />}
+            className="bg-lp-gold text-lp-navy-deep shadow-[0_4px_14px_rgba(248,184,1,.28)] hover:bg-lp-gold"
+          >
+            <Plus className="size-3.5" strokeWidth={2.5} />
+            {t("newCourse")}
+          </Button>
+        }
+      />
 
-      {/* Search + status filter (GET form) */}
-      <form className="flex flex-wrap gap-2">
-        <input
-          type="search"
-          name="q"
-          defaultValue={q ?? ""}
-          placeholder={t("searchCourses")}
-          className="rounded-md border border-line bg-surface px-3 py-1.5 text-sm"
+      <Card>
+        <CardToolbar>
+          <FilterChips
+            active={active}
+            hrefFor={href}
+            options={[
+              { value: null, label: t("filterAll"), count: all.length },
+              ...STATUSES.map((s) => ({
+                value: s,
+                label: t(`status_${s}`),
+                count: countFor(s),
+              })),
+            ]}
+          />
+          <SearchForm
+            action="/admin/courses"
+            defaultValue={q}
+            placeholder={t("searchCourses")}
+            hidden={{ status: active ?? undefined }}
+          />
+        </CardToolbar>
+
+        <Table
+          empty={t("noData")}
+          head={[
+            { label: t("colCourse") },
+            { label: t("colEnrollments"), align: "right" },
+            { label: t("colRevenue"), align: "right" },
+            { label: t("colStatus") },
+            { label: t("colActions"), align: "right" },
+          ]}
+          rows={courses.map((c) => [
+            <span key="c" className="block min-w-0">
+              <Link
+                href={`/admin/courses/${c.courseId}`}
+                className="block truncate font-semibold text-lp-ink hover:text-lp-navy-mid"
+              >
+                {pickLocale(c.title, locale)}
+              </Link>
+              <span className="block truncate font-mono text-[.78rem] text-lp-muted">
+                /{c.slug}
+              </span>
+            </span>,
+            <span key="e" className="text-lp-slate">
+              {c.enrollments}
+            </span>,
+            <span key="r" className="font-semibold text-lp-navy">
+              {formatTiyin(c.revenueTiyin, locale)}
+            </span>,
+            <CourseStatusSelect key="s" courseId={c.courseId} status={c.status} />,
+            <span key="a" className="flex items-center justify-end gap-3">
+              <GhostLink href={`/studio/courses/${c.courseId}`}>{t("studio")}</GhostLink>
+              {c.status === "published" && (
+                <a
+                  href={`/${locale}/courses/${c.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[.84rem] font-bold text-lp-navy-mid hover:underline"
+                >
+                  {t("preview")}
+                </a>
+              )}
+              <form action={deleteCourseAdminAction.bind(null, c.courseId)}>
+                <ConfirmSubmit label={t("delete")} />
+              </form>
+            </span>,
+          ])}
         />
-        <select
-          name="status"
-          defaultValue={status ?? "all"}
-          className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
-        >
-          <option value="all">{t("statusAll")}</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {t(`status_${s}`)}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" variant="outline" size="sm">
-          {t("filter")}
-        </Button>
-      </form>
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-4 py-3 font-medium">{t("colCourse")}</th>
-              <th scope="col" className="px-4 py-3 font-medium tabular-nums">{t("colEnrollments")}</th>
-              <th scope="col" className="px-4 py-3 font-medium tabular-nums">{t("colRevenue")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("colActions")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {courses.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                  {t("noData")}
-                </td>
-              </tr>
-            ) : (
-              courses.map((c) => (
-                <tr key={c.courseId}>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/courses/${c.courseId}`}
-                      className="font-medium text-ink hover:text-navy-600"
-                    >
-                      {pickLocale(c.title, locale)}
-                    </Link>
-                    <p className="text-xs text-slate-500">/{c.slug}</p>
-                  </td>
-                  <td className="px-4 py-3 tabular-nums text-slate-600">{c.enrollments}</td>
-                  <td className="px-4 py-3 tabular-nums text-navy-700">
-                    {formatTiyin(c.revenueTiyin, locale)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <CourseStatusSelect courseId={c.courseId} status={c.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/admin/courses/${c.courseId}`}
-                        className="text-sm text-navy-600 hover:underline"
-                      >
-                        {t("edit")}
-                      </Link>
-                      {c.status === "published" && (
-                        <a
-                          href={`/${locale}/courses/${c.slug}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm text-navy-600 hover:underline"
-                        >
-                          {t("preview")}
-                        </a>
-                      )}
-                      <form action={deleteCourseAdminAction.bind(null, c.courseId)}>
-                        <ConfirmSubmit label={t("delete")} />
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <div className="border-t border-lp-line-soft bg-lp-wash-alt px-6 py-4">
+          <p className="text-[.8rem] text-lp-muted">{t("coursesStudioNote")}</p>
+        </div>
+      </Card>
+    </>
   );
 }

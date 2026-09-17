@@ -1,6 +1,19 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireRole } from "@/lib/auth";
 import { notificationsRepository } from "@/lib/db/repositories/notifications";
+import { APP_TIME_ZONE } from "@/lib/utils";
+import { AdminPageHeader } from "@/components/admin/page-header";
+import {
+  Banner,
+  Card,
+  CardToolbar,
+  FilterChips,
+  KpiStrip,
+  Pill,
+  StatusDot,
+  Table,
+  type DotTone,
+} from "@/components/admin/ui";
 import type { Locale } from "@/lib/i18n/routing";
 
 /**
@@ -8,116 +21,184 @@ import type { Locale } from "@/lib/i18n/routing";
  *
  * Exists because "sent" was the end of the story: the provider's API accepting
  * a message told us nothing about whether it arrived, and a student who never
- * received a login code had no way to report it beyond "it doesn't work". The
- * Delivered and Rejected columns are the part that is worth looking at — a
- * cluster of rejections is a problem with the gateway, not with the student.
+ * got a login code had no way to report it beyond "it doesn't work".
+ *
+ * The rejected and failed columns are the ones worth looking at. A cluster of
+ * rejections in a short window is a gateway problem, not a student problem, and
+ * the banner says so rather than leaving someone to notice the pattern.
  */
-
-const TONES: Record<string, string> = {
-  delivered: "bg-success/10 text-success",
-  sent: "bg-navy-100 text-navy-800",
-  queued: "bg-slate-100 text-slate-500",
-  rejected: "bg-danger/10 text-danger",
-  failed: "bg-danger/10 text-danger",
+const TONE: Record<string, DotTone> = {
+  delivered: "green",
+  sent: "navy",
+  queued: "grey",
+  rejected: "red",
+  failed: "red",
 };
 
-export default async function AdminNotificationsPage() {
-  await requireRole("super_admin");
+/** Rejections this close together are one incident, not N student problems. */
+const CLUSTER_WINDOW_HOURS = 2;
+const CLUSTER_THRESHOLD = 5;
+
+export default async function AdminNotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ channel?: string; trouble?: string }>;
+}) {
+  const me = await requireRole("super_admin");
   const t = await getTranslations("Admin");
   const locale = (await getLocale()) as Locale;
-  const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ";
+  const { channel, trouble } = await searchParams;
 
-  const [rows, counts] = await Promise.all([
-    notificationsRepository.listRecentWithRecipient(100),
+  const onlyTrouble = trouble === "1";
+  const activeChannel =
+    channel === "sms" || channel === "email" ? channel : null;
+
+  const [all, counts, rejectCluster] = await Promise.all([
+    notificationsRepository.listRecentWithRecipient(200),
     notificationsRepository.statusCounts(500),
+    // Counted in SQL rather than by filtering the page: a render must not read
+    // the clock, and the window is a property of the question, not the list.
+    notificationsRepository.countRejectedSince(CLUSTER_WINDOW_HOURS),
   ]);
 
+  const rows = all.filter((r) => {
+    if (activeChannel && r.channel !== activeChannel) return false;
+    if (onlyTrouble && r.status !== "rejected" && r.status !== "failed")
+      return false;
+    return true;
+  });
+
   const byStatus = new Map(counts.map((c) => [c.status, c.count]));
-  const tiles = (["delivered", "sent", "rejected", "failed"] as const).map((s) => ({
-    status: s,
-    label: t(`notifStatus_${s}`),
-    count: byStatus.get(s) ?? 0,
-  }));
+  const at = (s: (typeof counts)[number]["status"]) => byStatus.get(s) ?? 0;
+
+  const href = (next: { channel?: string | null; trouble?: boolean }) => {
+    const p = new URLSearchParams();
+    const c = next.channel === undefined ? activeChannel : next.channel;
+    const tr = next.trouble === undefined ? onlyTrouble : next.trouble;
+    if (c) p.set("channel", c);
+    if (tr) p.set("trouble", "1");
+    const qs = p.toString();
+    return `/admin/notifications${qs ? `?${qs}` : ""}`;
+  };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold text-navy-800">
-          {t("notifTitle")}
-        </h1>
-        <p className="mt-1 max-w-prose text-sm text-slate-500">{t("notifSubtitle")}</p>
+    <>
+      <AdminPageHeader
+        eyebrow={t("navNotifications")}
+        title={t("notifTitle")}
+        userId={me.id}
+        role={me.role}
+      />
+
+      <div className="mb-[18px]">
+        <KpiStrip
+          cells={[
+            {
+              label: t("notifStatus_delivered"),
+              value: String(at("delivered")),
+              tone: "green",
+            },
+            { label: t("notifStatus_sent"), value: String(at("sent")) },
+            {
+              label: t("notifStatus_rejected"),
+              value: String(at("rejected")),
+              tone: at("rejected") > 0 ? "red" : undefined,
+            },
+            {
+              label: t("notifStatus_failed"),
+              value: String(at("failed")),
+              tone: at("failed") > 0 ? "red" : undefined,
+            },
+          ]}
+        />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        {tiles.map((tile) => (
-          <div
-            key={tile.status}
-            className="rounded-xl border border-line bg-surface p-4 shadow-sm"
-          >
-            <p className="text-sm text-slate-500">{tile.label}</p>
-            <p className="mt-1 font-heading text-2xl font-semibold text-navy-800 tabular-nums">
-              {tile.count}
-            </p>
-          </div>
-        ))}
-      </div>
+      {rejectCluster >= CLUSTER_THRESHOLD && (
+        <Banner tone="danger" className="mb-[18px]">
+          {t("notifCluster", {
+            count: rejectCluster,
+            hours: CLUSTER_WINDOW_HOURS,
+          })}
+        </Banner>
+      )}
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-4 py-3 font-medium">{t("colWhen")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("notifColChannel")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("notifColType")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("notifColTo")}</th>
-              <th scope="col" className="px-4 py-3 font-medium">{t("notifColStatus")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                  {t("notifEmpty")}
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => {
-                const to = (row.payload as { to?: string } | null)?.to ?? "—";
-                return (
-                  <tr key={row.id}>
-                    <td className="px-4 py-3 tabular-nums text-slate-500">
-                      {new Date(row.createdAt).toLocaleString(dateLocale)}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{row.channel}</td>
-                    <td className="px-4 py-3 text-slate-600">{row.type}</td>
-                    <td className="px-4 py-3">
-                      <span className="text-ink">{to}</span>
-                      {row.recipientName && (
-                        <span className="ml-2 text-slate-500">{row.recipientName}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          TONES[row.status] ?? TONES.queued
-                        }`}
-                      >
-                        {t(`notifStatus_${row.status}`)}
-                      </span>
-                      {/* The provider's own word, when it disagrees with ours. */}
-                      {row.providerStatus && (
-                        <span className="ml-2 text-xs text-slate-400">
-                          {row.providerStatus}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <Card>
+        <CardToolbar>
+          <FilterChips
+            active={activeChannel}
+            hrefFor={(v) => href({ channel: v })}
+            options={[
+              { value: null, label: t("filterAll") },
+              { value: "sms", label: t("notifChannelSms") },
+              { value: "email", label: t("notifChannelEmail") },
+            ]}
+          />
+          <FilterChips
+            active={onlyTrouble ? "1" : null}
+            hrefFor={(v) => href({ trouble: v === "1" })}
+            options={[{ value: "1", label: t("notifOnlyTrouble") }]}
+          />
+        </CardToolbar>
+
+        <Table
+          empty={t("notifEmpty")}
+          head={[
+            { label: t("colWhen") },
+            { label: t("notifColTo") },
+            { label: t("notifColChannel") },
+            { label: t("notifColType"), hide: true },
+            { label: t("notifColProvider"), hide: true },
+            { label: t("notifColStatus") },
+          ]}
+          rows={rows.map((r) => {
+            const to = (r.payload as { to?: string } | null)?.to ?? "—";
+            return [
+              <span
+                key="w"
+                className="whitespace-nowrap text-[.84rem] text-lp-slate tabular-nums"
+              >
+                {fmt(r.createdAt, locale)}
+              </span>,
+              <span key="t" className="block min-w-0">
+                <span className="block truncate text-[.88rem] text-lp-ink">
+                  {to}
+                </span>
+                {r.recipientName && (
+                  <span className="block truncate text-[.8rem] text-lp-muted">
+                    {r.recipientName}
+                  </span>
+                )}
+              </span>,
+              <Pill key="c" tone={r.channel === "sms" ? "gold" : "navy"}>
+                {r.channel}
+              </Pill>,
+              <span key="ty" className="font-mono text-[.78rem] text-lp-muted">
+                {r.type}
+              </span>,
+              /* The provider's own word, which is the thing support quotes. */
+              <span key="p" className="font-mono text-[.78rem] text-lp-slate">
+                {r.providerStatus || "—"}
+              </span>,
+              <StatusDot key="s" tone={TONE[r.status] ?? "grey"}>
+                {t(`notifStatus_${r.status}`)}
+              </StatusDot>,
+            ];
+          })}
+        />
+      </Card>
+    </>
+  );
+}
+
+function fmt(d: Date, locale: Locale) {
+  return new Date(d).toLocaleString(
+    locale === "ru" ? "ru-RU" : locale === "en" ? "en-GB" : "uz-UZ",
+    {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: APP_TIME_ZONE,
+    },
   );
 }

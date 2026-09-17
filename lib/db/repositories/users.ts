@@ -152,6 +152,10 @@ export const usersRepository = {
         locale: users.locale,
         isActive: users.isActive,
         createdAt: users.createdAt,
+        // Booleans, not the timestamps: the admin list asks "is this account
+        // proven", never "when". The dates stay for the account page.
+        emailVerified: sql<boolean>`${users.emailVerified} is not null`,
+        phoneVerified: sql<boolean>`${users.phoneVerified} is not null`,
         enrollmentCount: sql<number>`count(${enrollments.id})`,
         hasAvatar: sql<boolean>`bool_or(${userAvatars.userId} is not null)`,
       })
