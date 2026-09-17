@@ -167,7 +167,11 @@ export function DashboardRail({
             </Link>
             <div className="flex items-center justify-between gap-2.5 px-2.5 pt-2.5">
               <RailLanguage />
-              <LogoutButton variant="ghost" size="sm" />
+              <LogoutButton
+                variant="ghost"
+                size="sm"
+                className="text-lp-on-navy hover:bg-white/10 hover:text-white"
+              />
             </div>
           </div>
         </div>

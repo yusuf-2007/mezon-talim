@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/lib/i18n/navigation";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 import { BookMark, RailRow } from "./admin-rail";
 import {
@@ -124,14 +125,23 @@ export function AdminMobileNav({
               </div>
             ))}
 
-            <div className="mt-auto flex items-center gap-2.5 border-t border-white/10 px-2.5 pt-4">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-lp-navy-mid text-[.78rem] font-extrabold text-white">
-                {initials}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-[.88rem] font-bold text-white">{name}</span>
-                <span className="block text-[.74rem] text-lp-on-navy-dim">{roleLabel}</span>
-              </span>
+            <div className="mt-auto border-t border-white/10 px-2.5 pt-4">
+              <div className="flex items-center gap-2.5">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-lp-navy-mid text-[.78rem] font-extrabold text-white">
+                  {initials}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[.88rem] font-bold text-white">
+                    {name}
+                  </span>
+                  <span className="block text-[.74rem] text-lp-on-navy-dim">{roleLabel}</span>
+                </span>
+              </div>
+              <LogoutButton
+                variant="ghost"
+                size="sm"
+                className="mt-1 w-full justify-start px-0 text-lp-on-navy hover:bg-white/10 hover:text-white"
+              />
             </div>
           </div>
         </div>

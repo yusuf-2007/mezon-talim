@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/lib/i18n/navigation";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { cn } from "@/lib/utils";
 import {
   isAdminNavActive,
@@ -90,6 +91,15 @@ export function AdminRail({
               <span className="block truncate text-[.88rem] font-bold text-white">{name}</span>
               <span className="block text-[.74rem] text-lp-on-navy-dim">{roleLabel}</span>
             </span>
+          </div>
+          {/* The old admin shell carried this in the site header, which this
+              rail replaced — leaving staff with no way out of /admin at all. */}
+          <div className="px-2.5 pt-1">
+            <LogoutButton
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start px-0 text-lp-on-navy hover:bg-white/10 hover:text-white"
+            />
           </div>
         </div>
       </div>
