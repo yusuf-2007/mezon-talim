@@ -1036,7 +1036,12 @@
     "notifStatus_sent": "Sent",
     "notifStatus_delivered": "Delivered",
     "notifStatus_rejected": "Rejected",
-    "notifStatus_failed": "Failed"
+    "notifStatus_failed": "Failed",
+    "navGroupManage": "Manage",
+    "navGroupFinance": "Finance",
+    "navGroupAssess": "Assessment",
+    "navGroupInsight": "Insights",
+    "navGroupSystem": "System"
   },
   "Student": {
     "navHome": "Home",

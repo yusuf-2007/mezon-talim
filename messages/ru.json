@@ -1036,7 +1036,12 @@
     "notifStatus_sent": "Отправлено",
     "notifStatus_delivered": "Доставлено",
     "notifStatus_rejected": "Отклонено",
-    "notifStatus_failed": "Ошибка"
+    "notifStatus_failed": "Ошибка",
+    "navGroupManage": "Управление",
+    "navGroupFinance": "Финансы",
+    "navGroupAssess": "Оценивание",
+    "navGroupInsight": "Показатели",
+    "navGroupSystem": "Система"
   },
   "Student": {
     "navHome": "Главная",

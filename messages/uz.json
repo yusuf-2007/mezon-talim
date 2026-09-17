@@ -1036,7 +1036,12 @@
     "notifStatus_sent": "Yuborildi",
     "notifStatus_delivered": "Yetkazildi",
     "notifStatus_rejected": "Rad etildi",
-    "notifStatus_failed": "Xatolik"
+    "notifStatus_failed": "Xatolik",
+    "navGroupManage": "Boshqaruv",
+    "navGroupFinance": "Moliya",
+    "navGroupAssess": "Baholash",
+    "navGroupInsight": "Koʻrsatkichlar",
+    "navGroupSystem": "Tizim"
   },
   "Student": {
     "navHome": "Asosiy",
