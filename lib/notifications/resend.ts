@@ -14,6 +14,9 @@ const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
 const DEFAULT_FROM = "Mezon Ta'lim <no-reply@mezontalim.uz>";
 
+/** See ConsoleEmailSender. Not a real domain; nothing can be sent to it. */
+const BOUNCE_ADDRESS = "bounce@e2e.test";
+
 class ResendEmailSender implements EmailSender {
   async send(message: EmailMessage): Promise<{ id: string }> {
     const res = await fetch(RESEND_ENDPOINT, {
@@ -41,6 +44,14 @@ class ResendEmailSender implements EmailSender {
 
 class ConsoleEmailSender implements EmailSender {
   async send(message: EmailMessage): Promise<{ id: string }> {
+    // One reserved address always fails, so the suite can prove that a refused
+    // send is reported as refused. Reachable only on the no-API-key path, which
+    // is to say never in production, where RESEND_API_KEY selects the real
+    // sender. Per-recipient rather than a process flag, so one test can fail
+    // while every other email in the same run still succeeds.
+    if (message.to.toLowerCase() === BOUNCE_ADDRESS) {
+      throw new Error(`simulated provider refusal for ${BOUNCE_ADDRESS}`);
+    }
     console.info(
       `[dev EMAIL → ${message.to}] ${message.subject}\n` +
         (message.text ?? message.html.replace(/<[^>]+>/g, " ").trim()) +

@@ -489,7 +489,8 @@
     "verificationSent": "Tasdiqlash havolasi {email} manziliga yuborildi. Pochtangizni tekshiring.",
     "emailAlreadyVerified": "Bu manzil allaqachon tasdiqlangan",
     "noEmailYet": "Avval email manzilingizni qoʻshing",
-    "unverifiedHint": "Bu manzil hali tasdiqlanmagan. Tasdiqlash havolasini yuborishimiz mumkin."
+    "unverifiedHint": "Bu manzil hali tasdiqlanmagan. Tasdiqlash havolasini yuborishimiz mumkin.",
+    "emailSendFailed": "Xat yuborilmadi — pochta xizmatida muammo. Manzil saqlandi, biroz keyin qayta urinib koʻring."
   },
   "Studio": {
     "title": "Studiya",

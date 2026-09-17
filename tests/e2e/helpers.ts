@@ -15,8 +15,10 @@ export async function login(page: Page, email: string, password: string) {
   await page.fill("input[name=email]", email);
   await page.fill("input[name=password]", password);
   await page.locator("form:has(input[name=password]) button[type=submit]").click();
-  // Every role leaves the login page on success.
-  await expect(page).not.toHaveURL(/\/login/, { timeout: 30_000 });
+  // Every role leaves the login page on success. Same generous budget as
+  // openEmailForm and for the same reason: the first sign-in of a run also
+  // pays to compile the auth route and whatever it redirects to.
+  await expect(page).not.toHaveURL(/\/login/, { timeout: 60_000 });
 }
 
 /**
@@ -26,7 +28,10 @@ export async function login(page: Page, email: string, password: string) {
 export async function openEmailForm(page: Page) {
   const toggle = page.getByRole("button", { name: "Email va parol bilan kirish" });
   if (await toggle.isVisible().catch(() => false)) await toggle.click();
-  await page.waitForSelector("input[name=password]", { timeout: 15_000 });
+  // Generous on purpose. Against `next dev` the first request to a route pays
+  // for its compilation, and whichever spec runs first was intermittently
+  // losing a 15s race to it — a flake that looked like a broken login.
+  await page.waitForSelector("input[name=password]", { timeout: 45_000 });
 }
 
 /** Open a player tab ("Eslatmalar", "Muhokama", "Ustozga savol", …). */

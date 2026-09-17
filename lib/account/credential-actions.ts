@@ -70,6 +70,12 @@ export async function addEmailAction(
   const result = await requestEmailVerification(user.id, parsed.data.email);
   if (result === "taken") return { fieldErrors: { email: [t("emailTaken")] } };
   if (result === "already-yours") return { error: t("emailAlreadyYours") };
+  // The address is claimed either way; only the message failed. Say so rather
+  // than send someone to wait on an inbox nothing was delivered to.
+  if (result === "send-failed") {
+    revalidateAccount();
+    return { error: t("emailSendFailed") };
+  }
 
   revalidateAccount();
   return { ok: true, message: t("emailClaimSent", { email: parsed.data.email }) };
@@ -101,6 +107,7 @@ export async function sendEmailVerificationAction(
   const result = await requestEmailVerification(user.id, target);
   if (result === "already-yours") return { error: t("emailAlreadyVerified") };
   if (result === "taken") return { error: t("emailTaken") };
+  if (result === "send-failed") return { error: t("emailSendFailed") };
 
   revalidateAccount();
   return { ok: true, message: t("verificationSent", { email: target }) };

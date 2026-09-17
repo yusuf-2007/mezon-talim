@@ -40,13 +40,24 @@ function displayName(user: UserRow): string {
 }
 
 /** Record + dispatch one email; swallow errors after marking the row. */
+/**
+ * What became of one send.
+ *
+ * Returned rather than thrown: most callers are right to carry on regardless —
+ * a welcome email that bounces must not fail the sign-up. But the caller has to
+ * be able to *know*, because one of them is telling a student "check your
+ * inbox", and saying that when the provider refused the message is worse than
+ * saying nothing.
+ */
+export type EmailOutcome = "sent" | "failed" | "no-address";
+
 export async function dispatchEmail(
   userId: string,
   type: string,
   to: string | null,
   tpl: EmailTemplate,
-): Promise<void> {
-  if (!to) return; // phone-only account, no email on file
+): Promise<EmailOutcome> {
+  if (!to) return "no-address"; // phone-only account, no email on file
   const row = await notificationsRepository.record({
     userId,
     channel: "email",
@@ -63,9 +74,11 @@ export async function dispatchEmail(
     // Keep the provider's id: a bounce arrives later carrying only that, and
     // without it the event has no row to attach to.
     await notificationsRepository.markSent(row.id, id);
+    return "sent";
   } catch (err) {
     console.error(`notification email '${type}' failed:`, err);
     await notificationsRepository.markFailed(row.id);
+    return "failed";
   }
 }
 

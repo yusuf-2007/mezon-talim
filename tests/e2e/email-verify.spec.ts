@@ -128,4 +128,31 @@ test.describe("email verification", () => {
       timeout: 30_000,
     });
   });
+
+  test("a refused send is reported as failed, not as sent", async ({ page }) => {
+    await resetVerification(USERS.studentB.email);
+    await login(page, USERS.studentB.email, PASSWORD);
+    await page.goto("/uz/dashboard/settings");
+
+    // The regression this guards: the provider refused every message for a day
+    // while the page kept saying the link had been sent, so nobody thought to
+    // look at the provider. bounce@e2e.test always fails in the dev sender.
+    await page.getByRole("button", { name: "Emailni o'zgartirish" }).click();
+    await page.fill("input[name=email]", "bounce@e2e.test");
+    await page
+      .locator("form:has(input[name=email]) button[type=submit]")
+      .first()
+      .click();
+
+    await expect(page.getByText(/yuborilmadi/)).toBeVisible({ timeout: 30_000 });
+
+    const sql = testSql();
+    const rows = await sql`
+      select status from notifications
+      where channel = 'email' and payload->>'to' = 'bounce@e2e.test'
+      order by created_at desc limit 1`;
+    await sql.end();
+    // Recorded as failed, so the admin delivery log tells the true story.
+    expect(rows[0]?.status).toBe("failed");
+  });
 });

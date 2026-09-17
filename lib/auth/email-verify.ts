@@ -27,7 +27,12 @@ function baseUrl(): string {
   return publicBaseUrl();
 }
 
-export type RequestEmailResult = "sent" | "taken" | "already-yours";
+export type RequestEmailResult =
+  | "sent"
+  | "taken"
+  | "already-yours"
+  /** The claim was stored but the provider refused the message. */
+  | "send-failed";
 
 /**
  * Issue a fresh claim on `email` for `userId` and send the link.
@@ -70,7 +75,7 @@ export async function requestEmailVerification(
   );
 
   const locale = (user.locale ?? "uz") as Locale;
-  await dispatchEmail(
+  const outcome = await dispatchEmail(
     userId,
     "email_verification",
     email,
@@ -83,7 +88,10 @@ export async function requestEmailVerification(
       hours: EMAIL_VERIFY_TTL_HOURS,
     }),
   );
-  return "sent";
+
+  // The claim is left in place on failure: the token is still valid, so a
+  // retry can reuse it, and the notification row records what went wrong.
+  return outcome === "sent" ? "sent" : "send-failed";
 }
 
 export type ConfirmEmailResult = "ok" | "invalid" | "taken";
