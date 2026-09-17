@@ -137,6 +137,53 @@ export const messagesRepository = {
   },
 
   /**
+   * Open threads across the whole school, oldest first — the admin queue.
+   *
+   * "Open" means the student spoke last. One row per thread carrying the
+   * student's latest message, so the admin home can show the question itself
+   * and how long it has been sitting without a second round trip.
+   */
+  async openThreadsForAdmin(limit = 20) {
+    const student = alias(users, "thread_student");
+    const latest = db
+      .selectDistinctOn([lessonMessages.lessonId, lessonMessages.studentId], {
+        id: lessonMessages.id,
+        lessonId: lessonMessages.lessonId,
+        studentId: lessonMessages.studentId,
+        senderId: lessonMessages.senderId,
+        body: lessonMessages.body,
+        createdAt: lessonMessages.createdAt,
+      })
+      .from(lessonMessages)
+      .orderBy(
+        lessonMessages.lessonId,
+        lessonMessages.studentId,
+        desc(lessonMessages.createdAt),
+        desc(lessonMessages.id),
+      )
+      .as("latest");
+
+    return db
+      .select({
+        id: latest.id,
+        lessonId: latest.lessonId,
+        lessonTitle: lessons.title,
+        courseId: modules.courseId,
+        studentId: latest.studentId,
+        studentName: student.fullName,
+        body: latest.body,
+        createdAt: latest.createdAt,
+      })
+      .from(latest)
+      .innerJoin(lessons, eq(lessons.id, latest.lessonId))
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .innerJoin(student, eq(student.id, latest.studentId))
+      .where(eq(latest.senderId, latest.studentId))
+      .orderBy(asc(latest.createdAt))
+      .limit(limit);
+  },
+
+  /**
    * Threads still awaiting an instructor reply (their LATEST message is from
    * the student), counted per lesson with the owning course — feeds the
    * "needs reply" badges in the admin Messages pickers.

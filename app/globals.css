@@ -76,6 +76,14 @@
   --color-lp-success-dot: #1e9e6a;
   --color-lp-danger: #c0453a; /* destructive action text */
   --color-lp-danger-line: #f0c9c4; /* dashed border around destructive blocks */
+  /* Admin surface: status tints behind pills and banners, and the table row
+     hover. All are backgrounds, so they carry no contrast requirement of their
+     own — the text on them is lp-success / lp-gold-ink / lp-danger. */
+  --color-lp-success-tint: #e4f4ec;
+  --color-lp-danger-tint: #fbe9e7;
+  --color-lp-gold-band: #f5e2a8; /* border on gold-wash banners */
+  --color-lp-gold-muted: #f0d48a; /* a number standing in for one not yet set */
+  --color-lp-row-hover: #fbfcfd;
 }
 
 @theme inline {

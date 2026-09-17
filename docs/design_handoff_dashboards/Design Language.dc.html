@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:#F7F9FB;color:#0E2233;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  a{color:#0B4C82;text-decoration:none}
+  a:hover{color:#023A69}
+  ::selection{background:#FBD968;color:#011E38}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="max-width:1240px;margin:0 auto;padding:0 32px;font-family:'Manrope',sans-serif">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header style="padding:88px 0 64px;border-bottom:1px solid #E2E7EE;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;opacity:.5;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><path d=%22M22 1 L43 22 L22 43 L1 22 Z%22 fill=%22none%22 stroke=%22%23023A69%22 stroke-opacity=%220.05%22 stroke-width=%221%22/></svg>');background-size:44px 44px;pointer-events:none"></div>
+    <div style="position:relative">
+      <img src="assets/mezon-logo-horizontal.png" alt="Mezon Ta'lim" style="height:46px;width:auto;margin-bottom:40px;display:block">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:18px">Design Language &middot; v1.0</div>
+      <h1 style="font-family:'Spectral',serif;font-weight:600;font-size:clamp(2.4rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.015em;color:#023A69;max-width:20ch">A visual system for a credible academic institution</h1>
+      <p style="font-size:1.125rem;line-height:1.6;color:#46586B;max-width:62ch;margin-top:22px">The foundations for Mezon Ta&rsquo;lim &mdash; an Uzbek e-learning platform teaching AAOIFI Shari&rsquo;ah Standards. Navy structure, gold as the single accent, warm-but-formal voice, and restrained geometry drawn from the open-book mark. Every value below maps to a CSS variable and a Tailwind token.</p>
+      <nav style="display:flex;flex-wrap:wrap;gap:10px;margin-top:34px">
+        <a href="#color" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Colour</a>
+        <a href="#type" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Typography</a>
+        <a href="#layout" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Spacing &amp; layout</a>
+        <a href="#surface" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Radius &amp; elevation</a>
+        <a href="#motif" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Icon &amp; motif</a>
+        <a href="#imagery" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Imagery &amp; motion</a>
+        <a href="#components" style="font-size:13px;font-weight:600;color:#023A69;background:#fff;border:1px solid #E2E7EE;border-radius:999px;padding:7px 15px">Components</a>
+        <a href="#tokens" style="font-size:13px;font-weight:600;color:#fff;background:#023A69;border:1px solid #023A69;border-radius:999px;padding:7px 15px">Tokens</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ COLOUR ============ -->
+  <section id="color" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">01</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Colour system</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:36px">Two anchors: <b style="color:#023A69">navy</b> carries all structure &mdash; headers, footers, headings, body links &mdash; and <b style="color:#C08E00">gold</b> is reserved almost exclusively for the primary call-to-action and small moments of emphasis. Interface surfaces stay light. Tints and shades below are derived from the two logo colours.</p>
+
+    <!-- Primary anchors -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="border-radius:16px;overflow:hidden;border:1px solid #E2E7EE;background:#fff">
+        <div style="background:#023A69;height:132px;display:flex;align-items:flex-end;padding:16px;position:relative">
+          <div style="position:absolute;inset:0;opacity:.4;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><path d=%22M22 1 L43 22 L22 43 L1 22 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.12%22 stroke-width=%221%22/></svg>');background-size:44px 44px"></div>
+          <span style="color:#fff;font-weight:700;font-size:.95rem;position:relative">Primary &middot; Navy</span>
+        </div>
+        <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+          <code style="font-family:ui-monospace,monospace;font-size:.8rem;color:#46586B">--navy</code>
+          <code style="font-family:ui-monospace,monospace;font-size:.85rem;font-weight:700;color:#023A69">#023A69</code>
+        </div>
+      </div>
+      <div style="border-radius:16px;overflow:hidden;border:1px solid #E2E7EE;background:#fff">
+        <div style="background:#F8B801;height:132px;display:flex;align-items:flex-end;padding:16px">
+          <span style="color:#011E38;font-weight:700;font-size:.95rem">Accent &middot; Gold</span>
+        </div>
+        <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+          <code style="font-family:ui-monospace,monospace;font-size:.8rem;color:#46586B">--gold</code>
+          <code style="font-family:ui-monospace,monospace;font-size:.85rem;font-weight:700;color:#023A69">#F8B801</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ramps -->
+    <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin:32px 0 12px">Navy ramp</p>
+    <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px;border-radius:14px;overflow:hidden">
+      <sc-for list="{{ navy }}" as="c" hint-placeholder-count="8">
+        <div style="background:{{ c.hex }};padding:14px 10px 12px;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end">
+          <div style="font-family:ui-monospace,monospace;font-size:.68rem;font-weight:700;color:{{ c.on }}">{{ c.name }}</div>
+          <div style="font-family:ui-monospace,monospace;font-size:.66rem;color:{{ c.on }};opacity:.75">{{ c.hex }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin:24px 0 12px">Gold ramp</p>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;border-radius:14px;overflow:hidden">
+      <sc-for list="{{ gold }}" as="c" hint-placeholder-count="6">
+        <div style="background:{{ c.hex }};padding:14px 10px 12px;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid rgba(2,58,105,.06)">
+          <div style="font-family:ui-monospace,monospace;font-size:.68rem;font-weight:700;color:{{ c.on }}">{{ c.name }}</div>
+          <div style="font-family:ui-monospace,monospace;font-size:.66rem;color:{{ c.on }};opacity:.8">{{ c.hex }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin:24px 0 12px">Neutrals (navy-tinted)</p>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;border-radius:14px;overflow:hidden">
+      <sc-for list="{{ neutral }}" as="c" hint-placeholder-count="7">
+        <div style="background:{{ c.hex }};padding:14px 10px 12px;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid rgba(2,58,105,.06)">
+          <div style="font-family:ui-monospace,monospace;font-size:.68rem;font-weight:700;color:{{ c.on }}">{{ c.name }}</div>
+          <div style="font-family:ui-monospace,monospace;font-size:.66rem;color:{{ c.on }};opacity:.8">{{ c.hex }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin:24px 0 12px">Semantic</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <sc-for list="{{ semantic }}" as="c" hint-placeholder-count="4">
+        <div style="border-radius:12px;border:1px solid #E2E7EE;background:#fff;overflow:hidden">
+          <div style="height:56px;background:{{ c.hex }}"></div>
+          <div style="padding:10px 12px">
+            <div style="font-weight:700;font-size:.85rem;color:#0E2233">{{ c.name }}</div>
+            <code style="font-family:ui-monospace,monospace;font-size:.72rem;color:#46586B">{{ c.hex }}</code>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- Usage / pairings -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px">
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:22px 24px">
+        <h4 style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;color:#023A69;margin-bottom:12px">Usage rules</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:.92rem;line-height:1.5;color:#46586B">
+          <li style="display:flex;gap:10px"><span style="color:#F8B801;font-weight:800">&bull;</span><span>Gold is the <b style="color:#0E2233">primary action</b> colour only &mdash; one gold button per view. Never fill large areas with gold.</span></li>
+          <li style="display:flex;gap:10px"><span style="color:#023A69;font-weight:800">&bull;</span><span>Navy carries structure: header, footer, section anchors, headings, and links.</span></li>
+          <li style="display:flex;gap:10px"><span style="color:#8A97A6;font-weight:800">&bull;</span><span>Surfaces are white on a <code style="font-size:.8rem">--paper</code> tint. Reserve <code style="font-size:.8rem">--navy-50/100</code> for quiet zones.</span></li>
+          <li style="display:flex;gap:10px"><span style="color:#C0453A;font-weight:800">&bull;</span><span>Semantic colours only for status &mdash; never decoratively.</span></li>
+        </ul>
+      </div>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:22px 24px">
+        <h4 style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;color:#023A69;margin-bottom:14px">Accessible pairings (WCAG AA)</h4>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="background:#023A69;color:#fff;font-weight:600;font-size:.85rem;padding:8px 14px;border-radius:8px">White on Navy</span>
+            <span style="font-size:.8rem;color:#1C8A5A;font-weight:700">12.4 : 1 &check;</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="background:#F8B801;color:#011E38;font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:8px">Navy on Gold</span>
+            <span style="font-size:.8rem;color:#1C8A5A;font-weight:700">9.8 : 1 &check;</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="background:#F8B801;color:#fff;font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:8px;text-decoration:line-through">White on Gold</span>
+            <span style="font-size:.8rem;color:#C0453A;font-weight:700">1.5 : 1 &mdash; never</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="background:#fff;color:#46586B;border:1px solid #E2E7EE;font-weight:600;font-size:.85rem;padding:8px 14px;border-radius:8px">Body on White</span>
+            <span style="font-size:.8rem;color:#1C8A5A;font-weight:700">8.1 : 1 &check;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TYPOGRAPHY ============ -->
+  <section id="type" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">02</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Typography</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:32px">Both faces carry <b style="color:#023A69">full Cyrillic and Latin-Extended</b> so Uzbek Latin (o&#699;, g&#699;, sh, ch) and Russian render natively &mdash; the reason display serifs like Fraunces were rejected.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+      <div style="background:#023A69;border-radius:16px;padding:28px 30px;color:#fff">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FBD968;margin-bottom:10px">Headings &middot; Spectral</div>
+        <div style="font-family:'Spectral',serif;font-weight:600;font-size:2.4rem;line-height:1.1;margin-bottom:10px">Shariʼat standartlari</div>
+        <div style="font-family:'Spectral',serif;font-weight:400;font-size:1.05rem;color:#B9CBDB;line-height:1.5">Шариатские стандарты &middot; oʻqish, gʻoya, mashq &middot; A refined literary serif built for screens, with genuine Cyrillic. Warm and authoritative without feeling antique.</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:28px 30px">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:10px">Body &amp; UI &middot; Manrope</div>
+        <div style="font-weight:700;font-size:1.7rem;line-height:1.2;color:#023A69;margin-bottom:10px">Video-darslar va testlar</div>
+        <div style="font-weight:400;font-size:1.0rem;color:#46586B;line-height:1.6">Практичные тесты и экзамены. A geometric-humanist sans with a tall x-height that stays crisp at small UI sizes and reads calmly in longer passages. Full Cyrillic support.</div>
+      </div>
+    </div>
+
+    <!-- Type scale -->
+    <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;overflow:hidden">
+      <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="9">
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:24px;align-items:baseline;padding:18px 24px;border-bottom:1px solid #EFF2F6">
+          <div>
+            <div style="font-weight:700;font-size:.85rem;color:#0E2233">{{ t.token }}</div>
+            <div style="font-family:ui-monospace,monospace;font-size:.72rem;color:#8A97A6;margin-top:3px">{{ t.meta }}</div>
+          </div>
+          <div style="font-family:{{ t.family }};font-weight:{{ t.weight }};font-size:{{ t.size }};line-height:{{ t.lh }};letter-spacing:{{ t.ls }};color:#0E2233;text-transform:{{ t.tt }}">{{ t.sample }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="font-size:.9rem;color:#46586B;margin-top:14px;line-height:1.5">Weights in use: Spectral 400 / 500 / 600 (headings never bolder than 600 &mdash; weight comes from size, not heft). Manrope 400 / 500 / 600 / 700 / 800. Body line-height <b style="color:#0E2233">1.6</b>; headings 1.05&ndash;1.3. Measure caps at ~68ch.</p>
+  </section>
+
+  <!-- ============ SPACING & LAYOUT ============ -->
+  <section id="layout" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">03</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Spacing &amp; layout</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:32px"><b style="color:#023A69">4&nbsp;px base unit.</b> All spacing, sizing, and radii are multiples of 4 for a predictable vertical rhythm. A 12-column grid at 24&nbsp;px gutters; content maxes at 1200&nbsp;px, prose at 720&nbsp;px.</p>
+
+    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:16px">
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:24px">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:16px">Spacing scale</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="9">
+            <div style="display:flex;align-items:center;gap:16px">
+              <code style="font-family:ui-monospace,monospace;font-size:.75rem;color:#0E2233;width:64px;font-weight:600">{{ s.token }}</code>
+              <code style="font-family:ui-monospace,monospace;font-size:.72rem;color:#8A97A6;width:48px">{{ s.px }}</code>
+              <div style="height:14px;background:#F8B801;border-radius:3px;width:{{ s.px }}"></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:24px">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:16px">Grid &amp; containers</p>
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-bottom:18px">
+          <div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div><div style="height:70px;background:#E7EEF4;border-radius:4px"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:.9rem;color:#46586B">
+          <div style="display:flex;justify-content:space-between"><span>Columns</span><b style="color:#0E2233">12</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Gutter</span><b style="color:#0E2233">24px</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Content max-width</span><b style="color:#0E2233">1200px</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Prose max-width</span><b style="color:#0E2233">720px</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Section rhythm</span><b style="color:#0E2233">72&ndash;96px</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Page gutter (mobile)</span><b style="color:#0E2233">20px</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RADIUS & ELEVATION ============ -->
+  <section id="surface" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">04</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Radius, borders &amp; elevation</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:32px">Soft, confident corners &mdash; never fully rounded except pills. Borders are a single hairline <code style="font-size:.85rem">#E2E7EE</code>. Shadows are <b style="color:#023A69">navy-tinted, not grey</b>, and used sparingly for genuine elevation.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:24px">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:16px">Radius</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="width:76px;height:56px;background:#E7EEF4;border:1px solid #cdd9e6;border-radius:6px"></div><div style="font-size:.72rem;color:#46586B;margin-top:8px;font-family:ui-monospace,monospace">sm&nbsp;6</div></div>
+          <div style="text-align:center"><div style="width:76px;height:56px;background:#E7EEF4;border:1px solid #cdd9e6;border-radius:10px"></div><div style="font-size:.72rem;color:#46586B;margin-top:8px;font-family:ui-monospace,monospace">md&nbsp;10</div></div>
+          <div style="text-align:center"><div style="width:76px;height:56px;background:#E7EEF4;border:1px solid #cdd9e6;border-radius:14px"></div><div style="font-size:.72rem;color:#46586B;margin-top:8px;font-family:ui-monospace,monospace">lg&nbsp;14</div></div>
+          <div style="text-align:center"><div style="width:76px;height:56px;background:#E7EEF4;border:1px solid #cdd9e6;border-radius:20px"></div><div style="font-size:.72rem;color:#46586B;margin-top:8px;font-family:ui-monospace,monospace">xl&nbsp;20</div></div>
+          <div style="text-align:center"><div style="width:76px;height:56px;background:#E7EEF4;border:1px solid #cdd9e6;border-radius:999px"></div><div style="font-size:.72rem;color:#46586B;margin-top:8px;font-family:ui-monospace,monospace">pill</div></div>
+        </div>
+      </div>
+      <div style="background:#F7F9FB;border:1px solid #E2E7EE;border-radius:16px;padding:24px">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:18px">Elevation</p>
+        <div style="display:flex;gap:18px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="width:96px;height:64px;background:#fff;border-radius:12px;box-shadow:0 1px 2px rgba(2,58,105,.06)"></div><div style="font-size:.72rem;color:#46586B;margin-top:10px;font-family:ui-monospace,monospace">e1</div></div>
+          <div style="text-align:center"><div style="width:96px;height:64px;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(2,58,105,.08)"></div><div style="font-size:.72rem;color:#46586B;margin-top:10px;font-family:ui-monospace,monospace">e2</div></div>
+          <div style="text-align:center"><div style="width:96px;height:64px;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(2,58,105,.14)"></div><div style="font-size:.72rem;color:#46586B;margin-top:10px;font-family:ui-monospace,monospace">e3</div></div>
+          <div style="text-align:center"><div style="width:96px;height:64px;background:#fff;border-radius:12px;box-shadow:0 0 0 3px rgba(248,184,1,.55)"></div><div style="font-size:.72rem;color:#46586B;margin-top:10px;font-family:ui-monospace,monospace">focus</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ICON & MOTIF ============ -->
+  <section id="motif" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">05</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Iconography &amp; the signature motif</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:32px">Icons are <b style="color:#023A69">line icons, 1.75&nbsp;px stroke, 24&nbsp;px grid, round joins</b> (Lucide-style) in navy. The signature motif is a restrained <b style="color:#023A69">diamond lattice</b> &mdash; a modern nod to girih tessellation and to the two pages of the open-book mark. It appears only as low-opacity texture on navy fields, dividers, and the certificate border. Never loud, never full-colour.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="border-radius:16px;overflow:hidden;border:1px solid #E2E7EE;background:#023A69;min-height:220px;position:relative;display:flex;align-items:center;justify-content:center">
+        <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><path d=%22M22 1 L43 22 L22 43 L1 22 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.14%22 stroke-width=%221%22/></svg>');background-size:44px 44px"></div>
+        <div style="position:relative;text-align:center">
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:1.3rem;color:#fff">Diamond lattice</div>
+          <div style="font-size:.85rem;color:#B9CBDB;margin-top:4px">texture on navy &middot; 12&ndash;16% opacity</div>
+        </div>
+      </div>
+      <div style="border-radius:16px;border:1px solid #E2E7EE;background:#fff;padding:26px;display:flex;flex-direction:column;justify-content:center">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:16px">Where it appears</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:.92rem;line-height:1.5;color:#46586B">
+          <li style="display:flex;gap:10px"><span style="color:#F8B801;font-weight:800">&bull;</span>Hero &amp; footer navy fields, as faint watermark texture.</li>
+          <li style="display:flex;gap:10px"><span style="color:#F8B801;font-weight:800">&bull;</span>Section dividers &mdash; a single thin lattice band.</li>
+          <li style="display:flex;gap:10px"><span style="color:#F8B801;font-weight:800">&bull;</span>Certificate border, at low opacity in navy + gold.</li>
+          <li style="display:flex;gap:10px"><span style="color:#F8B801;font-weight:800">&bull;</span>Empty states &amp; auth pages, as a quiet backdrop.</li>
+        </ul>
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid #EFF2F6;display:flex;gap:18px;align-items:center">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          <span style="font-size:.8rem;color:#8A97A6">line icons &middot; 1.75px</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ IMAGERY & MOTION ============ -->
+  <section id="imagery" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">06</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Imagery &amp; motion</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;overflow:hidden">
+        <div style="height:170px;background:#023A69;position:relative">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 12px,transparent 12px 24px)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,58,105,.1),rgba(2,58,105,.55))"></div>
+          <div style="position:absolute;left:0;bottom:0;width:100%;height:4px;background:#F8B801"></div>
+          <div style="position:absolute;left:16px;bottom:14px;font-family:ui-monospace,monospace;font-size:.78rem;color:#DCE6F0">real photo &rarr; navy duotone + gold edge</div>
+        </div>
+        <div style="padding:20px 22px">
+          <h4 style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;color:#023A69;margin-bottom:8px">Photography treatment</h4>
+          <p style="font-size:.92rem;line-height:1.55;color:#46586B">Client-supplied photos of people, classrooms and offices are unified with a soft <b style="color:#0E2233">navy duotone</b> and a subtle gold accent (a corner rule or thin baseline). Warm, dignified, never stocky. On cards, a gentle navy gradient sits under overlaid text for contrast.</p>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:22px 24px">
+        <h4 style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;color:#023A69;margin-bottom:14px">Motion principles</h4>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:.92rem;line-height:1.5;color:#46586B">
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #EFF2F6;padding-bottom:10px"><span>Duration</span><b style="color:#0E2233">150&ndash;250ms</b></div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #EFF2F6;padding-bottom:10px"><span>Easing</span><code style="font-size:.78rem;color:#0E2233">cubic-bezier(.2,.7,.2,1)</code></div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #EFF2F6;padding-bottom:10px"><span>Entrance</span><b style="color:#0E2233">fade + 8px rise</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Hover lift</span><b style="color:#0E2233">translateY(-2px)</b></div>
+        </div>
+        <p style="font-size:.88rem;line-height:1.55;color:#8A97A6;margin-top:16px">Subtle and professional &mdash; short fades and slides, never bounce or spring. Respect <code style="font-size:.78rem">prefers-reduced-motion</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPONENTS ============ -->
+  <section id="components" style="padding:72px 0;border-bottom:1px solid #E2E7EE">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">07</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Components</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:32px">The working vocabulary &mdash; each built from the tokens above and translatable to shadcn/ui primitives.</p>
+
+    <!-- Buttons -->
+    <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:26px;margin-bottom:16px">
+      <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:18px">Buttons</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+        <button style="background:#F8B801;color:#011E38;font-family:'Manrope';font-weight:700;font-size:.95rem;border:none;border-radius:10px;padding:12px 22px;cursor:pointer;box-shadow:0 4px 16px rgba(248,184,1,.28)">Kurslarni ko&rsquo;rish</button>
+        <button style="background:#023A69;color:#fff;font-family:'Manrope';font-weight:600;font-size:.95rem;border:none;border-radius:10px;padding:12px 22px;cursor:pointer">Ro&rsquo;yxatdan o&rsquo;tish</button>
+        <button style="background:#fff;color:#023A69;font-family:'Manrope';font-weight:600;font-size:.95rem;border:1.5px solid #023A69;border-radius:10px;padding:11px 21px;cursor:pointer">AAOIFI haqida</button>
+        <button style="background:transparent;color:#0B4C82;font-family:'Manrope';font-weight:600;font-size:.95rem;border:none;border-radius:10px;padding:12px 14px;cursor:pointer">Batafsil &rarr;</button>
+        <button style="background:#EFF2F6;color:#8A97A6;font-family:'Manrope';font-weight:600;font-size:.95rem;border:none;border-radius:10px;padding:12px 22px;cursor:not-allowed">Disabled</button>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:16px">
+        <button style="background:#F8B801;color:#011E38;font-family:'Manrope';font-weight:700;font-size:.82rem;border:none;border-radius:8px;padding:8px 16px;cursor:pointer">Small</button>
+        <button style="background:#F8B801;color:#011E38;font-family:'Manrope';font-weight:700;font-size:1.05rem;border:none;border-radius:12px;padding:15px 30px;cursor:pointer">Large CTA</button>
+        <span style="font-size:.82rem;color:#8A97A6">Primary = gold + navy text. Secondary = navy fill. Tertiary = navy outline. Ghost = text-only.</span>
+      </div>
+    </div>
+
+    <!-- Inputs + badges -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:26px">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:18px">Inputs</p>
+        <label style="display:block;font-size:.82rem;font-weight:600;color:#0E2233;margin-bottom:6px">Email manzil</label>
+        <input value="ali@bank.uz" style="width:100%;font-family:'Manrope';font-size:.95rem;color:#0E2233;border:1.5px solid #023A69;border-radius:10px;padding:11px 14px;box-shadow:0 0 0 3px rgba(248,184,1,.35);outline:none" />
+        <div style="font-size:.78rem;color:#8A97A6;margin-top:6px">Fokusdagi holat &mdash; navy border + gold ring</div>
+        <label style="display:block;font-size:.82rem;font-weight:600;color:#0E2233;margin:16px 0 6px">Parol</label>
+        <input type="password" value="passw0rd" style="width:100%;font-family:'Manrope';font-size:.95rem;color:#0E2233;border:1.5px solid #C0453A;border-radius:10px;padding:11px 14px;outline:none" />
+        <div style="font-size:.78rem;color:#C0453A;margin-top:6px">Parol juda qisqa (xato holati)</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:26px">
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:18px">Badges &amp; pills</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <span style="background:#FEF3D2;color:#8A5B00;font-weight:700;font-size:.78rem;padding:5px 12px;border-radius:999px">Bepul</span>
+          <span style="background:#E7EEF4;color:#023A69;font-weight:600;font-size:.78rem;padding:5px 12px;border-radius:999px">Boshlang&rsquo;ich</span>
+          <span style="background:#E4F4EC;color:#146B44;font-weight:600;font-size:.78rem;padding:5px 12px;border-radius:999px">Yakunlandi</span>
+          <span style="background:#023A69;color:#fff;font-weight:600;font-size:.78rem;padding:5px 12px;border-radius:999px">Yangi</span>
+        </div>
+        <div style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:#F7F9FB;border:1px solid #E2E7EE;border-radius:999px;padding:6px 14px 6px 8px">
+          <span style="width:22px;height:22px;border-radius:50%;background:#023A69;display:grid;place-items:center;color:#F8B801;font-size:.7rem;font-weight:800">A</span>
+          <span style="font-size:.82rem;font-weight:600;color:#023A69">AAOIFI rasmiy hamkori</span>
+        </div>
+        <div style="margin-top:18px">
+          <p style="font-size:.78rem;color:#8A97A6;margin-bottom:8px">Tabs</p>
+          <div style="display:inline-flex;gap:4px;border-bottom:1px solid #E2E7EE;width:100%">
+            <div style="padding:9px 14px;font-size:.88rem;font-weight:700;color:#023A69;border-bottom:2px solid #F8B801;margin-bottom:-1px">Umumiy</div>
+            <div style="padding:9px 14px;font-size:.88rem;font-weight:500;color:#8A97A6">Dastur</div>
+            <div style="padding:9px 14px;font-size:.88rem;font-weight:500;color:#8A97A6">Sharhlar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course card + accordion -->
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:16px;margin-bottom:16px">
+      <!-- COURSE CARD -->
+      <div>
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:12px">Course card</p>
+        <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(2,58,105,.08)">
+          <div style="height:150px;background:#023A69;position:relative">
+            <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><path d=%22M20 1 L39 20 L20 39 L1 20 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.12%22 stroke-width=%221%22/></svg>');background-size:40px 40px"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(1,30,56,.5))"></div>
+            <span style="position:absolute;top:12px;left:12px;background:#FEF3D2;color:#8A5B00;font-weight:700;font-size:.72rem;padding:4px 10px;border-radius:999px">Bepul modul</span>
+            <div style="position:absolute;bottom:12px;left:14px;display:flex;align-items:center;gap:7px">
+              <span style="width:22px;height:22px;border-radius:50%;background:#F8B801;display:grid;place-items:center;color:#011E38;font-size:.66rem;font-weight:800">A</span>
+              <span style="font-size:.74rem;color:#DCE6F0;font-weight:600">AAOIFI hamkorligida</span>
+            </div>
+          </div>
+          <div style="padding:18px">
+            <div style="font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#C08E00;margin-bottom:8px">Islom moliyasi</div>
+            <h4 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;line-height:1.25;color:#023A69;margin-bottom:8px">AAOIFI Shari&rsquo;ah standartlari asoslari</h4>
+            <p style="font-size:.88rem;color:#46586B;line-height:1.5;margin-bottom:14px">Islom moliyasi va standartlarga kirish kursi &mdash; amaliy misollar bilan.</p>
+            <div style="display:flex;align-items:center;gap:14px;font-size:.8rem;color:#8A97A6;margin-bottom:16px">
+              <span style="display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A97A6" stroke-width="2"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>12 dars</span>
+              <span style="display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A97A6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>6 soat</span>
+              <span style="display:flex;align-items:center;gap:4px;color:#C08E00"><svg width="14" height="14" viewBox="0 0 24 24" fill="#F8B801" stroke="#F8B801" stroke-width="1"><path d="M12 2l2.4 6.9H22l-6 4.4 2.3 7-6.3-4.6L5.7 20l2.3-7-6-4.4h7.6z"/></svg>4.9</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid #EFF2F6">
+              <div style="font-family:'Spectral',serif;font-weight:600;font-size:1.35rem;color:#023A69">490 000 <span style="font-size:.85rem;color:#8A97A6;font-family:'Manrope'">so&rsquo;m</span></div>
+              <button style="background:#F8B801;color:#011E38;font-weight:700;font-size:.85rem;border:none;border-radius:8px;padding:9px 16px;cursor:pointer">Batafsil</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accordion + progress -->
+      <div>
+        <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:12px">Curriculum accordion &amp; progress</p>
+        <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;overflow:hidden">
+          <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;background:#F7F9FB;border-bottom:1px solid #E2E7EE">
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-family:'Spectral',serif;font-weight:600;color:#F8B801;font-size:1.05rem">01</span><span style="font-weight:700;color:#023A69;font-size:.98rem">Kirish va asosiy tushunchalar</span></div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+          </div>
+          <div style="padding:6px 8px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px">
+              <span style="width:26px;height:26px;border-radius:50%;background:#E4F4EC;display:grid;place-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#146B44" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+              <span style="flex:1;font-size:.9rem;color:#0E2233;font-weight:500">Islom moliyasi nima?</span>
+              <span style="font-size:.78rem;color:#8A97A6">08:24</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:#FFFAEC">
+              <span style="width:26px;height:26px;border-radius:50%;background:#F8B801;display:grid;place-items:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="#011E38"><path d="M8 5v14l11-7z"/></svg></span>
+              <span style="flex:1;font-size:.9rem;color:#0E2233;font-weight:700">AAOIFI tarixi va tuzilishi</span>
+              <span style="font-size:.78rem;color:#C08E00;font-weight:700">Davom etish</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px">
+              <span style="width:26px;height:26px;border-radius:50%;border:1.5px solid #cdd9e6;display:grid;place-items:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A97A6" stroke-width="2.5"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              <span style="flex:1;font-size:.9rem;color:#8A97A6;font-weight:500">Shari&rsquo;ah standartlari turlari</span>
+              <span style="font-size:.78rem;color:#8A97A6">10:02</span>
+            </div>
+          </div>
+          <div style="padding:16px 20px;border-top:1px solid #EFF2F6">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px"><span style="color:#46586B;font-weight:600">Kurs progressi</span><span style="color:#023A69;font-weight:700">45%</span></div>
+            <div style="height:8px;background:#EFF2F6;border-radius:999px;overflow:hidden"><div style="width:45%;height:100%;background:linear-gradient(90deg,#023A69,#0B4C82);border-radius:999px"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav + footer -->
+    <div style="margin-bottom:16px">
+      <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:12px">Header navigation</p>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:14px;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(2,58,105,.06)">
+        <img src="assets/mezon-logo-horizontal.png" alt="Mezon Ta'lim" style="height:28px;width:auto">
+        <div style="display:flex;gap:26px;font-size:.92rem;font-weight:600;color:#46586B">
+          <span style="color:#023A69">Kurslar</span><span>AAOIFI haqida</span><span>Savol-javob</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="display:flex;background:#F7F9FB;border:1px solid #E2E7EE;border-radius:8px;overflow:hidden;font-size:.8rem;font-weight:700"><span style="background:#023A69;color:#fff;padding:6px 11px">UZ</span><span style="color:#8A97A6;padding:6px 11px">RU</span></div>
+          <button style="background:transparent;color:#023A69;font-weight:600;font-size:.88rem;border:none;cursor:pointer">Kirish</button>
+          <button style="background:#F8B801;color:#011E38;font-weight:700;font-size:.88rem;border:none;border-radius:8px;padding:9px 16px;cursor:pointer">Ro&rsquo;yxatdan o&rsquo;tish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certificate -->
+    <div>
+      <p style="font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:12px">Certificate</p>
+      <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;padding:20px">
+        <div style="position:relative;border:2px solid #023A69;border-radius:10px;padding:38px 44px;text-align:center;overflow:hidden">
+          <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22><path d=%22M18 1 L35 18 L18 35 L1 18 Z%22 fill=%22none%22 stroke=%22%23023A69%22 stroke-opacity=%220.05%22 stroke-width=%221%22/></svg>');background-size:36px 36px"></div>
+          <div style="position:absolute;top:0;left:0;width:100%;height:6px;background:linear-gradient(90deg,#023A69,#F8B801)"></div>
+          <div style="position:relative">
+            <img src="assets/mezon-logo-stacked.png" alt="Mezon Ta'lim" style="height:72px;width:auto;margin:0 auto 18px;display:block">
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C08E00;margin-bottom:14px">Sertifikat &middot; Certificate of Completion</div>
+            <div style="font-size:.9rem;color:#46586B;margin-bottom:6px">Ushbu sertifikat</div>
+            <div style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;margin-bottom:6px">Alisher Karimov</div>
+            <div style="font-size:.92rem;color:#46586B;max-width:44ch;margin:0 auto 22px;line-height:1.5">quyidagi kursni muvaffaqiyatli yakunlaganini tasdiqlaydi:<br><b style="color:#0E2233">AAOIFI Shari&rsquo;ah standartlari asoslari</b></div>
+            <div style="display:flex;justify-content:center;align-items:center;gap:48px;margin-top:8px">
+              <div style="text-align:center"><div style="width:130px;border-top:1.5px solid #cdd9e6;padding-top:8px;font-size:.78rem;color:#8A97A6">Sana &middot; 2026</div></div>
+              <div style="width:56px;height:56px;border-radius:50%;background:#F8B801;display:grid;place-items:center;box-shadow:0 4px 12px rgba(248,184,1,.4)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#011E38" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+              <div style="text-align:center"><div style="width:130px;border-top:1.5px solid #cdd9e6;padding-top:8px;font-size:.78rem;color:#8A97A6">Imzo &middot; Direktor</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOKENS ============ -->
+  <section id="tokens" style="padding:72px 0 96px">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <span style="font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#C08E00">08</span>
+      <h2 style="font-family:'Spectral',serif;font-weight:600;font-size:2rem;color:#023A69;letter-spacing:-.01em">Design tokens</h2>
+    </div>
+    <p style="font-size:1.0625rem;line-height:1.6;color:#46586B;max-width:64ch;margin-bottom:28px">Everything above expressed as CSS custom properties and the equivalent Tailwind theme extension &mdash; ready to drop into a Next.js + shadcn/ui app.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:#011E38;border-radius:16px;padding:24px 26px;overflow:auto">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FBD968;margin-bottom:14px">globals.css</div>
+        <pre style="font-family:ui-monospace,'SF Mono',monospace;font-size:.76rem;line-height:1.65;color:#DCE6F0;white-space:pre">{{ cssTokens }}</pre>
+      </div>
+      <div style="background:#011E38;border-radius:16px;padding:24px 26px;overflow:auto">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FBD968;margin-bottom:14px">tailwind.config.ts</div>
+        <pre style="font-family:ui-monospace,'SF Mono',monospace;font-size:.76rem;line-height:1.65;color:#DCE6F0;white-space:pre">{{ twTokens }}</pre>
+      </div>
+    </div>
+    <div style="margin-top:40px;padding-top:28px;border-top:1px solid #E2E7EE;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <img src="assets/mezon-logo-horizontal.png" alt="Mezon Ta'lim" style="height:32px;width:auto">
+      <div style="font-size:.85rem;color:#8A97A6">Design Language v1.0 &middot; navy + gold &middot; Spectral / Manrope &middot; light theme</div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const navy = [
+      { name: 'ink 950', hex: '#011E38', on: '#DCE6F0' },
+      { name: 'deep 900', hex: '#033668', on: '#DCE6F0' },
+      { name: 'navy 800', hex: '#023A69', on: '#DCE6F0' },
+      { name: '600', hex: '#0B4C82', on: '#ffffff' },
+      { name: '500', hex: '#1D6099', on: '#ffffff' },
+      { name: '200', hex: '#B9CBDB', on: '#023A69' },
+      { name: '100', hex: '#E7EEF4', on: '#023A69' },
+      { name: '50', hex: '#F3F6FA', on: '#023A69' },
+    ];
+    const gold = [
+      { name: 'gold 500', hex: '#F8B801', on: '#011E38' },
+      { name: 'alt 520', hex: '#F0B720', on: '#011E38' },
+      { name: '600', hex: '#E0A600', on: '#011E38' },
+      { name: '700', hex: '#C08E00', on: '#ffffff' },
+      { name: '300', hex: '#FBD968', on: '#011E38' },
+      { name: '100', hex: '#FEF3D2', on: '#8A5B00' },
+    ];
+    const neutral = [
+      { name: 'white', hex: '#FFFFFF', on: '#0E2233' },
+      { name: 'paper', hex: '#F7F9FB', on: '#0E2233' },
+      { name: 'cloud 100', hex: '#EFF2F6', on: '#0E2233' },
+      { name: 'border', hex: '#E2E7EE', on: '#0E2233' },
+      { name: 'muted 400', hex: '#8A97A6', on: '#ffffff' },
+      { name: 'text 600', hex: '#46586B', on: '#ffffff' },
+      { name: 'ink', hex: '#0E2233', on: '#ffffff' },
+    ];
+    const semantic = [
+      { name: 'Success', hex: '#1C8A5A' },
+      { name: 'Warning', hex: '#B9791C' },
+      { name: 'Danger', hex: '#C0453A' },
+      { name: 'Info (navy)', hex: '#0B4C82' },
+    ];
+    const typeScale = [
+      { token: 'Display', meta: '56 / 1.05', family: "'Spectral',serif", weight: 600, size: '3rem', lh: '1.05', ls: '-.02em', tt: 'none', sample: 'Bilim — ishonch bilan' },
+      { token: 'H1', meta: '40 / 1.1', family: "'Spectral',serif", weight: 600, size: '2.4rem', lh: '1.1', ls: '-.015em', tt: 'none', sample: 'Shariʼat standartlari' },
+      { token: 'H2', meta: '32 / 1.15', family: "'Spectral',serif", weight: 600, size: '2rem', lh: '1.15', ls: '-.01em', tt: 'none', sample: 'Kurs dasturi' },
+      { token: 'H3', meta: '24 / 1.2', family: "'Spectral',serif", weight: 600, size: '1.5rem', lh: '1.2', ls: '0', tt: 'none', sample: 'Модуль тесты' },
+      { token: 'H4', meta: '20 / 1.3', family: "'Manrope',sans-serif", weight: 700, size: '1.25rem', lh: '1.3', ls: '0', tt: 'none', sample: 'Video-darslar va materiallar' },
+      { token: 'Body L', meta: '18 / 1.6', family: "'Manrope',sans-serif", weight: 400, size: '1.125rem', lh: '1.6', ls: '0', tt: 'none', sample: 'Amaliy testlar bilan bilimni mustahkamlang.' },
+      { token: 'Body', meta: '16 / 1.6', family: "'Manrope',sans-serif", weight: 400, size: '1rem', lh: '1.6', ls: '0', tt: 'none', sample: 'Тан олинган сертификат билан якунланади.' },
+      { token: 'Small', meta: '14 / 1.5', family: "'Manrope',sans-serif", weight: 500, size: '.875rem', lh: '1.5', ls: '0', tt: 'none', sample: '12 dars · 6 soat · 4.9 reyting' },
+      { token: 'Caption', meta: '12 / .14em', family: "'Manrope',sans-serif", weight: 700, size: '.75rem', lh: '1.4', ls: '.14em', tt: 'uppercase', sample: 'AAOIFI bilan rasmiy hamkorlikda' },
+    ];
+    const spacing = [
+      { token: 'space-1', px: '4px' }, { token: 'space-2', px: '8px' }, { token: 'space-3', px: '12px' },
+      { token: 'space-4', px: '16px' }, { token: 'space-5', px: '24px' }, { token: 'space-6', px: '32px' },
+      { token: 'space-7', px: '48px' }, { token: 'space-8', px: '64px' }, { token: 'space-9', px: '96px' },
+    ];
+    const cssTokens = `:root {
+  /* brand */
+  --navy:        #023A69;
+  --navy-deep:   #033668;
+  --navy-ink:    #011E38;
+  --navy-600:    #0B4C82;
+  --navy-500:    #1D6099;
+  --navy-100:    #E7EEF4;
+  --navy-50:     #F3F6FA;
+  --gold:        #F8B801;
+  --gold-600:    #E0A600;
+  --gold-700:    #C08E00;
+  --gold-300:    #FBD968;
+  --gold-100:    #FEF3D2;
+  /* neutral */
+  --paper:       #F7F9FB;
+  --surface:     #FFFFFF;
+  --border:      #E2E7EE;
+  --ink:         #0E2233;
+  --text:        #46586B;
+  --muted:       #8A97A6;
+  /* semantic */
+  --success:     #1C8A5A;
+  --warning:     #B9791C;
+  --danger:      #C0453A;
+  /* type */
+  --font-head: 'Spectral', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  /* radius */
+  --r-sm: 6px; --r-md: 10px;
+  --r-lg: 14px; --r-xl: 20px;
+  --r-pill: 999px;
+  /* elevation */
+  --e1: 0 1px 2px rgba(2,58,105,.06);
+  --e2: 0 4px 16px rgba(2,58,105,.08);
+  --e3: 0 12px 32px rgba(2,58,105,.14);
+  --ring: 0 0 0 3px rgba(248,184,1,.55);
+}`;
+    const twTokens = `theme: {
+  extend: {
+    colors: {
+      navy: {
+        DEFAULT: '#023A69',
+        deep: '#033668',
+        ink:  '#011E38',
+        600:  '#0B4C82',
+        500:  '#1D6099',
+        100:  '#E7EEF4',
+        50:   '#F3F6FA',
+      },
+      gold: {
+        DEFAULT: '#F8B801',
+        600: '#E0A600',
+        700: '#C08E00',
+        300: '#FBD968',
+        100: '#FEF3D2',
+      },
+      paper:  '#F7F9FB',
+      border: '#E2E7EE',
+      ink:    '#0E2233',
+      body:   '#46586B',
+      muted:  '#8A97A6',
+    },
+    fontFamily: {
+      head: ['Spectral', 'Georgia', 'serif'],
+      body: ['Manrope', 'system-ui'],
+    },
+    borderRadius: {
+      sm:'6px', md:'10px', lg:'14px', xl:'20px',
+    },
+    boxShadow: {
+      e1:'0 1px 2px rgba(2,58,105,.06)',
+      e2:'0 4px 16px rgba(2,58,105,.08)',
+      e3:'0 12px 32px rgba(2,58,105,.14)',
+    },
+  },
+}`;
+    return { navy, gold, neutral, semantic, typeScale, spacing, cssTokens, twTokens };
+  }
+}
+</script>
+</body>
+</html>

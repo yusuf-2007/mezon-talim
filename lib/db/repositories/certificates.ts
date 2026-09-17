@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, ilike, isNull, isNotNull, or, sql } from "drizzle-orm";
 import { db } from "../client";
-import { certificates, courses, users } from "../schema";
+import { assessments, attempts, certificates, courses, users } from "../schema";
 
 export type CertificateInsert = {
   userId: string;
@@ -124,6 +124,51 @@ export const certificatesRepository = {
       active: Number(row?.active ?? 0),
       revoked: Number(row?.revoked ?? 0),
     };
+  },
+
+  /**
+   * Students who passed a final exam and have no certificate for that course.
+   *
+   * The issuance queue. A pass is the trigger, but issuing is deliberately a
+   * human step — the name is printed on the document, and the design asks an
+   * admin to eyeball the spelling before it is minted.
+   *
+   * Best passing attempt per (student, course), newest first.
+   */
+  async pendingIssuance(limit = 50) {
+    return db
+      .select({
+        userId: users.id,
+        userName: users.fullName,
+        userEmail: users.email,
+        courseId: assessments.courseId,
+        courseTitle: courses.title,
+        scorePct: sql<number>`max(${attempts.scorePct})`,
+        attemptNo: sql<number>`min(${attempts.attemptNo})`,
+        passedAt: sql<Date>`max(${attempts.submittedAt})`,
+      })
+      .from(attempts)
+      .innerJoin(assessments, eq(assessments.id, attempts.assessmentId))
+      .innerJoin(users, eq(users.id, attempts.userId))
+      .innerJoin(courses, eq(courses.id, assessments.courseId))
+      .leftJoin(
+        certificates,
+        and(
+          eq(certificates.userId, attempts.userId),
+          eq(certificates.courseId, assessments.courseId),
+        ),
+      )
+      .where(
+        and(
+          eq(assessments.type, "final_exam"),
+          eq(attempts.passed, true),
+          eq(attempts.voided, false),
+          isNull(certificates.id),
+        ),
+      )
+      .groupBy(users.id, users.fullName, users.email, assessments.courseId, courses.title)
+      .orderBy(sql`max(${attempts.submittedAt}) desc`)
+      .limit(limit);
   },
 
   async create(input: CertificateInsert) {

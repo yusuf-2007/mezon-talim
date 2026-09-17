@@ -76,6 +76,15 @@ typography:
   # The nine working steps below the display roles. The first implementation
   # carried 19 distinct sizes copied from the comp, several differing by less
   # than half a pixel; they were merged onto these steps with no visible change.
+  # Added for the dashboards: the rail's group labels and the ADMIN chip sit
+  # below every landing-page step. The handoff's .6/.66 pair differ by 1px, so
+  # they share one step, as the nine below already merged their near-duplicates.
+  ui-2xs:
+    fontFamily: "Manrope, system-ui, sans-serif"
+    fontSize: "0.66rem"
+    fontWeight: 700
+    lineHeight: 1.4
+    letterSpacing: "0.16em"
   ui-xs:
     fontFamily: "Manrope, system-ui, sans-serif"
     fontSize: "0.8rem"
@@ -123,6 +132,28 @@ typography:
     fontSize: "1.3rem"
     fontWeight: 600
     lineHeight: 1.3
+    letterSpacing: "normal"
+  # Dashboard steps. The handoff's scale (card title 1.2-1.3, h1 1.75-1.9, big
+  # number 1.9-2.4) sits between the landing roles; these are the three that
+  # recur across the student and admin views. Everything within a pixel of an
+  # existing step uses that step instead.
+  title-card:
+    fontFamily: "Spectral, Georgia, serif"
+    fontSize: "1.2rem"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "normal"
+  datum-sm:
+    fontFamily: "Spectral, Georgia, serif"
+    fontSize: "1.9rem"
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: "normal"
+  datum-lg:
+    fontFamily: "Spectral, Georgia, serif"
+    fontSize: "2.1rem"
+    fontWeight: 600
+    lineHeight: 1.02
     letterSpacing: "normal"
   title-lg:
     fontFamily: "Spectral, Georgia, serif"

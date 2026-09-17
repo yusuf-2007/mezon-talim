@@ -26,6 +26,9 @@ const eslintConfig = defineConfig([
     // Vendored Claude Code skill bundles + agent tooling — not project source.
     ".claude/**",
     ".agents/**",
+    // Design handoff: .dc.html prototypes and the runtime they need. Reference
+    // material we read from, never code we ship.
+    "docs/design_handoff_*/**",
   ]),
 ]);
 

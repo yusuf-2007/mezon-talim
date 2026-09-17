@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#F7F9FB;color:#0E2233;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:#0B4C82;text-decoration:none}
+  a:hover{color:#023A69}
+  ::selection{background:#FBD968;color:#011E38}
+  button,input,select{font-family:inherit}
+  .num{font-variant-numeric:tabular-nums}
+  .rl{transition:background .18s ease,color .18s ease;cursor:pointer}
+  .rl:hover{background:rgba(255,255,255,.08)!important}
+  .rl[data-on]{background:rgba(255,255,255,.12)!important;color:#fff!important}
+  .gold{transition:transform .2s ease,box-shadow .2s ease}
+  .gold:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(248,184,1,.42)!important}
+  .olt{transition:background .18s ease;cursor:pointer}
+  .olt:hover{background:#F3F6FA!important}
+  .row{transition:background .15s ease}
+  .row:hover{background:#FBFCFD}
+  .view{animation:fade .35s cubic-bezier(.2,.7,.2,1)}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .fld{width:100%;font-family:'Manrope',sans-serif;font-size:.9rem;color:#0E2233;border:1.5px solid #E2E7EE;border-radius:9px;padding:9px 12px;outline:none;background:#fff;transition:border-color .2s ease,box-shadow .2s ease}
+  .fld:focus{border-color:#023A69;box-shadow:0 0 0 3px rgba(248,184,1,.35)}
+  .fld::placeholder{color:#A9B4C0}
+  .qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  .qgrid > div + div{border-left:1px solid #EFF2F6}
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A97A6;text-align:left;padding:12px 16px;border-bottom:1px solid #E2E7EE;background:#FBFCFD;white-space:nowrap}
+  .tbl td{padding:14px 16px;border-bottom:1px solid #EFF2F6;font-size:.9rem;color:#0E2233;vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .kb{display:none}
+  @media (max-width:1100px){
+    .hidem{display:none!important}
+    .crs{grid-template-columns:120px 1fr auto!important}
+    .mrow{grid-template-columns:44px 1fr auto!important}
+    .lrow{grid-template-columns:100px 1fr!important}
+    .lrow > :nth-child(2){grid-column:2}
+    .lrow > :nth-child(3){grid-column:1 / -1}
+    .qgrid{grid-template-columns:1fr 1fr!important}
+    .qgrid > div:nth-child(3){border-left:0!important;border-top:1px solid #EFF2F6}
+    .qgrid > div:nth-child(4){border-top:1px solid #EFF2F6}
+    .two{grid-template-columns:1fr!important}
+    .split{grid-template-columns:1fr!important}
+  }
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr!important}
+    .railbox{display:none!important}
+    .mainpad{padding:20px 18px 40px!important}
+    .topbar{flex-direction:column;align-items:flex-start!important;gap:12px}
+    .kb{display:flex}
+  }
+</style>
+</helmet>
+<div class="shell" style="display:grid;grid-template-columns:244px 1fr;min-height:100vh;font-family:'Manrope',sans-serif">
+
+  <!-- ═══════════ RAIL ═══════════ -->
+  <aside class="railbox" style="background:#023A69;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 14px 18px;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><path d=%22M22 1 L43 22 L22 43 L1 22 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.05%22 stroke-width=%221%22/></svg>');background-size:44px 44px;pointer-events:none"></div>
+    <div style="position:relative;display:flex;flex-direction:column;height:100%;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 10px 0">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:24px;position:relative;display:inline-block;flex-shrink:0">
+            <span style="position:absolute;left:0;top:0;width:13px;height:24px;background:#9BB8D4;border-radius:3px 0 0 7px;transform:skewX(-6deg)"></span>
+            <span style="position:absolute;right:0;top:0;width:13px;height:24px;background:#F8B801;border-radius:0 3px 7px 0;transform:skewX(6deg)"></span>
+          </span>
+          <span style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;line-height:1"><span style="color:#fff">Mezon</span> <span style="color:#F8B801">Ta&rsquo;lim</span></span>
+        </div>
+        <span style="font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#011E38;background:#F8B801;border-radius:5px;padding:3px 7px">Admin</span>
+      </div>
+
+      <!-- workspace switch -->
+      <div style="margin:22px 0 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+        <div><div style="font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5E7A96">Ish maydoni</div><div style="font-size:.86rem;font-weight:700;color:#fff;margin-top:2px">Boshqaruv paneli</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8FA8C0" stroke-width="2"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+      </div>
+
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="5">
+        <div style="font-size:.66rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#5E7A96;padding:20px 12px 8px">{{ g.label }}</div>
+        <nav style="display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+            <div class="rl" data-on="{{ i.on }}" onclick="{{ i.go }}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:9px;color:#C6D6E6;font-size:.9rem;font-weight:600">
+              <span style="display:flex;align-items:center;gap:11px"><span style="width:6px;height:6px;border-radius:50%;background:{{ i.dot }}"></span>{{ i.label }}</span>
+              <span style="font-size:.7rem;font-weight:800;color:{{ i.badgeColor }};background:{{ i.badgeBg }};border-radius:999px;padding:2px 7px;min-width:20px;text-align:center;display:{{ i.badgeShow }}">{{ i.badge }}</span>
+            </div>
+          </sc-for>
+        </nav>
+      </sc-for>
+
+      <div style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)">
+        <div style="display:flex;align-items:center;gap:11px;padding:6px 10px">
+          <span style="width:36px;height:36px;border-radius:50%;background:#0B4C82;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.78rem;flex-shrink:0">MA</span>
+          <div style="min-width:0">
+            <div style="font-weight:700;font-size:.88rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">M. Akramov</div>
+            <div style="font-size:.74rem;color:#8FA8C0">Super admin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="mainpad" style="padding:24px 36px 56px;min-width:0">
+    <div style="max-width:1240px;margin:0 auto">
+
+      <!-- top bar -->
+      <div class="topbar" style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px">
+        <div>
+          <div style="font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C08E00;margin-bottom:6px">{{ eyebrow }}</div>
+          <h1 style="font-family:'Spectral',serif;font-weight:600;font-size:1.75rem;line-height:1.15;letter-spacing:-.01em;color:#023A69">{{ title }}</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="position:relative;min-width:260px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A97A6" stroke-width="2" stroke-linecap="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input class="fld" type="text" placeholder="Foydalanuvchi, telefon, kod&hellip;" style="padding-left:36px;padding-right:44px" />
+            <span class="kb" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.66rem;font-weight:700;color:#8A97A6;border:1px solid #E2E7EE;border-radius:4px;padding:1px 5px;display:flex">&#8984;K</span>
+          </div>
+          <span class="gold" style="display:inline-flex;align-items:center;gap:8px;background:#F8B801;color:#011E38;font-weight:700;font-size:.86rem;border-radius:9px;padding:10px 16px;box-shadow:0 4px 14px rgba(248,184,1,.28);cursor:pointer;white-space:nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#011E38" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Yangi</span>
+        </div>
+      </div>
+
+      <!-- ─────────── VIEW: HOME ─────────── -->
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div class="view">
+
+        <!-- WORK QUEUE -->
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px 14px;border-bottom:1px solid #EFF2F6">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:22px;height:2px;background:#F8B801"></span><span style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00">Bugun kutayotgan ishlar</span></div>
+            <span style="font-size:.82rem;color:#8A97A6">Yangilandi: hozirgina</span>
+          </div>
+          <div class="qgrid">
+            <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+              <div class="row" onclick="{{ q.go }}" style="padding:20px 24px;cursor:pointer">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                  <span style="font-size:.78rem;font-weight:700;color:#46586B">{{ q.label }}</span>
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ q.dot }}"></span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:8px">
+                  <span class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:2.4rem;line-height:1;color:{{ q.numColor }}">{{ q.count }}</span>
+                  <span style="font-size:.82rem;color:#8A97A6">{{ q.unit }}</span>
+                </div>
+                <div style="font-size:.8rem;color:#46586B;margin-top:8px;line-height:1.45">{{ q.sub }}</div>
+                <div style="font-size:.82rem;font-weight:700;color:#0B4C82;margin-top:12px">{{ q.cta }} &rarr;</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <!-- SPLIT: applications + questions -->
+        <section class="split" style="display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin-top:22px;align-items:start">
+          <!-- applications -->
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px 14px">
+              <div><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Arizalar &middot; CPSS</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Yangi murojaatlar</h3></div>
+              <span style="font-size:.82rem;font-weight:700;color:#0B4C82;cursor:pointer" onclick="{{ goApps }}">Barchasi &middot; 23 &rarr;</span>
+            </div>
+            <div style="display:flex;gap:0;padding:0 22px 14px">
+              <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="4">
+                <div style="flex:{{ f.w }};min-width:0;padding-right:4px">
+                  <div style="height:6px;border-radius:3px;background:{{ f.bg }}"></div>
+                  <div style="font-size:.7rem;color:#8A97A6;margin-top:6px;white-space:nowrap"><b class="num" style="color:#0E2233">{{ f.n }}</b> {{ f.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="overflow-x:auto"><table class="tbl">
+              <thead><tr><th>Ism / telefon</th><th class="hidem">Manba</th><th>Kelgan</th><th style="text-align:right">Harakat</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ apps }}" as="a" hint-placeholder-count="5">
+                  <tr class="row">
+                    <td><div style="font-weight:600">{{ a.name }}</div><div class="num" style="font-size:.78rem;color:#8A97A6">{{ a.phone }} &middot; {{ a.org }}</div></td>
+                    <td class="hidem"><span style="font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 9px;background:#E7EEF4;color:#023A69">{{ a.source }}</span></td>
+                    <td class="num" style="color:#46586B;white-space:nowrap">{{ a.when }}</td>
+                    <td style="text-align:right;white-space:nowrap"><span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.78rem;border:1.5px solid #023A69;border-radius:8px;padding:6px 12px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>Bog&rsquo;lanildi</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- questions -->
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px 12px">
+                <div><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Ustozga savollar</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Javob kutmoqda</h3></div>
+                <span style="font-size:.82rem;font-weight:700;color:#0B4C82;cursor:pointer" onclick="{{ goMsgs }}">Barchasi &rarr;</span>
+              </div>
+              <sc-for list="{{ questions }}" as="qq" hint-placeholder-count="3">
+                <div class="row" style="padding:14px 22px;border-top:1px solid #EFF2F6;cursor:pointer" onclick="{{ goMsgs }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
+                    <span style="font-size:.78rem;font-weight:700;color:#023A69">{{ qq.who }}</span>
+                    <span class="num" style="font-size:.72rem;font-weight:700;color:{{ qq.ageColor }}">{{ qq.age }}</span>
+                  </div>
+                  <p style="font-family:'Spectral',serif;font-style:italic;font-weight:500;font-size:.95rem;line-height:1.4;color:#0E2233">&laquo;{{ qq.text }}&raquo;</p>
+                  <div style="font-size:.76rem;color:#8A97A6;margin-top:6px">{{ qq.lesson }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- payments attention -->
+            <div style="background:#FFFAEC;border:1px solid #F5E2A8;border-radius:16px;padding:18px 22px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A5B00">To&rsquo;lovlar &middot; e&rsquo;tibor</span><span class="num" style="font-size:.72rem;font-weight:700;color:#8A5B00">2</span></div>
+              <div style="font-size:.9rem;line-height:1.5;color:#0E2233"><b>Payme</b> &mdash; 1 to&rsquo;lov 40 daqiqadan beri <i>pending</i>. <b>Click</b> &mdash; 1 muvaffaqiyatsiz callback.</div>
+              <div style="font-size:.82rem;font-weight:700;color:#8A5B00;margin-top:10px;cursor:pointer" onclick="{{ goPay }}">To&rsquo;lovlarni ko&rsquo;rish &rarr;</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FINANCE + COURSES -->
+        <section class="two" style="display:grid;grid-template-columns:1.15fr .85fr;gap:22px;margin-top:22px;align-items:start">
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);padding:20px 24px">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+              <div>
+                <div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:6px">Tushum &middot; 30 kun</div>
+                <div style="display:flex;align-items:baseline;gap:10px"><span class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:2.1rem;line-height:1;color:#023A69">14 260 000</span><span style="font-size:.84rem;color:#8A97A6">so&rsquo;m</span><span style="font-size:.78rem;font-weight:700;color:#146B44;background:#E4F4EC;border-radius:999px;padding:3px 9px">+18%</span></div>
+              </div>
+              <div style="display:flex;gap:16px;font-size:.8rem;color:#46586B"><span><b class="num" style="color:#0E2233">29</b> to&rsquo;lov</span><span><b class="num" style="color:#0E2233">61%</b> Click</span><span><b class="num" style="color:#0E2233">39%</b> Payme</span></div>
+            </div>
+            <div style="display:flex;gap:3px;align-items:flex-end;height:96px">
+              <sc-for list="{{ rev }}" as="r" hint-placeholder-count="30">
+                <span title="{{ r.t }}" style="flex:1;height:{{ r.h }};border-radius:2px 2px 0 0;background:{{ r.bg }}"></span>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.7rem;color:#8A97A6;margin-top:6px"><span>18 avg</span><span>1 sen</span><span>Bugun</span></div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+            <div style="padding:18px 22px 12px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Kurslar</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Faollik bo&rsquo;yicha</h3></div><span style="font-size:.82rem;font-weight:700;color:#0B4C82;cursor:pointer">Barchasi &rarr;</span></div>
+            <sc-for list="{{ courses }}" as="c" hint-placeholder-count="3">
+              <div class="row" style="padding:13px 22px;border-top:1px solid #EFF2F6;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;cursor:pointer">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:600;font-size:.9rem;color:#0E2233;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.title }}</span><span style="font-size:.66rem;font-weight:700;border-radius:999px;padding:2px 7px;background:{{ c.stBg }};color:{{ c.stColor }};white-space:nowrap">{{ c.status }}</span></div>
+                  <div style="height:5px;border-radius:3px;background:#EFF2F6;overflow:hidden"><div style="width:{{ c.pct }};height:100%;background:#023A69"></div></div>
+                </div>
+                <div class="num" style="text-align:right;font-size:.78rem;color:#46586B;line-height:1.5"><b style="color:#0E2233">{{ c.active }}</b> faol<br>{{ c.done }} bitirgan</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <!-- ACTIVITY -->
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);margin-top:22px;overflow:hidden">
+          <div style="padding:18px 22px 10px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00">So&rsquo;nggi harakatlar</div><span style="font-size:.82rem;font-weight:700;color:#0B4C82;cursor:pointer">Jurnal &rarr;</span></div>
+          <sc-for list="{{ activity }}" as="ev" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:80px 22px 1fr;gap:14px;align-items:start;padding:11px 22px;border-top:1px solid #EFF2F6">
+              <span class="num" style="font-size:.78rem;color:#8A97A6;padding-top:2px">{{ ev.time }}</span>
+              <span style="width:22px;height:22px;border-radius:50%;background:{{ ev.bg }};display:grid;place-items:center"><span style="width:6px;height:6px;border-radius:50%;background:{{ ev.dot }}"></span></span>
+              <div style="font-size:.9rem;line-height:1.45;color:#0E2233">{{ ev.text }} <span style="color:#8A97A6">&middot; {{ ev.by }}</span></div>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: ARIZALAR ─────────── -->
+      <sc-if value="{{ isApps }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="display:inline-flex;background:#fff;border:1px solid #E2E7EE;border-radius:10px;padding:4px">
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;background:#023A69;color:#fff">Yangi &middot; 8</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Bog&rsquo;lanilgan &middot; 11</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Yozilgan &middot; 3</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Rad etilgan &middot; 1</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="font-size:.82rem;color:#8A97A6">Manba:</span>
+            <span style="font-size:.82rem;font-weight:700;background:#fff;color:#023A69;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Barchasi</span>
+            <span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.82rem;border:1.5px solid #E2E7EE;border-radius:9px;padding:8px 12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>CSV</span>
+          </div>
+        </div>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th style="width:36px"></th><th>Ariza beruvchi</th><th class="hidem">Tashkilot</th><th class="hidem">Manba &middot; til</th><th>SMS roziligi</th><th>Kelgan</th><th style="text-align:right">Holat</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ appsFull }}" as="a" hint-placeholder-count="8">
+                <tr class="row">
+                  <td><span style="width:16px;height:16px;border:1.5px solid #DCE3EC;border-radius:4px;display:block"></span></td>
+                  <td><div style="font-weight:600">{{ a.name }}</div><div class="num" style="font-size:.78rem;color:#8A97A6">{{ a.phone }}</div></td>
+                  <td class="hidem" style="color:#46586B">{{ a.org }}</td>
+                  <td class="hidem"><span style="font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 9px;background:#E7EEF4;color:#023A69">{{ a.source }}</span> <span style="font-size:.76rem;color:#8A97A6;margin-left:4px">{{ a.locale }}</span></td>
+                  <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;color:{{ a.smsColor }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ a.smsDot }}"></span>{{ a.sms }}</span></td>
+                  <td class="num" style="color:#46586B;white-space:nowrap">{{ a.when }}</td>
+                  <td style="text-align:right"><span style="display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;border-radius:8px;padding:6px 12px;border:1.5px solid {{ a.stBorder }};background:{{ a.stBg }};color:{{ a.stColor }};white-space:nowrap;cursor:pointer">{{ a.status }}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #EFF2F6;font-size:.8rem;color:#8A97A6"><span>1&ndash;8 / 23</span><span>Yangi arizalar 24 soat ichida bog&rsquo;lanishi kutiladi.</span></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: TO'LOVLAR ─────────── -->
+      <sc-if value="{{ isPay }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <section class="qgrid" style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-bottom:22px">
+          <div style="padding:20px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Jami tushum</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">48 930 000</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">so&rsquo;m &middot; 101 to&rsquo;lov</div></div>
+          <div style="padding:20px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Bu oy</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">14 260 000</div><div style="font-size:.8rem;color:#146B44;margin-top:6px;font-weight:700">+18% o&rsquo;tgan oyga</div></div>
+          <div style="padding:20px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Kutilmoqda</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#8A5B00">1</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">Payme &middot; 40 daqiqa</div></div>
+          <div style="padding:20px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Muvaffaqiyatsiz</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#C0453A">1</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">Click callback</div></div>
+        </section>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid #EFF2F6">
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:700;background:#023A69;color:#fff;border-radius:999px;padding:6px 12px">Barchasi</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Click</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Payme</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Bank</span></div>
+            <span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.82rem;border:1.5px solid #E2E7EE;border-radius:9px;padding:8px 12px">Hisobot (CSV)</span>
+          </div>
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th>Vaqt</th><th>Xaridor</th><th class="hidem">Kurs</th><th>Provayder</th><th style="text-align:right">Summa</th><th style="text-align:right">Holat</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ pays }}" as="p" hint-placeholder-count="8">
+                <tr class="row">
+                  <td class="num" style="color:#46586B;white-space:nowrap">{{ p.time }}</td>
+                  <td><div style="font-weight:600">{{ p.who }}</div><div class="num" style="font-size:.76rem;color:#8A97A6">{{ p.ref }}</div></td>
+                  <td class="hidem" style="color:#46586B">{{ p.course }}</td>
+                  <td><span style="font-size:.78rem;font-weight:700;color:#023A69">{{ p.prov }}</span></td>
+                  <td class="num" style="text-align:right;font-weight:600;white-space:nowrap">{{ p.amt }}</td>
+                  <td style="text-align:right"><span style="display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:{{ p.stColor }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ p.stDot }}"></span>{{ p.status }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: SERTIFIKATLAR ─────────── -->
+      <sc-if value="{{ isCerts }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <section style="background:#023A69;border-radius:16px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><path d=%22M22 1 L43 22 L22 43 L1 22 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.06%22 stroke-width=%221%22/></svg>');background-size:44px 44px;pointer-events:none"></div>
+          <div style="position:relative"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FBD968;margin-bottom:6px">Tasdiqlash kutilmoqda</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.3rem;color:#fff">3 ta talaba imtihondan o&rsquo;tdi &mdash; sertifikat tayyor</h3><p style="font-size:.86rem;color:#C6D6E6;margin-top:6px">Ism-familiya sertifikatda yoziladigan shaklda ekanini tekshiring, so&rsquo;ng bering.</p></div>
+          <span class="gold" style="position:relative;display:inline-flex;align-items:center;background:#F8B801;color:#011E38;font-weight:700;font-size:.9rem;border-radius:10px;padding:12px 20px;box-shadow:0 6px 18px rgba(248,184,1,.3);cursor:pointer;white-space:nowrap">3 tasini berish</span>
+        </section>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th>Talaba</th><th class="hidem">Kurs</th><th>Imtihon</th><th>Kod</th><th>Sana</th><th style="text-align:right">Holat</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ certs }}" as="c" hint-placeholder-count="7">
+                <tr class="row">
+                  <td><div style="font-weight:600">{{ c.who }}</div><div style="font-size:.76rem;color:#8A97A6">{{ c.note }}</div></td>
+                  <td class="hidem" style="color:#46586B">{{ c.course }}</td>
+                  <td class="num" style="color:#46586B">{{ c.exam }}</td>
+                  <td class="num" style="font-family:ui-monospace,monospace;font-size:.82rem;color:#0E2233">{{ c.code }}</td>
+                  <td class="num" style="color:#46586B;white-space:nowrap">{{ c.date }}</td>
+                  <td style="text-align:right;white-space:nowrap">
+                    <span style="display:{{ c.showIssue }};align-items:center;font-size:.78rem;font-weight:700;background:#F8B801;color:#011E38;border-radius:8px;padding:6px 12px;cursor:pointer">Berish</span>
+                    <span style="display:{{ c.showState }};align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:{{ c.stColor }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ c.stDot }}"></span>{{ c.status }}</span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: XABARLAR ─────────── -->
+      <sc-if value="{{ isMsgs }}" hint-placeholder-val="{{ false }}">
+      <div class="view split" style="display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start">
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="display:inline-flex;background:#F3F6FA;border-bottom:1px solid #EFF2F6;width:100%;padding:10px 12px;gap:4px">
+            <span style="padding:6px 12px;border-radius:7px;font-size:.8rem;font-weight:700;background:#023A69;color:#fff">Ochiq &middot; 4</span>
+            <span style="padding:6px 12px;border-radius:7px;font-size:.8rem;font-weight:700;color:#46586B">Javob berilgan</span>
+          </div>
+          <sc-for list="{{ threads }}" as="t" hint-placeholder-count="4">
+            <div class="row" style="padding:14px 16px;border-bottom:1px solid #EFF2F6;cursor:pointer;background:{{ t.bg }};border-left:3px solid {{ t.edge }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px"><span style="font-size:.84rem;font-weight:700;color:#0E2233">{{ t.who }}</span><span class="num" style="font-size:.72rem;font-weight:700;color:{{ t.ageColor }}">{{ t.age }}</span></div>
+              <div style="font-size:.84rem;color:#46586B;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.text }}</div>
+              <div style="font-size:.74rem;color:#8A97A6;margin-top:5px">{{ t.lesson }}</div>
+            </div>
+          </sc-for>
+        </section>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 22px;background:#F7F9FB;border-bottom:1px solid #EFF2F6">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="width:34px;height:34px;border-radius:50%;background:#F8B801;display:grid;place-items:center;color:#011E38;font-weight:800;font-size:.72rem">YN</span><div><div style="font-weight:700;font-size:.92rem;color:#0E2233">Yusuf Nusrat</div><div style="font-size:.76rem;color:#8A97A6">Biznesda Islom moliyasi &middot; 5-dars &middot; Ijara &middot; 14:02</div></div></div>
+            <div style="display:flex;gap:8px"><span class="olt" style="display:inline-flex;align-items:center;background:#fff;color:#023A69;font-weight:700;font-size:.8rem;border:1.5px solid #E2E7EE;border-radius:8px;padding:7px 12px">Darsni ochish</span><span class="olt" style="display:inline-flex;align-items:center;background:#fff;color:#023A69;font-weight:700;font-size:.8rem;border:1.5px solid #E2E7EE;border-radius:8px;padding:7px 12px">Profil</span></div>
+          </div>
+          <div style="padding:22px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:12px">
+              <span style="width:32px;height:32px;border-radius:50%;background:#F8B801;display:grid;place-items:center;color:#011E38;font-weight:800;font-size:.68rem;flex-shrink:0">YN</span>
+              <div style="max-width:64ch;background:#F3F6FA;border-radius:4px 14px 14px 14px;padding:12px 16px"><p style="font-size:.92rem;line-height:1.55;color:#0E2233">Assalomu alaykum. Ijara shartnomasida asosiy vositaning sug&rsquo;urta xarajati kimga tushadi &mdash; ijarachi yoki ijaraga beruvchiga? AAOIFI 9-standartida bu aniq yozilganmi?</p><div style="font-size:.72rem;color:#8A97A6;margin-top:6px">kecha, 21:14</div></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;padding-left:44px">
+              <span style="font-size:.76rem;color:#8A97A6;align-self:center">Tez javoblar:</span>
+              <span class="olt" style="font-size:.76rem;font-weight:600;background:#fff;color:#023A69;border:1px solid #E2E7EE;border-radius:999px;padding:5px 11px">Standart 9 &sect;5/1/7</span>
+              <span class="olt" style="font-size:.76rem;font-weight:600;background:#fff;color:#023A69;border:1px solid #E2E7EE;border-radius:999px;padding:5px 11px">Lug&rsquo;at: Ijara</span>
+            </div>
+          </div>
+          <div style="padding:16px 22px 20px;border-top:1px solid #EFF2F6">
+            <textarea class="fld" placeholder="Javob yozing&hellip; (Markdown qo&rsquo;llanadi)" style="min-height:96px;resize:vertical"></textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;color:#46586B;cursor:pointer"><span style="width:16px;height:16px;border:1.5px solid #023A69;border-radius:4px;background:#023A69;display:grid;place-items:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></span>Talabaga email + SMS yuborilsin</label>
+              <div style="display:flex;gap:8px"><span class="olt" style="display:inline-flex;align-items:center;background:#fff;color:#46586B;font-weight:600;font-size:.84rem;border:1.5px solid #E2E7EE;border-radius:9px;padding:9px 14px">Muhokamaga ko&rsquo;chirish</span><span style="display:inline-flex;align-items:center;background:#023A69;color:#fff;font-weight:700;font-size:.86rem;border-radius:9px;padding:10px 18px;cursor:pointer">Javob yuborish</span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+
+      <!-- ─────────── VIEW: KURSLAR ─────────── -->
+      <sc-if value="{{ isCourses }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="display:inline-flex;background:#fff;border:1px solid #E2E7EE;border-radius:10px;padding:4px">
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;background:#023A69;color:#fff">Barchasi &middot; 4</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Nashr &middot; 2</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Qoralama &middot; 1</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Arxiv &middot; 1</span>
+          </div>
+          <span class="gold" style="display:inline-flex;align-items:center;gap:8px;background:#F8B801;color:#011E38;font-weight:700;font-size:.86rem;border-radius:9px;padding:10px 16px;box-shadow:0 4px 14px rgba(248,184,1,.28);cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#011E38" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Yangi kurs</span>
+        </div>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <sc-for list="{{ courseRows }}" as="c" hint-placeholder-count="4">
+            <div class="row crs" style="display:grid;grid-template-columns:150px 1fr 200px auto;gap:22px;align-items:center;padding:18px 22px;border-bottom:1px solid #EFF2F6;cursor:pointer">
+              <div style="position:relative;border-radius:9px;overflow:hidden;aspect-ratio:16/10;background:#012A4D"><div style="position:absolute;inset:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2226%22 height=%2226%22><path d=%22M13 1 L25 13 L13 25 L1 13 Z%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.1%22 stroke-width=%221%22/></svg>');background-size:26px 26px"></div><span style="position:absolute;top:7px;left:7px;font-size:.62rem;font-weight:700;border-radius:999px;padding:2px 7px;background:{{ c.stBg }};color:{{ c.stColor }}">{{ c.status }}</span></div>
+              <div style="min-width:0">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">{{ c.kind }}</div>
+                <h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.15rem;color:#023A69;margin-bottom:6px">{{ c.title }}</h3>
+                <div class="num" style="font-size:.8rem;color:#46586B;display:flex;gap:12px;flex-wrap:wrap"><span>{{ c.modules }} modul &middot; {{ c.lessons }} dars</span><span style="color:#DCE3EC">|</span><span>{{ c.price }}</span><span style="color:#DCE3EC">|</span><span>/{{ c.slug }}</span></div>
+              </div>
+              <div class="num hidem" style="font-size:.8rem;color:#46586B;line-height:1.6">
+                <div style="display:flex;justify-content:space-between"><span>Yozilgan</span><b style="color:#0E2233">{{ c.enr }}</b></div>
+                <div style="display:flex;justify-content:space-between"><span>Bitirgan</span><b style="color:#0E2233">{{ c.done }}</b></div>
+                <div style="display:flex;justify-content:space-between"><span>Tushum</span><b style="color:#0E2233">{{ c.rev }}</b></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                <span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.78rem;border:1.5px solid #023A69;border-radius:8px;padding:6px 12px;white-space:nowrap">Studio &rarr;</span>
+                <span style="font-size:.74rem;color:#8A97A6;white-space:nowrap">{{ c.updated }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+        <p style="font-size:.8rem;color:#8A97A6;margin-top:14px;padding:0 4px">Kurs tarkibi (modullar, darslar, testlar) Studio da tahrirlanadi. Bu yerda holat, narx va ko&rsquo;rsatkichlar boshqariladi.</p>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: FOYDALANUVCHILAR ─────────── -->
+      <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <section class="qgrid" style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-bottom:22px">
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Jami</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">312</div><div style="font-size:.8rem;color:#146B44;margin-top:6px;font-weight:700">+24 bu oy</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Talabalar</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">304</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">125 faol yozilish</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Xodimlar</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">8</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">2 admin &middot; 1 buxgalter &middot; 5 ustoz</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Tasdiqlanmagan</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#8A5B00">17</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">telefon yoki email</div></div>
+        </section>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid #EFF2F6">
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:700;background:#023A69;color:#fff;border-radius:999px;padding:6px 12px">Barchasi</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Talaba</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Ustoz</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Admin</span></div>
+            <div style="display:flex;gap:8px"><span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.82rem;border:1.5px solid #E2E7EE;border-radius:9px;padding:8px 12px">Kursga yozish</span><span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.82rem;border:1.5px solid #E2E7EE;border-radius:9px;padding:8px 12px">CSV</span></div>
+          </div>
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th>Foydalanuvchi</th><th>Rol</th><th class="hidem">Kurslar</th><th class="hidem">Tasdiq</th><th>Ro&rsquo;yxatdan</th><th style="text-align:right">Holat</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="8">
+                <tr class="row">
+                  <td><div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:{{ u.avBg }};display:grid;place-items:center;color:{{ u.avColor }};font-weight:800;font-size:.68rem;flex-shrink:0">{{ u.ini }}</span><div><div style="font-weight:600">{{ u.name }}</div><div class="num" style="font-size:.76rem;color:#8A97A6">{{ u.contact }}</div></div></div></td>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;border-radius:999px;padding:3px 9px;background:{{ u.roleBg }};color:{{ u.roleColor }}">{{ u.role }}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></span></td>
+                  <td class="hidem" style="color:#46586B;font-size:.84rem">{{ u.courses }}</td>
+                  <td class="hidem"><span style="display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;color:{{ u.vColor }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ u.vDot }}"></span>{{ u.verified }}</span></td>
+                  <td class="num" style="color:#46586B;white-space:nowrap">{{ u.since }}</td>
+                  <td style="text-align:right"><span style="font-size:.78rem;font-weight:700;color:{{ u.stColor }}">{{ u.status }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #EFF2F6;font-size:.8rem;color:#8A97A6"><span>1&ndash;8 / 312</span><span>Rol o&rsquo;zgarishi jurnalga yoziladi.</span></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: YOZILISHLAR ─────────── -->
+      <sc-if value="{{ isEnr }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="display:inline-flex;background:#fff;border:1px solid #E2E7EE;border-radius:10px;padding:4px">
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;background:#023A69;color:#fff">Faol &middot; 125</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Yakunlangan &middot; 49</span>
+            <span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Muddati tugagan &middot; 6</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:.82rem;color:#8A97A6">Kurs:</span><span style="font-size:.82rem;font-weight:700;background:#fff;color:#023A69;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Barchasi</span><span class="gold" style="display:inline-flex;align-items:center;gap:8px;background:#F8B801;color:#011E38;font-weight:700;font-size:.86rem;border-radius:9px;padding:9px 14px;box-shadow:0 4px 14px rgba(248,184,1,.28);cursor:pointer">Qo&rsquo;lda yozish</span></div>
+        </div>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th>Talaba</th><th class="hidem">Kurs</th><th style="min-width:180px">Jarayon</th><th class="hidem">So&rsquo;nggi faollik</th><th>Kirish muddati</th><th style="text-align:right">Manba</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ enrs }}" as="e" hint-placeholder-count="8">
+                <tr class="row">
+                  <td><div style="font-weight:600">{{ e.who }}</div><div class="num" style="font-size:.76rem;color:#8A97A6">{{ e.started }} dan</div></td>
+                  <td class="hidem" style="color:#46586B">{{ e.course }}</td>
+                  <td><div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:6px;border-radius:3px;background:#EFF2F6;overflow:hidden"><div style="width:{{ e.pct }};height:100%;background:{{ e.barBg }}"></div></div><span class="num" style="font-size:.78rem;color:#46586B;white-space:nowrap;min-width:52px;text-align:right">{{ e.progress }}</span></div></td>
+                  <td class="hidem num" style="color:{{ e.lastColor }};font-size:.84rem">{{ e.last }}</td>
+                  <td class="num" style="color:#46586B;white-space:nowrap">{{ e.until }}</td>
+                  <td style="text-align:right"><span style="font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 9px;background:#E7EEF4;color:#023A69">{{ e.src }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </section>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px 18px;background:#FFFAEC;border:1px solid #F5E2A8;border-radius:12px;font-size:.84rem;color:#0E2233"><span style="width:8px;height:8px;border-radius:50%;background:#F8B801;flex-shrink:0"></span><span><b>11 talaba</b> 14 kundan beri faol emas. <span style="font-weight:700;color:#8A5B00;cursor:pointer">Eslatma yuborish &rarr;</span></span></div>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: IMTIHONLAR ─────────── -->
+      <sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <section class="qgrid" style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-bottom:22px">
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Urinishlar &middot; 30 kun</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">86</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">2 yakuniy imtihon</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">O&rsquo;tish darajasi</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">71%</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">1-urinishda 58%</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">O&rsquo;rtacha ball</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">76</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">o&rsquo;tish chegarasi 70</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Qiyin savollar</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#C0453A">3</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">to&rsquo;g&rsquo;ri javob &lt; 40%</div></div>
+        </section>
+        <section class="split" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+            <div style="padding:18px 22px 12px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Yakuniy imtihonlar</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Kurs bo&rsquo;yicha</h3></div></div>
+            <sc-for list="{{ exams }}" as="x" hint-placeholder-count="2">
+              <div class="row" style="padding:16px 22px;border-top:1px solid #EFF2F6;cursor:pointer">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px"><span style="font-weight:700;font-size:.95rem;color:#0E2233">{{ x.course }}</span><span style="font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 9px;background:{{ x.stBg }};color:{{ x.stColor }}">{{ x.status }}</span></div>
+                <div class="num" style="font-size:.8rem;color:#46586B;display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"><span>{{ x.q }} savol</span><span style="color:#DCE3EC">|</span><span>{{ x.time }} daqiqa</span><span style="color:#DCE3EC">|</span><span>chegara {{ x.pass }}%</span><span style="color:#DCE3EC">|</span><span>{{ x.tries }} urinish</span></div>
+                <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:6px;border-radius:3px;background:#EFF2F6;overflow:hidden;display:flex"><div style="width:{{ x.passW }};height:100%;background:#1E9E6A"></div><div style="width:{{ x.failW }};height:100%;background:#C0453A"></div></div><span class="num" style="font-size:.78rem;color:#46586B;white-space:nowrap">{{ x.passed }} o&rsquo;tdi &middot; {{ x.failed }} yo&rsquo;q</span></div>
+              </div>
+            </sc-for>
+            <div style="padding:14px 22px;border-top:1px solid #EFF2F6"><span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.82rem;border:1.5px solid #023A69;border-radius:8px;padding:8px 14px">Savollar bankini ochish &rarr;</span></div>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+            <div style="padding:18px 22px 12px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">E&rsquo;tibor talab</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Eng ko&rsquo;p xato qilinadigan savollar</h3></div>
+            <sc-for list="{{ hardQ }}" as="h" hint-placeholder-count="3">
+              <div class="row" style="padding:14px 22px;border-top:1px solid #EFF2F6;display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;cursor:pointer">
+                <span class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.3rem;line-height:1.1;color:{{ h.color }}">{{ h.pct }}<span style="font-size:.7rem;color:#8A97A6">%</span></span>
+                <div><p style="font-size:.9rem;line-height:1.45;color:#0E2233;margin-bottom:4px">{{ h.text }}</p><div style="font-size:.76rem;color:#8A97A6">{{ h.where }} &middot; {{ h.n }} urinish &middot; ko&rsquo;p tanlangan xato: <i>{{ h.wrong }}</i></div></div>
+              </div>
+            </sc-for>
+            <p style="font-size:.78rem;line-height:1.5;color:#8A97A6;padding:14px 22px 18px">40% dan past natija odatda savol shakli yoki dars materiali muammosi. Savolni tahrirlash yoki darsga izoh qo&rsquo;shishni ko&rsquo;rib chiqing.</p>
+          </div>
+        </section>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-top:22px">
+          <div style="padding:16px 22px 10px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00">So&rsquo;nggi urinishlar</div><span style="font-size:.82rem;font-weight:700;color:#0B4C82;cursor:pointer">Barchasi &rarr;</span></div>
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th>Vaqt</th><th>Talaba</th><th class="hidem">Imtihon</th><th>Ball</th><th class="hidem">Vaqt sarfi</th><th style="text-align:right">Natija</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ attempts }}" as="a" hint-placeholder-count="6">
+                <tr class="row"><td class="num" style="color:#46586B;white-space:nowrap">{{ a.time }}</td><td style="font-weight:600">{{ a.who }}<span style="font-weight:500;color:#8A97A6;font-size:.78rem"> &middot; {{ a.try }}-urinish</span></td><td class="hidem" style="color:#46586B">{{ a.exam }}</td><td class="num" style="font-weight:700;color:{{ a.scoreColor }}">{{ a.score }}%</td><td class="hidem num" style="color:#46586B">{{ a.dur }}</td><td style="text-align:right"><span style="display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:{{ a.stColor }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ a.stDot }}"></span>{{ a.result }}</span></td></tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: MODUL TESTLARI ─────────── -->
+      <sc-if value="{{ isMod }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:.82rem;color:#8A97A6">Kurs:</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:.84rem;font-weight:700;background:#fff;color:#023A69;border:1px solid #E2E7EE;border-radius:9px;padding:8px 12px">Biznesda Islom moliyasi<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></span></div>
+          <span style="font-size:.82rem;color:#8A97A6">Modul testi = modul yakunida, o&rsquo;tish 70%, 3 urinish. Keyingi modul faqat testdan so&rsquo;ng ochiladi.</span>
+        </div>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <sc-for list="{{ modTests }}" as="m" hint-placeholder-count="4">
+            <div class="row mrow" style="display:grid;grid-template-columns:56px 1fr 220px 180px auto;gap:20px;align-items:center;padding:18px 22px;border-bottom:1px solid #EFF2F6;cursor:pointer">
+              <span class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.8rem;line-height:1;color:{{ m.numColor }}">{{ m.n }}</span>
+              <div style="min-width:0"><div style="font-weight:700;font-size:.98rem;color:#0E2233;margin-bottom:4px">{{ m.title }}</div><div class="num" style="font-size:.8rem;color:#46586B">{{ m.q }} savol &middot; {{ m.lessons }} darsdan &middot; {{ m.updated }}</div></div>
+              <div class="hidem"><div style="display:flex;justify-content:space-between;font-size:.76rem;color:#8A97A6;margin-bottom:5px"><span>O&rsquo;tish darajasi</span><b class="num" style="color:#0E2233">{{ m.passRate }}</b></div><div style="height:6px;border-radius:3px;background:#EFF2F6;overflow:hidden"><div style="width:{{ m.passRate }};height:100%;background:{{ m.barBg }}"></div></div></div>
+              <div class="hidem num" style="font-size:.8rem;color:#46586B;line-height:1.55"><div><b style="color:#0E2233">{{ m.waiting }}</b> talaba test kutmoqda</div><div>{{ m.attempts }} urinish</div></div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 9px;background:{{ m.stBg }};color:{{ m.stColor }};white-space:nowrap">{{ m.status }}</span><span class="olt" style="display:inline-flex;background:#fff;color:#023A69;font-weight:700;font-size:.78rem;border:1.5px solid #E2E7EE;border-radius:8px;padding:6px 12px;white-space:nowrap">Tahrirlash</span></div>
+            </div>
+          </sc-for>
+        </section>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px 18px;background:#FFFAEC;border:1px solid #F5E2A8;border-radius:12px;font-size:.84rem;color:#0E2233"><span style="width:8px;height:8px;border-radius:50%;background:#F8B801;flex-shrink:0"></span><span><b>4-modul</b> testi hali yaratilmagan &mdash; 2 talaba 3-modulni tugatgach shu yerda to&rsquo;xtab qoladi. <span style="font-weight:700;color:#8A5B00;cursor:pointer">Test yaratish &rarr;</span></span></div>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: TAHLIL ─────────── -->
+      <sc-if value="{{ isAn }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="display:inline-flex;background:#fff;border:1px solid #E2E7EE;border-radius:10px;padding:4px"><span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">7 kun</span><span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;background:#023A69;color:#fff">30 kun</span><span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">90 kun</span><span style="padding:8px 14px;border-radius:7px;font-size:.84rem;font-weight:700;color:#46586B">Yil</span></div>
+          <span class="olt" style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#023A69;font-weight:700;font-size:.82rem;border:1.5px solid #E2E7EE;border-radius:9px;padding:8px 12px">Hisobot (PDF)</span>
+        </div>
+        <section class="qgrid" style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-bottom:22px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">{{ k.label }}</div><div style="display:flex;align-items:baseline;gap:8px"><span class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">{{ k.v }}</span><span style="font-size:.74rem;font-weight:700;color:{{ k.dColor }}">{{ k.d }}</span></div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">{{ k.sub }}</div></div>
+          </sc-for>
+        </section>
+        <section class="split" style="display:grid;grid-template-columns:1.2fr .8fr;gap:22px;align-items:start;margin-bottom:22px">
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);padding:20px 24px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Voronka &middot; 30 kun</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Tashrifdan sertifikatgacha</h3></div></div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ funnelBig }}" as="f" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:150px 1fr 90px;gap:14px;align-items:center"><span style="font-size:.84rem;color:#46586B">{{ f.label }}</span><div style="height:22px;border-radius:4px;background:#F3F6FA;overflow:hidden"><div style="width:{{ f.w }};height:100%;background:{{ f.bg }};border-radius:4px"></div></div><span class="num" style="font-size:.84rem;text-align:right"><b style="color:#0E2233">{{ f.n }}</b> <span style="color:#8A97A6">{{ f.rate }}</span></span></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+            <div style="padding:18px 22px 12px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Tushum manbalari</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Kurs va provayder</h3></div>
+            <sc-for list="{{ revBy }}" as="r" hint-placeholder-count="4">
+              <div style="padding:12px 22px;border-top:1px solid #EFF2F6"><div style="display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:6px"><span style="color:#0E2233;font-weight:600">{{ r.label }}</span><span class="num" style="color:#46586B">{{ r.v }}</span></div><div style="height:6px;border-radius:3px;background:#EFF2F6;overflow:hidden"><div style="width:{{ r.w }};height:100%;background:{{ r.bg }}"></div></div></div>
+            </sc-for>
+          </div>
+        </section>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);padding:20px 24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px"><div><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Dars bo&rsquo;yicha tark etish</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Biznesda Islom moliyasi &mdash; qayerda to&rsquo;xtaydilar</h3></div><span style="font-size:.8rem;color:#8A97A6">Har darsni boshlagan talabalar soni</span></div>
+          <div style="display:flex;gap:6px;align-items:flex-end;height:120px">
+            <sc-for list="{{ dropoff }}" as="d" hint-placeholder-count="12">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px"><span class="num" style="font-size:.7rem;color:#46586B">{{ d.n }}</span><span title="{{ d.title }}" style="width:100%;height:{{ d.h }};border-radius:3px 3px 0 0;background:{{ d.bg }}"></span></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:6px"><sc-for list="{{ dropoff }}" as="d" hint-placeholder-count="12"><span class="num" style="flex:1;text-align:center;font-size:.68rem;color:#8A97A6">{{ d.i }}</span></sc-for></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 16px;background:#FFFAEC;border:1px solid #F5E2A8;border-radius:10px;font-size:.84rem;color:#0E2233"><span style="width:8px;height:8px;border-radius:50%;background:#F8B801;flex-shrink:0"></span><span><b>6 &rarr; 7-dars</b> orasida eng katta pasayish (&minus;31%) &mdash; bu 2-modul testidan keyingi nuqta. Test qiyinligi yoki 7-dars uzunligini tekshiring.</span></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: AUDITORIYA ─────────── -->
+      <sc-if value="{{ isAud }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <section class="qgrid" style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-bottom:22px">
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Javoblar</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">1 284</div><div style="font-size:.8rem;color:#146B44;margin-top:6px;font-weight:700">+212 so&rsquo;nggi 30 kun</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Javob darajasi</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">64%</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">722 o&rsquo;tkazib yuborgan</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Ro&rsquo;yxatdan o&rsquo;tganlar</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">304</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">kasb ko&rsquo;rsatgan: 281</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">So&rsquo;rov varianti</div><div style="display:inline-flex;background:#F3F6FA;border:1px solid #E2E7EE;border-radius:8px;overflow:hidden;font-size:.78rem;font-weight:700;margin-top:2px"><span style="padding:6px 12px;background:#023A69;color:#fff">A &middot; Kasb</span><span style="padding:6px 12px;color:#46586B">B &middot; Maqsad</span></div><div style="font-size:.78rem;color:#8A97A6;margin-top:8px">Landing so&rsquo;rovida ko&rsquo;rsatiladi</div></div>
+        </section>
+        <section class="split" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);padding:20px 24px">
+            <div style="margin-bottom:14px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Tashrif buyuruvchilar</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Kim kelmoqda</h3></div>
+            <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:14px"><sc-for list="{{ occV }}" as="o" hint-placeholder-count="5"><span title="{{ o.label }}" style="width:{{ o.w }};background:{{ o.bg }}"></span></sc-for></div>
+            <div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ occV }}" as="o" hint-placeholder-count="5"><div style="display:flex;align-items:center;justify-content:space-between;font-size:.86rem"><span style="display:inline-flex;align-items:center;gap:9px;color:#0E2233"><span style="width:10px;height:10px;border-radius:3px;background:{{ o.bg }}"></span>{{ o.label }}</span><span class="num" style="color:#46586B"><b style="color:#0E2233">{{ o.pct }}</b> &middot; {{ o.n }}</span></div></sc-for></div>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);padding:20px 24px">
+            <div style="margin-bottom:14px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C08E00;margin-bottom:4px">Ro&rsquo;yxatdan o&rsquo;tganlar</div><h3 style="font-family:'Spectral',serif;font-weight:600;font-size:1.2rem;color:#023A69">Kim yozilmoqda</h3></div>
+            <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:14px"><sc-for list="{{ occR }}" as="o" hint-placeholder-count="5"><span title="{{ o.label }}" style="width:{{ o.w }};background:{{ o.bg }}"></span></sc-for></div>
+            <div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ occR }}" as="o" hint-placeholder-count="5"><div style="display:flex;align-items:center;justify-content:space-between;font-size:.86rem"><span style="display:inline-flex;align-items:center;gap:9px;color:#0E2233"><span style="width:10px;height:10px;border-radius:3px;background:{{ o.bg }}"></span>{{ o.label }}</span><span class="num" style="color:#46586B"><b style="color:#0E2233">{{ o.pct }}</b> &middot; {{ o.n }}</span></div></sc-for></div>
+          </div>
+        </section>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:22px;padding:14px 18px;background:#E7EEF4;border-radius:12px;font-size:.86rem;color:#0E2233;line-height:1.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span><b>Xulosa:</b> bank xodimlari tashrifning 27% ini, ammo yozilishlarning 46% ini tashkil qiladi &mdash; eng yuqori konversiya. Tadbirkorlar ko&rsquo;p keladi (38%), kam yoziladi (21%) &mdash; BIM kursi ular uchun; landing xabarini tekshiring.</span></div>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: YUBORILGANLAR ─────────── -->
+      <sc-if value="{{ isNotif }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <section class="qgrid" style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden;margin-bottom:22px">
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Yetkazilgan</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#146B44">463</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">so&rsquo;nggi 500 dan &middot; 92.6%</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Yuborilgan</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#023A69">21</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">tasdiq kutilmoqda</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Rad etilgan</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#C0453A">12</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">provayder rad etdi</div></div>
+          <div style="padding:18px 24px"><div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A97A6;margin-bottom:8px">Muvaffaqiyatsiz</div><div class="num" style="font-family:'Spectral',serif;font-weight:600;font-size:1.9rem;line-height:1;color:#C0453A">4</div><div style="font-size:.8rem;color:#8A97A6;margin-top:6px">tarmoq / xato</div></div>
+        </section>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding:14px 18px;background:#FBE9E7;border:1px solid #F0C9C4;border-radius:12px;font-size:.84rem;color:#0E2233;line-height:1.5"><span style="width:8px;height:8px;border-radius:50%;background:#C0453A;flex-shrink:0"></span><span><b>9 rad etish 2 soat ichida</b> &mdash; barchasi Eskiz, &laquo;Ucell&raquo; raqamlari. Bu talabaning emas, shlyuzning muammosi. <span style="font-weight:700;color:#C0453A;cursor:pointer">Eskiz holatini tekshirish &rarr;</span></span></div>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid #EFF2F6">
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:700;background:#023A69;color:#fff;border-radius:999px;padding:6px 12px">Barchasi</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">SMS</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Email</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#C0453A;border:1px solid #F0C9C4;border-radius:999px;padding:6px 12px">Faqat muammoli</span></div>
+          </div>
+          <div style="overflow-x:auto"><table class="tbl">
+            <thead><tr><th>Vaqt</th><th>Qabul qiluvchi</th><th>Kanal</th><th class="hidem">Turi</th><th class="hidem">Provayder javobi</th><th style="text-align:right">Holat</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="8">
+                <tr class="row"><td class="num" style="color:#46586B;white-space:nowrap">{{ n.time }}</td><td><div style="font-weight:600">{{ n.who }}</div><div class="num" style="font-size:.76rem;color:#8A97A6">{{ n.to }}</div></td><td><span style="font-size:.74rem;font-weight:700;border-radius:999px;padding:3px 9px;background:#E7EEF4;color:#023A69">{{ n.ch }}</span></td><td class="hidem" style="color:#46586B;font-size:.84rem">{{ n.kind }}</td><td class="hidem" style="font-family:ui-monospace,monospace;font-size:.76rem;color:#8A97A6">{{ n.resp }}</td><td style="text-align:right"><span style="display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:{{ n.stColor }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ n.stDot }}"></span>{{ n.status }}</span></td></tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ─────────── VIEW: JURNAL ─────────── -->
+      <sc-if value="{{ isLog }}" hint-placeholder-val="{{ false }}">
+      <div class="view">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:700;background:#023A69;color:#fff;border-radius:999px;padding:6px 12px">Barchasi</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Foydalanuvchi</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Kurs</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">To&rsquo;lov</span><span style="font-size:.8rem;font-weight:600;background:#fff;color:#46586B;border:1px solid #E2E7EE;border-radius:999px;padding:6px 12px">Sertifikat</span></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:.82rem;color:#8A97A6">Kim:</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;background:#fff;color:#023A69;border:1px solid #E2E7EE;border-radius:9px;padding:7px 12px">Barchasi<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#023A69" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></span></div>
+        </div>
+        <section style="background:#fff;border:1px solid #E2E7EE;border-radius:16px;box-shadow:0 2px 10px rgba(2,58,105,.05);overflow:hidden">
+          <sc-for list="{{ audit }}" as="a" hint-placeholder-count="10">
+            <div class="row lrow" style="display:grid;grid-template-columns:130px 160px 1fr auto;gap:18px;align-items:center;padding:13px 22px;border-bottom:1px solid #EFF2F6;cursor:pointer">
+              <span class="num" style="font-size:.8rem;color:#8A97A6">{{ a.when }}</span>
+              <div style="display:flex;align-items:center;gap:9px;min-width:0"><span style="width:26px;height:26px;border-radius:50%;background:{{ a.avBg }};display:grid;place-items:center;color:{{ a.avColor }};font-weight:800;font-size:.62rem;flex-shrink:0">{{ a.ini }}</span><span style="font-size:.86rem;font-weight:600;color:#0E2233;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.actor }}</span></div>
+              <div style="min-width:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-family:ui-monospace,monospace;font-size:.74rem;font-weight:600;border-radius:5px;padding:2px 8px;background:{{ a.actBg }};color:{{ a.actColor }}">{{ a.action }}</span><span style="font-size:.86rem;color:#46586B">{{ a.detail }}</span></div>
+              <span class="num hidem" style="font-family:ui-monospace,monospace;font-size:.74rem;color:#8A97A6;white-space:nowrap">{{ a.entity }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 22px;font-size:.8rem;color:#8A97A6"><span>1&ndash;10 / 2 418</span><span>Jurnal o&rsquo;zgartirilmaydi va 3 yil saqlanadi.</span></div>
+        </section>
+      </div>
+      </sc-if>
+
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;initialView&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;home&quot;, &quot;apps&quot;, &quot;courses&quot;, &quot;users&quot;, &quot;enr&quot;, &quot;msgs&quot;, &quot;pay&quot;, &quot;quiz&quot;, &quot;mod&quot;, &quot;certs&quot;, &quot;an&quot;, &quot;aud&quot;, &quot;notif&quot;, &quot;log&quot;], &quot;default&quot;: &quot;home&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ko'rinish&quot; },
+  &quot;role&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;super_admin&quot;, &quot;accountant&quot;], &quot;default&quot;: &quot;super_admin&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Rol&quot; }
+}">
+class Component extends DCLogic {
+  state = { view: null };
+
+  renderVals() {
+    const view = this.state.view ?? this.props.initialView ?? 'home';
+    const go = (v) => () => this.setState({ view: v });
+    const role = this.props.role ?? 'super_admin';
+    const isAcct = role === 'accountant';
+
+    const titles = {
+      home: ['Boshqaruv paneli', 'Xayrli tong, Muhammad.'],
+      apps: ['Arizalar', 'CPSS murojaatlari \u2014 23'],
+      pay: ['To\u2018lovlar', 'Tushum va tranzaksiyalar'],
+      certs: ['Sertifikatlar', 'Berish va tekshirish'],
+      msgs: ['Xabarlar', 'Ustozga savollar'],
+      courses: ['Kurslar', '4 ta kurs \u2014 2 nashrda'],
+      users: ['Foydalanuvchilar', '312 foydalanuvchi'],
+      enr: ['Yozilishlar', '180 yozilish \u2014 125 faol'],
+      quiz: ['Imtihonlar', 'Yakuniy imtihonlar va savollar banki'],
+      mod: ['Modul testlari', 'Modul yakunidagi sinovlar'],
+      an: ['Tahlil', 'Voronka, tushum, tark etish'],
+      aud: ['Auditoriya', 'Kim kelmoqda va kim yozilmoqda'],
+      notif: ['Yuborilganlar', 'SMS va email yetkazish jurnali'],
+      log: ['Jurnal', 'Barcha ma\u2019muriy harakatlar'],
+    };
+
+    const courseRows = [
+      { title: 'Biznesda Islom moliyasi', kind: 'Tadbirkorlar uchun', slug: 'biznesda-islom-moliyasi', status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44', modules: 4, lessons: 12, price: '490 000 so\u2018m', enr: 96, done: 12, rev: '29.4 mln', updated: 'kecha' },
+      { title: 'AAOIFI Shariat standartlari asoslari', kind: 'Kirish', slug: 'aaoifi-asoslari', status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44', modules: 3, lessons: 8, price: '290 000 so\u2018m', enr: 78, done: 37, rev: '19.5 mln', updated: '2 hafta oldin' },
+      { title: 'Islomiy bank mahsulotlari', kind: 'Bank xodimlari uchun', slug: 'islomiy-bank-mahsulotlari', status: 'Qoralama', stBg: '#EFF2F6', stColor: '#8A97A6', modules: 3, lessons: 7, price: '[NARX]', enr: 0, done: 0, rev: '\u2014', updated: 'bugun' },
+      { title: 'Islom moliyasi: sinov kursi (2025)', kind: 'Arxiv', slug: 'sinov-2025', status: 'Arxiv', stBg: '#EFF2F6', stColor: '#8A97A6', modules: 2, lessons: 5, price: 'Bepul', enr: 6, done: 0, rev: '\u2014', updated: '4 oy oldin' },
+    ];
+
+    const ROLE = { student: ['Talaba', '#E7EEF4', '#023A69'], teacher: ['Ustoz', '#FEF3D2', '#8A5B00'], admin: ['Super admin', '#023A69', '#fff'], acct: ['Buxgalter', '#E4F4EC', '#146B44'] };
+    const U = (name, contact, r, courses, v, since, active = true) => ({
+      name, contact, ini: name.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase(),
+      avBg: r === 'admin' ? '#023A69' : r === 'teacher' ? '#F8B801' : '#E7EEF4', avColor: r === 'admin' ? '#fff' : r === 'teacher' ? '#011E38' : '#023A69',
+      role: ROLE[r][0], roleBg: ROLE[r][1], roleColor: ROLE[r][2], courses, since,
+      verified: v ? 'Tasdiqlangan' : 'Kutilmoqda', vColor: v ? '#146B44' : '#8A5B00', vDot: v ? '#1E9E6A' : '#F8B801',
+      status: active ? 'Faol' : 'Bloklangan', stColor: active ? '#146B44' : '#C0453A',
+    });
+    const users = [
+      U('Sardor Yusupov', '+998 90 214 77 10', 'student', 'BIM', true, 'bugun'),
+      U('Nilufar Rahimova', 'nilufar@kapitalbank.uz', 'student', 'Asoslar', false, 'bugun'),
+      U('Madina Tuqulova', '+998 91 181 45 09', 'student', 'BIM, Asoslar', true, '3 kun oldin'),
+      U('Aziz Rahmonov', 'aziz@mezon.uz', 'teacher', 'BIM (ustoz)', true, '01.06.2026'),
+      U('Yusuf Nusrat', '+998 90 123 45 67', 'student', 'BIM, Asoslar', true, '03.03.2026'),
+      U('Muhammad Akramov', 'admin@mezon.uz', 'admin', '\u2014', true, '15.01.2026'),
+      U('Zilola Karimova', 'zilola@mezon.uz', 'acct', '\u2014', true, '20.02.2026'),
+      U('Bekzod Alimov', '+998 94 478 56 60', 'student', 'Asoslar', true, '11.08.2026', false),
+    ];
+
+    const E = (who, course, done, total, last, lastColor, until, src, started) => ({
+      who, course, progress: `${done} / ${total}`, pct: `${Math.round(done / total * 100)}%`,
+      barBg: done === total ? '#1E9E6A' : '#023A69', last, lastColor, until, src, started,
+    });
+    const enrs = [
+      E('Yusuf Nusrat', 'Biznesda Islom moliyasi', 6, 12, 'bugun', '#146B44', '03.03.2027', 'Click', '03.03'),
+      E('Madina Tuqulova', 'Biznesda Islom moliyasi', 4, 12, 'kecha', '#146B44', '14.09.2027', 'Click', '14.09'),
+      E('Sardor Yusupov', 'AAOIFI standartlari asoslari', 8, 8, 'bugun', '#146B44', '08.09.2027', 'Payme', '20.08'),
+      E('Otabek Karimov', 'Biznesda Islom moliyasi', 1, 12, '16 kun oldin', '#C0453A', '02.09.2027', 'Payme', '02.09'),
+      E('Ipoteka Bank \u2014 6 talaba', 'AAOIFI CPSS tayyorlov', 3, 30, 'kecha', '#146B44', '01.06.2027', 'B2B', '01.09'),
+      E('Kamola Ergasheva', 'AAOIFI standartlari asoslari', 8, 8, '3 kun oldin', '#146B44', '25.08.2027', 'Click', '25.07'),
+      E('Bekzod Alimov', 'AAOIFI standartlari asoslari', 5, 8, '21 kun oldin', '#C0453A', '11.08.2027', 'Payme', '11.08'),
+      E('Dilnoza Saidova', 'Biznesda Islom moliyasi', 0, 12, '\u2014', '#8A97A6', '17.09.2027', 'Click', 'bugun'),
+    ];
+
+    const exams = [
+      { course: 'AAOIFI Shariat standartlari asoslari', status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44', q: 30, time: 45, pass: 70, tries: 3, passed: 37, failed: 14, passW: '73%', failW: '27%' },
+      { course: 'Biznesda Islom moliyasi', status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44', q: 40, time: 60, pass: 70, tries: 3, passed: 12, failed: 9, passW: '57%', failW: '43%' },
+    ];
+    const hardQ = [
+      { pct: 31, color: '#C0453A', text: 'Ijara muntahiya bittamlik shartnomasida mulk huquqi qachon o\u2018tadi?', where: 'Asoslar \u00b7 yakuniy \u00b7 #18', n: 51, wrong: '\u201cShartnoma imzolanganda\u201d' },
+      { pct: 36, color: '#C0453A', text: 'Murobahada bank tovarni sotib olmasdan oldin narxni e\u2019lon qilishi mumkinmi?', where: 'BIM \u00b7 yakuniy \u00b7 #7', n: 21, wrong: '\u201cHa, har doim\u201d' },
+      { pct: 39, color: '#8A5B00', text: 'Sukuk egasi qanday daromad oladi?', where: 'Asoslar \u00b7 yakuniy \u00b7 #26', n: 51, wrong: '\u201cBelgilangan foiz\u201d' },
+    ];
+    const attempts = [
+      { time: 'Bugun 10:12', who: 'Madina Tuqulova', try: 1, exam: 'Asoslar \u00b7 yakuniy', score: 92, scoreColor: '#146B44', dur: '31 daq', result: 'O\u2018tdi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Bugun 09:30', who: 'Otabek Karimov', try: 2, exam: 'Asoslar \u00b7 yakuniy', score: 78, scoreColor: '#146B44', dur: '44 daq', result: 'O\u2018tdi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Kecha 20:05', who: 'Otabek Karimov', try: 1, exam: 'Asoslar \u00b7 yakuniy', score: 63, scoreColor: '#C0453A', dur: '45 daq', result: 'O\u2018tmadi', stColor: '#C0453A', stDot: '#C0453A' },
+      { time: 'Kecha 18:40', who: 'Kamola Ergasheva', try: 1, exam: 'Asoslar \u00b7 yakuniy', score: 85, scoreColor: '#146B44', dur: '38 daq', result: 'O\u2018tdi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Kecha 14:22', who: 'Jasur Tashkentov', try: 3, exam: 'BIM \u00b7 yakuniy', score: 66, scoreColor: '#C0453A', dur: '60 daq', result: 'O\u2018tmadi \u00b7 urinish tugadi', stColor: '#C0453A', stDot: '#C0453A' },
+      { time: '15 sen 11:08', who: 'Yusuf Nusrat', try: 1, exam: 'Asoslar \u00b7 yakuniy', score: 86, scoreColor: '#146B44', dur: '36 daq', result: 'O\u2018tdi', stColor: '#146B44', stDot: '#1E9E6A' },
+    ];
+
+    const modTests = [
+      { n: '01', numColor: '#C7D3DF', title: 'Asoslar \u2014 modul testi', q: 10, lessons: 3, updated: '2 oy oldin', passRate: '90%', barBg: '#1E9E6A', waiting: 0, attempts: 104, status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44' },
+      { n: '02', numColor: '#C7D3DF', title: 'Shartnomalar \u2014 modul testi', q: 12, lessons: 3, updated: '3 hafta oldin', passRate: '64%', barBg: '#8A5B00', waiting: 7, attempts: 71, status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44' },
+      { n: '03', numColor: '#C7D3DF', title: 'Amaliyot \u2014 modul testi', q: 10, lessons: 3, updated: 'kecha', passRate: '81%', barBg: '#1E9E6A', waiting: 2, attempts: 16, status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44' },
+      { n: '04', numColor: '#F0D48A', title: 'Yakun \u2014 modul testi', q: 0, lessons: 3, updated: 'yaratilmagan', passRate: '0%', barBg: '#DCE3EC', waiting: 0, attempts: 0, status: 'Yo\u2018q', stBg: '#FEF3D2', stColor: '#8A5B00' },
+    ];
+
+    const kpis = [
+      { label: 'Tushum', v: '14.26 mln', d: '+18%', dColor: '#146B44', sub: '29 to\u2018lov \u00b7 o\u2018rtacha 492k' },
+      { label: 'Yangi yozilishlar', v: '31', d: '+9', dColor: '#146B44', sub: '22 to\u2018lovli \u00b7 9 qo\u2018lda' },
+      { label: 'Yakunlash darajasi', v: '27%', d: '+3 b.', dColor: '#146B44', sub: 'sertifikat \u00f7 yozilish (B35)' },
+      { label: 'Faol talabalar', v: '125', d: '\u22124', dColor: '#C0453A', sub: '11 tasi 14+ kun faol emas' },
+    ];
+    const funnelBig = [
+      { label: 'Landing tashrifi', n: '4 812', rate: '', w: '100%', bg: '#B9CBDB' },
+      { label: 'Ariza / ro\u2018yxat', n: '187', rate: '3.9%', w: '39%', bg: '#5E7A96' },
+      { label: 'To\u2018lov boshlandi', n: '54', rate: '29%', w: '20%', bg: '#0B4C82' },
+      { label: 'To\u2018landi', n: '29', rate: '54%', w: '13%', bg: '#023A69' },
+      { label: '1-dars ko\u2018rildi', n: '26', rate: '90%', w: '11%', bg: '#023A69' },
+      { label: 'Sertifikat', n: '7', rate: '27%', w: '6%', bg: '#F8B801' },
+    ];
+    const revBy = [
+      { label: 'Biznesda Islom moliyasi', v: '9.8 mln \u00b7 69%', w: '69%', bg: '#023A69' },
+      { label: 'AAOIFI standartlari asoslari', v: '4.4 mln \u00b7 31%', w: '31%', bg: '#0B4C82' },
+      { label: 'Click', v: '8.7 mln \u00b7 61%', w: '61%', bg: '#F8B801' },
+      { label: 'Payme', v: '5.6 mln \u00b7 39%', w: '39%', bg: '#FBD968' },
+    ];
+    const drop = [96, 91, 88, 84, 79, 74, 51, 46, 44, 38, 35, 33];
+    const dropoff = drop.map((n, i) => ({ i: i + 1, n, title: `${i + 1}-dars`, h: `${Math.round(n / drop[0] * 100)}%`, bg: i === 6 ? '#F8B801' : '#023A69' }));
+
+    const OCC = [['Tadbirkor', '#F8B801'], ['Bank xodimi', '#023A69'], ['Talaba', '#0B4C82'], ['O\u2018qituvchi', '#1E9E6A'], ['Boshqa', '#B9CBDB']];
+    const mk = (vals) => { const t = vals.reduce((a, b) => a + b, 0); return vals.map((n, i) => ({ label: OCC[i][0], bg: OCC[i][1], n, pct: `${Math.round(n / t * 100)}%`, w: `${Math.round(n / t * 100)}%` })); };
+    const occV = mk([488, 347, 231, 96, 122]);
+    const occR = mk([59, 129, 52, 24, 17]);
+
+    const notifs = [
+      { time: 'Bugun 10:14', who: 'Sardor Yusupov', to: '+998 90 214 77 10', ch: 'SMS', kind: 'Kirish kodi', resp: 'eskiz: DELIVRD', status: 'Yetkazildi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Bugun 10:02', who: 'Nilufar Rahimova', to: 'nilufar@kapitalbank.uz', ch: 'Email', kind: 'Email tasdiqlash', resp: 'resend: 250 OK', status: 'Yuborildi', stColor: '#023A69', stDot: '#0B4C82' },
+      { time: 'Bugun 09:55', who: 'Otabek Karimov', to: '+998 99 612 20 08', ch: 'SMS', kind: 'Ustoz javobi', resp: 'eskiz: REJECTD (op=ucell)', status: 'Rad etildi', stColor: '#C0453A', stDot: '#C0453A' },
+      { time: 'Bugun 09:51', who: 'Madina Tuqulova', to: '+998 91 181 45 09', ch: 'SMS', kind: 'Sertifikat tayyor', resp: 'eskiz: REJECTD (op=ucell)', status: 'Rad etildi', stColor: '#C0453A', stDot: '#C0453A' },
+      { time: 'Bugun 09:00', who: '14 talaba', to: 'imtihon eslatmasi', ch: 'SMS', kind: 'Imtihon 3 kun qoldi', resp: '12 DELIVRD \u00b7 2 REJECTD', status: '12 / 14', stColor: '#8A5B00', stDot: '#F8B801' },
+      { time: 'Kecha 21:20', who: 'Yusuf Nusrat', to: 'yusuf@example.uz', ch: 'Email', kind: 'Savol qabul qilindi', resp: 'resend: delivered', status: 'Yetkazildi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Kecha 18:22', who: 'Kamola Ergasheva', to: '+998 95 209 14 33', ch: 'SMS', kind: 'To\u2018lov tasdig\u2018i', resp: 'eskiz: DELIVRD', status: 'Yetkazildi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Kecha 16:50', who: 'Jasur Tashkentov', to: '+998 97 700 33 21', ch: 'SMS', kind: 'To\u2018lov muvaffaqiyatsiz', resp: 'timeout (network)', status: 'Xato', stColor: '#C0453A', stDot: '#C0453A' },
+    ];
+
+    const A = (when, actor, action, detail, entity, tone) => ({
+      when, actor, ini: actor === 'tizim' ? '\u2699' : actor.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase(),
+      avBg: actor === 'tizim' ? '#EFF2F6' : actor.startsWith('M.') ? '#023A69' : '#E7EEF4', avColor: actor === 'tizim' ? '#8A97A6' : actor.startsWith('M.') ? '#fff' : '#023A69',
+      action, detail, entity,
+      actBg: tone === 'danger' ? '#FBE9E7' : tone === 'gold' ? '#FEF3D2' : '#E7EEF4', actColor: tone === 'danger' ? '#C0453A' : tone === 'gold' ? '#8A5B00' : '#023A69',
+    });
+    const audit = [
+      A('Bugun 09:41', 'tizim', 'payment.paid', 'Dilnoza Saidova \u2014 490 000 so\u2018m, Click', 'pay:clk_7a91', 'navy'),
+      A('Bugun 09:12', 'tizim', 'application.create', 'Sardor Yusupov, Ipoteka Bank, manba: landing_cpss', 'app:c9e1', 'gold'),
+      A('Bugun 08:55', 'M. Akramov', 'certificate.issue', 'Yusuf Nusrat \u2014 Asoslar, MZN-H6CT-3CSK', 'cert:MZN-H6CT', 'navy'),
+      A('Bugun 08:40', 'M. Akramov', 'application.status', 'Madina Tuqulova: new \u2192 contacted', 'app:b7d2', 'navy'),
+      A('Kecha 19:03', 'M. Akramov', 'lesson.create', '\u201cIslomiy bank mahsulotlari\u201d \u2192 3-modul, 2 dars', 'course:ibm', 'navy'),
+      A('Kecha 16:47', 'tizim', 'payment.failed', 'Payme callback xatosi, order 8f2a \u2014 qayta urinish 3/3', 'pay:pm_8f2a', 'danger'),
+      A('Kecha 15:10', 'Z. Karimova', 'payment.refund', 'Jasur Tashkentov \u2014 490 000 so\u2018m qaytarildi', 'pay:pm_1c40', 'danger'),
+      A('Kecha 15:08', 'M. Akramov', 'certificate.revoke', 'Jasur Tashkentov \u2014 MZN-C4WD-7HJE, sabab: to\u2018lov qaytarildi', 'cert:MZN-C4WD', 'danger'),
+      A('Kecha 11:05', 'Z. Karimova', 'enrollment.create', 'Ipoteka Bank \u2014 6 talaba, CPSS, schyot inv_0042', 'enr:b2b-0042', 'navy'),
+      A('15 sen 17:30', 'M. Akramov', 'user.role', 'Aziz Rahmonov: student \u2192 teacher', 'user:aziz', 'gold'),
+    ];
+
+    const NAV = [
+      { label: 'Boshqaruv', items: [
+        { key: 'home', label: 'Asosiy', dot: '#F8B801' },
+        { key: 'apps', label: 'Arizalar', dot: '#F8B801', badge: 8, hot: true, manage: true },
+        { key: 'courses', label: 'Kurslar', dot: '#5E7A96', manage: true },
+        { key: 'users', label: 'Foydalanuvchilar', dot: '#5E7A96', manage: true },
+        { key: 'enr', label: 'Yozilishlar', dot: '#5E7A96', manage: true },
+        { key: 'msgs', label: 'Xabarlar', dot: '#5E7A96', badge: 4, manage: true },
+      ]},
+      { label: 'Moliya', items: [
+        { key: 'pay', label: 'To\u2018lovlar', dot: '#5E7A96', badge: 2, warn: true },
+      ]},
+      { label: 'Baholash', items: [
+        { key: 'quiz', label: 'Imtihonlar', dot: '#5E7A96', manage: true },
+        { key: 'mod', label: 'Modul testlari', dot: '#5E7A96', manage: true },
+        { key: 'certs', label: 'Sertifikatlar', dot: '#5E7A96', badge: 3, manage: true },
+      ]},
+      { label: 'Tahlil', items: [
+        { key: 'an', label: 'Tahlil', dot: '#5E7A96' },
+        { key: 'aud', label: 'Auditoriya', dot: '#5E7A96' },
+      ]},
+      { label: 'Tizim', items: [
+        { key: 'notif', label: 'Yuborilganlar', dot: '#5E7A96', manage: true },
+        { key: 'log', label: 'Jurnal', dot: '#5E7A96', manage: true },
+      ]},
+    ];
+    const navGroups = NAV.map(g => ({
+      label: g.label,
+      items: g.items.filter(i => !(isAcct && i.manage)).map(i => ({
+        label: i.label, dot: view === i.key ? '#F8B801' : i.dot,
+        on: view === i.key ? '' : undefined,
+        go: titles[i.key] ? go(i.key) : () => {},
+        badge: i.badge ?? '', badgeShow: i.badge ? 'inline-block' : 'none',
+        badgeBg: i.hot ? '#F8B801' : i.warn ? '#F5E2A8' : 'rgba(255,255,255,.14)',
+        badgeColor: (i.hot || i.warn) ? '#011E38' : '#fff',
+      })),
+    })).filter(g => g.items.length);
+
+    const queue = [
+      { label: 'Yangi arizalar', count: 8, unit: 'ta', sub: '3 tasi 24 soatdan oshdi', dot: '#F8B801', numColor: '#023A69', cta: 'Bog\u2018lanish', go: go('apps') },
+      { label: 'Ustozga savollar', count: 4, unit: 'ta', sub: 'Eng eskisi \u2014 kecha 21:14', dot: '#F8B801', numColor: '#023A69', cta: 'Javob berish', go: go('msgs') },
+      { label: 'Sertifikat berish', count: 3, unit: 'ta', sub: 'Imtihondan o\u2018tgan, ism tekshiruvi', dot: '#1E9E6A', numColor: '#023A69', cta: 'Ko\u2018rib chiqish', go: go('certs') },
+      { label: 'To\u2018lov muammolari', count: 2, unit: 'ta', sub: '1 pending \u00b7 1 failed callback', dot: '#C0453A', numColor: '#C0453A', cta: 'To\u2018lovlar', go: go('pay') },
+    ];
+
+    const funnel = [
+      { n: 8, label: 'yangi', w: 8, bg: '#F8B801' },
+      { n: 11, label: 'bog\u2018lanilgan', w: 11, bg: '#023A69' },
+      { n: 3, label: 'yozilgan', w: 3, bg: '#1E9E6A' },
+      { n: 1, label: 'rad', w: 1, bg: '#DCE3EC' },
+    ];
+
+    const appsFull = [
+      { name: 'Sardor Yusupov', phone: '+998 90 214 77 10', org: 'Ipoteka Bank', source: 'CPSS', locale: 'uz', sms: 'Bor', smsColor: '#146B44', smsDot: '#1E9E6A', when: '2 soat oldin', status: 'Yangi', stBg: '#FEF3D2', stColor: '#8A5B00', stBorder: '#F5E2A8' },
+      { name: 'Nilufar Rahimova', phone: '+998 93 505 12 40', org: 'Kapitalbank', source: 'CPSS', locale: 'ru', sms: 'Bor', smsColor: '#146B44', smsDot: '#1E9E6A', when: '5 soat oldin', status: 'Yangi', stBg: '#FEF3D2', stColor: '#8A5B00', stBorder: '#F5E2A8' },
+      { name: 'Jasur Tashkentov', phone: '+998 97 700 33 21', org: '\u2014', source: 'BIM', locale: 'uz', sms: 'Yo\u2018q', smsColor: '#8A97A6', smsDot: '#DCE3EC', when: 'kecha', status: 'Yangi', stBg: '#FEF3D2', stColor: '#8A5B00', stBorder: '#F5E2A8' },
+      { name: 'Madina Tuqulova', phone: '+998 91 181 45 09', org: 'Asaka Bank', source: 'CPSS', locale: 'uz', sms: 'Bor', smsColor: '#146B44', smsDot: '#1E9E6A', when: 'kecha', status: 'Bog\u2018lanildi', stBg: '#E7EEF4', stColor: '#023A69', stBorder: '#E7EEF4' },
+      { name: 'Otabek Karimov', phone: '+998 99 612 20 08', org: 'Hamkorbank', source: 'B2B', locale: 'uz', sms: 'Bor', smsColor: '#146B44', smsDot: '#1E9E6A', when: '2 kun oldin', status: 'Bog\u2018lanildi', stBg: '#E7EEF4', stColor: '#023A69', stBorder: '#E7EEF4' },
+      { name: 'Dilnoza Saidova', phone: '+998 90 330 91 17', org: 'Milliy Bank', source: 'CPSS', locale: 'ru', sms: 'Bor', smsColor: '#146B44', smsDot: '#1E9E6A', when: '3 kun oldin', status: 'Yozildi', stBg: '#E4F4EC', stColor: '#146B44', stBorder: '#E4F4EC' },
+      { name: 'Bekzod Alimov', phone: '+998 94 478 56 60', org: '\u2014', source: 'CPSS', locale: 'uz', sms: 'Yo\u2018q', smsColor: '#8A97A6', smsDot: '#DCE3EC', when: '4 kun oldin', status: 'Rad etildi', stBg: '#fff', stColor: '#8A97A6', stBorder: '#E2E7EE' },
+      { name: 'Kamola Ergasheva', phone: '+998 95 209 14 33', org: 'Agrobank', source: 'CPSS', locale: 'uz', sms: 'Bor', smsColor: '#146B44', smsDot: '#1E9E6A', when: '5 kun oldin', status: 'Yozildi', stBg: '#E4F4EC', stColor: '#146B44', stBorder: '#E4F4EC' },
+    ];
+    const apps = appsFull.slice(0, 5);
+
+    const questions = [
+      { who: 'Yusuf Nusrat', text: 'Ijara shartnomasida sug\u2018urta xarajati kimga tushadi?', lesson: 'BIM \u00b7 5-dars \u00b7 Ijara', age: '26 soat', ageColor: '#C0453A' },
+      { who: 'Madina Tuqulova', text: 'Murobahada ustama foizga o\u2018xshab ketmaydimi?', lesson: 'BIM \u00b7 4-dars \u00b7 Murobaha', age: '9 soat', ageColor: '#8A5B00' },
+      { who: 'Sardor Yusupov', text: 'Sukuk daromadi qanday hisoblanadi?', lesson: 'Asoslar \u00b7 6-dars', age: '2 soat', ageColor: '#8A97A6' },
+    ];
+
+    const revData = [220,0,340,180,0,410,260,0,0,520,300,0,480,0,390,610,0,0,450,720,0,380,0,560,0,0,690,540,0,830];
+    const mx = Math.max(...revData);
+    const rev = revData.map((v, i) => ({ t: `${v ? v * 1000 : 0} so\u2018m`, h: v ? `${Math.max(6, Math.round(v / mx * 100))}%` : '3px', bg: v === 0 ? '#EFF2F6' : i === 29 ? '#F8B801' : '#023A69' }));
+
+    const courses = [
+      { title: 'Biznesda Islom moliyasi', status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44', active: 84, done: 12, pct: '61%' },
+      { title: 'AAOIFI Shariat standartlari asoslari', status: 'Nashr', stBg: '#E4F4EC', stColor: '#146B44', active: 41, done: 37, pct: '88%' },
+      { title: 'Islomiy bank mahsulotlari', status: 'Qoralama', stBg: '#EFF2F6', stColor: '#8A97A6', active: 0, done: 0, pct: '0%' },
+    ];
+
+    const activity = [
+      { time: '09:41', text: 'Dilnoza Saidova \u2014 to\u2018lov qabul qilindi, 490 000 so\u2018m (Click)', by: 'tizim', bg: '#E4F4EC', dot: '#1E9E6A' },
+      { time: '09:12', text: 'Yangi ariza: Sardor Yusupov, Ipoteka Bank', by: 'landing / CPSS', bg: '#FEF3D2', dot: '#F8B801' },
+      { time: '08:55', text: 'Sertifikat berildi \u2014 MZN-H6CT-3CSK, Yusuf Nusrat', by: 'M. Akramov', bg: '#E7EEF4', dot: '#023A69' },
+      { time: 'kecha', text: '\u201cIslomiy bank mahsulotlari\u201d 3-modulga 2 dars qo\u2018shildi', by: 'M. Akramov', bg: '#E7EEF4', dot: '#023A69' },
+      { time: 'kecha', text: 'Payme callback muvaffaqiyatsiz \u2014 order 8f2a\u2026 (qayta urinish rejalashtirildi)', by: 'tizim', bg: '#FBE9E7', dot: '#C0453A' },
+      { time: 'kecha', text: 'SMS eslatma yuborildi: 14 talabaga imtihon 3 kun qoldi', by: 'tizim / Eskiz', bg: '#E7EEF4', dot: '#023A69' },
+    ];
+
+    const pays = [
+      { time: 'Bugun 09:41', who: 'Dilnoza Saidova', ref: 'clk_7a91\u2026', course: 'Biznesda Islom moliyasi', prov: 'Click', amt: '490 000', status: 'To\u2018landi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Bugun 09:02', who: 'Otabek Karimov', ref: 'pm_3c4e\u2026', course: 'Biznesda Islom moliyasi', prov: 'Payme', amt: '490 000', status: 'Kutilmoqda', stColor: '#8A5B00', stDot: '#F8B801' },
+      { time: 'Kecha 18:20', who: 'Kamola Ergasheva', ref: 'clk_5d10\u2026', course: 'AAOIFI standartlari asoslari', prov: 'Click', amt: '290 000', status: 'To\u2018landi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: 'Kecha 16:47', who: 'Jasur Tashkentov', ref: 'pm_8f2a\u2026', course: 'Biznesda Islom moliyasi', prov: 'Payme', amt: '490 000', status: 'Muvaffaqiyatsiz', stColor: '#C0453A', stDot: '#C0453A' },
+      { time: 'Kecha 11:05', who: 'Ipoteka Bank (B2B)', ref: 'inv_0042', course: 'CPSS \u00b7 6 o\u2018rin', prov: 'Bank', amt: '18 000 000', status: 'To\u2018landi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: '15 sen 14:30', who: 'Nilufar Rahimova', ref: 'clk_2b77\u2026', course: 'AAOIFI standartlari asoslari', prov: 'Click', amt: '290 000', status: 'To\u2018landi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: '15 sen 10:12', who: 'Bekzod Alimov', ref: 'pm_1e09\u2026', course: 'Biznesda Islom moliyasi', prov: 'Payme', amt: '490 000', status: 'To\u2018landi', stColor: '#146B44', stDot: '#1E9E6A' },
+      { time: '14 sen 19:58', who: 'Madina Tuqulova', ref: 'clk_9a3f\u2026', course: 'Biznesda Islom moliyasi', prov: 'Click', amt: '490 000', status: 'To\u2018landi', stColor: '#146B44', stDot: '#1E9E6A' },
+    ];
+
+    const certs = [
+      { who: 'Madina Tuqulova', note: 'Ism tasdiqlangan', course: 'AAOIFI standartlari asoslari', exam: '92% \u00b7 1-urinish', code: '\u2014', date: 'Bugun', showIssue: 'inline-flex', showState: 'none' },
+      { who: 'Otabek Karimov', note: 'Ism tasdiqlangan', course: 'AAOIFI standartlari asoslari', exam: '78% \u00b7 2-urinish', code: '\u2014', date: 'Bugun', showIssue: 'inline-flex', showState: 'none' },
+      { who: 'Kamola Ergasheva', note: 'Ismda kichik harf \u2014 tekshiring', course: 'AAOIFI standartlari asoslari', exam: '85% \u00b7 1-urinish', code: '\u2014', date: 'Kecha', showIssue: 'inline-flex', showState: 'none' },
+      { who: 'Yusuf Nusrat', note: '', course: 'AAOIFI standartlari asoslari', exam: '86% \u00b7 1-urinish', code: 'MZN-H6CT-3CSK', date: '17.09.2026', showIssue: 'none', showState: 'inline-flex', status: 'Berilgan', stColor: '#146B44', stDot: '#1E9E6A' },
+      { who: 'Dilnoza Saidova', note: '', course: 'AAOIFI standartlari asoslari', exam: '90% \u00b7 1-urinish', code: 'MZN-A2PQ-9XLM', date: '12.09.2026', showIssue: 'none', showState: 'inline-flex', status: 'Berilgan', stColor: '#146B44', stDot: '#1E9E6A' },
+      { who: 'Sardor Yusupov', note: '', course: 'AAOIFI standartlari asoslari', exam: '74% \u00b7 3-urinish', code: 'MZN-K8TR-2VNB', date: '08.09.2026', showIssue: 'none', showState: 'inline-flex', status: 'Berilgan', stColor: '#146B44', stDot: '#1E9E6A' },
+      { who: 'Jasur Tashkentov', note: 'Bekor qilingan: 03.09 \u2014 to\u2018lov qaytarildi', course: 'AAOIFI standartlari asoslari', exam: '81%', code: 'MZN-C4WD-7HJE', date: '01.09.2026', showIssue: 'none', showState: 'inline-flex', status: 'Bekor qilingan', stColor: '#C0453A', stDot: '#C0453A' },
+    ];
+
+    const threads = [
+      { who: 'Yusuf Nusrat', text: 'Ijara shartnomasida sug\u2018urta xarajati kimga tushadi?', lesson: 'BIM \u00b7 5-dars', age: '26 s', ageColor: '#C0453A', bg: '#F7F9FB', edge: '#F8B801' },
+      { who: 'Madina Tuqulova', text: 'Murobahada ustama foizga o\u2018xshab ketmaydimi? Farqini tushunmadim.', lesson: 'BIM \u00b7 4-dars', age: '9 s', ageColor: '#8A5B00', bg: '#fff', edge: 'transparent' },
+      { who: 'Sardor Yusupov', text: 'Sukuk daromadi qanday hisoblanadi?', lesson: 'Asoslar \u00b7 6-dars', age: '2 s', ageColor: '#8A97A6', bg: '#fff', edge: 'transparent' },
+      { who: 'Kamola Ergasheva', text: 'Zakot hisobida qarzlar ayiriladimi?', lesson: 'BIM \u00b7 8-dars', age: '40 d', ageColor: '#8A97A6', bg: '#fff', edge: 'transparent' },
+    ];
+
+    return {
+      eyebrow: titles[view][0], title: titles[view][1],
+      isHome: view === 'home', isApps: view === 'apps', isPay: view === 'pay', isCerts: view === 'certs', isMsgs: view === 'msgs',
+      isCourses: view === 'courses', isUsers: view === 'users', isEnr: view === 'enr', isQuiz: view === 'quiz', isMod: view === 'mod',
+      isAn: view === 'an', isAud: view === 'aud', isNotif: view === 'notif', isLog: view === 'log',
+      courseRows, users, enrs, exams, hardQ, attempts, modTests, kpis, funnelBig, revBy, dropoff, occV, occR, notifs, audit,
+      goApps: go('apps'), goPay: go('pay'), goMsgs: go('msgs'), goCerts: go('certs'),
+      navGroups, queue, funnel, apps, appsFull, questions, rev, courses, activity, pays, certs, threads,
+    };
+  }
+}
+</script>
+</body>
+</html>
