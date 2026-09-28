@@ -71,6 +71,19 @@ export const enrollmentsRepository = {
       .orderBy(desc(enrollments.startedAt));
   },
 
+  /**
+   * Revoke the access a specific payment granted. Keyed by the payment rather
+   * than (user, course) so a refund of one purchase cannot touch access the
+   * student holds for some other reason, such as a manual admin enrollment.
+   */
+  async markRefundedByPayment(paymentId: string) {
+    return db
+      .update(enrollments)
+      .set({ status: "refunded" })
+      .where(eq(enrollments.sourcePaymentId, paymentId))
+      .returning({ id: enrollments.id, userId: enrollments.userId });
+  },
+
   /** Remove an enrollment (admin). Returns true if a row was deleted. */
   async removeByUserCourse(userId: string, courseId: string) {
     const rows = await db

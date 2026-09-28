@@ -95,6 +95,14 @@ const envSchema = z.object({
   CLICK_SECRET_KEY: optionalText(),
   PAYME_MERCHANT_ID: optionalText(),
   PAYME_KEY: optionalText(),
+  /** checkout.paycom.uz in production; checkout.test.paycom.uz for the sandbox. */
+  PAYME_CHECKOUT_URL: optionalUrl(),
+  // Fiscal receipt data. Sent only when all three are set: the IKPU (MXIK)
+  // code for the service, its package code, and the VAT rate. These come from
+  // the business's tax registration, not from us.
+  PAYME_MXIK_CODE: optionalText(),
+  PAYME_PACKAGE_CODE: optionalText(),
+  PAYME_VAT_PERCENT: optionalText(),
 
   // --- Email (Resend — external, non-personal delivery) ---
   RESEND_API_KEY: optionalText(),

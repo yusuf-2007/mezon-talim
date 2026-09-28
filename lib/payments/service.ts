@@ -2,6 +2,7 @@ import "server-only";
 import { paymentsRepository } from "@/lib/db/repositories/payments";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
+import { auditRepository } from "@/lib/db/repositories/audit";
 import { notifyReceipt } from "@/lib/notifications/service";
 
 /**
@@ -16,6 +17,8 @@ export type PaymeMeta = {
   performTime?: number;
   cancelTime?: number;
   reason?: number | null;
+  /** Payme's own timestamp from CreateTransaction, echoed in GetStatement. */
+  paymeTime?: number;
 };
 
 /** Create a pending payment for a course purchase (reuses an open one). */
@@ -78,10 +81,17 @@ export async function markPaidAndEnroll(
   await notifyReceipt(payment.userId, payment.courseId, payment.amountTiyin);
 }
 
-/** Mark a payment refunded/cancelled (e.g. Payme CancelTransaction). */
+/**
+ * Refund a paid payment: mark it refunded and revoke the access it bought.
+ *
+ * Called when a provider cancels a transaction that had already been performed
+ * (Payme state -2). The money has gone back, so the course access it paid for
+ * goes too — leaving it would mean a refund that keeps the product. Audited,
+ * because this is the one place the system takes access away on its own.
+ */
 export async function markCancelled(
   paymentId: string,
-  opts: { raw?: unknown } = {},
+  opts: { raw?: unknown; reason?: number | null } = {},
 ): Promise<void> {
   const payment = await paymentsRepository.findById(paymentId);
   if (!payment) return;
@@ -89,7 +99,19 @@ export async function markCancelled(
     status: "refunded",
     rawCallback: opts.raw ?? payment.rawCallback,
   });
-  // TODO(phase-9): reflect refund on the enrollment (status='refunded') + audit.
+  const revoked = await enrollmentsRepository.markRefundedByPayment(paymentId);
+  await auditRepository.record({
+    actorUserId: null,
+    action: "payment.refund",
+    entityType: "payment",
+    entityId: paymentId,
+    meta: {
+      provider: payment.provider,
+      amountTiyin: payment.amountTiyin,
+      reason: opts.reason ?? null,
+      enrollmentsRevoked: revoked.length,
+    },
+  });
 }
 
 /** Merge Payme transaction metadata into raw_callback. */

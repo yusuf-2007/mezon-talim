@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../client";
 import { courses, payments, users } from "../schema";
 
@@ -103,6 +103,26 @@ export const paymentsRepository = {
       .where(conds.length ? and(...conds) : undefined)
       .orderBy(desc(payments.createdAt))
       .limit(opts.limit ?? 200);
+  },
+
+  /**
+   * Payme transactions created in [from, to] (ms, inclusive), oldest first —
+   * the GetStatement reconciliation. Filtered on the create time we recorded
+   * when CreateTransaction succeeded, which is the time Payme asks about;
+   * rows never reached by CreateTransaction carry no Payme state and drop out.
+   */
+  async listPaymeCreatedBetween(from: number, to: number) {
+    const createTime = sql`(${payments.rawCallback}->'payme'->>'createTime')::bigint`;
+    return db
+      .select()
+      .from(payments)
+      .where(
+        and(
+          eq(payments.provider, "payme"),
+          sql`${createTime} between ${from} and ${to}`,
+        ),
+      )
+      .orderBy(asc(createTime));
   },
 
   /** Per-status counts + summed amount, for the ledger stat cards. */

@@ -21,12 +21,17 @@ export function isPaymentsConfigured(): boolean {
 /** Build the hosted-checkout URL for a provider. */
 export function checkoutUrlFor(
   provider: PaymentProviderId,
-  args: { paymentId: string; amountTiyin: number; returnUrl: string },
+  args: {
+    paymentId: string;
+    amountTiyin: number;
+    returnUrl: string;
+    locale?: "uz" | "ru" | "en";
+  },
 ): string {
   if (provider === "click") {
     return clickCheckoutUrl(args.paymentId, args.amountTiyin / 100, args.returnUrl);
   }
-  return paymeCheckoutUrl(args.paymentId, args.amountTiyin, args.returnUrl);
+  return paymeCheckoutUrl(args.paymentId, args.amountTiyin, args.returnUrl, args.locale);
 }
 
 /** Integer-tiyin money formatter for display. Never used for arithmetic. */

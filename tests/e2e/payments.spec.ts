@@ -198,4 +198,168 @@ test.describe("Payme JSON-RPC", () => {
     expect((await res.json()).error.code).toBe(-31001);
     expect((await state(userId, paymentId)).enrollments).toBe(0);
   });
+
+  // ── The rest of Payme's state machine ─────────────────────────────────
+
+  const call = async (
+    request: import("@playwright/test").APIRequestContext,
+    method: string,
+    params: Record<string, unknown>,
+  ) => (await request.post("/api/webhooks/payme", { headers: auth, data: rpc(method, params) })).json();
+
+  async function enrollmentStatus(userId: string) {
+    const sql = testSql();
+    const rows = await sql`
+      select status from enrollments where user_id = ${userId} and course_id = ${IDS.course}`;
+    await sql.end();
+    return rows.map((r) => r.status as string);
+  }
+
+  test("cancelling before perform releases the order and grants nothing", async ({ request }) => {
+    const userId = await resetMoney();
+    const paymentId = await pendingPayment(userId, "payme");
+    await call(request, "CreateTransaction", {
+      id: "PM-C1", time: Date.now(), amount: PRICE_TIYIN, account: { order_id: paymentId },
+    });
+
+    const cancel = await call(request, "CancelTransaction", { id: "PM-C1", reason: 3 });
+    expect(cancel.result.state).toBe(-1);
+    expect(await state(userId, paymentId)).toEqual({ enrollments: 0, payment: "failed" });
+
+    // Cancelling twice reports the same cancellation rather than erroring.
+    const again = await call(request, "CancelTransaction", { id: "PM-C1", reason: 3 });
+    expect(again.result).toMatchObject({ state: -1, cancel_time: cancel.result.cancel_time });
+
+    // A cancelled transaction can never be performed.
+    const perform = await call(request, "PerformTransaction", { id: "PM-C1" });
+    expect(perform.error.code).toBe(-31008);
+  });
+
+  test("a refund after perform revokes the access it bought, and is audited", async ({ request }) => {
+    const userId = await resetMoney();
+    const paymentId = await pendingPayment(userId, "payme");
+    const account = { order_id: paymentId };
+    await call(request, "CreateTransaction", { id: "PM-R1", time: Date.now(), amount: PRICE_TIYIN, account });
+    await call(request, "PerformTransaction", { id: "PM-R1" });
+    expect(await enrollmentStatus(userId)).toEqual(["active"]);
+
+    const refund = await call(request, "CancelTransaction", { id: "PM-R1", reason: 5 });
+    expect(refund.result.state).toBe(-2);
+    expect(await enrollmentStatus(userId)).toEqual(["refunded"]);
+
+    const sql = testSql();
+    const [audit] = await sql`
+      select action, meta from audit_log where entity_id = ${paymentId} order by created_at desc limit 1`;
+    const [pay] = await sql`select status from payments where id = ${paymentId}`;
+    await sql.end();
+    expect(pay.status).toBe("refunded");
+    expect(audit.action).toBe("payment.refund");
+
+    const check = await call(request, "CheckTransaction", { id: "PM-R1" });
+    expect(check.result).toMatchObject({ state: -2, reason: 5 });
+  });
+
+  test("a second transaction for an order already awaiting payment is refused", async ({ request }) => {
+    const userId = await resetMoney();
+    const paymentId = await pendingPayment(userId, "payme");
+    const account = { order_id: paymentId };
+    await call(request, "CreateTransaction", { id: "PM-B1", time: Date.now(), amount: PRICE_TIYIN, account });
+
+    const second = await call(request, "CreateTransaction", {
+      id: "PM-B2", time: Date.now(), amount: PRICE_TIYIN, account,
+    });
+    // Account errors live in -31050..-31099 and name the field.
+    expect(second.error.code).toBeGreaterThanOrEqual(-31099);
+    expect(second.error.code).toBeLessThanOrEqual(-31050);
+    expect(second.error.data).toBe("order_id");
+
+    // Re-sending the first transaction is still fine: idempotent create.
+    const replay = await call(request, "CreateTransaction", {
+      id: "PM-B1", time: Date.now(), amount: PRICE_TIYIN, account,
+    });
+    expect(replay.result.state).toBe(1);
+  });
+
+  test("a transaction older than 12 hours cannot be performed and is cancelled", async ({ request }) => {
+    const userId = await resetMoney();
+    const paymentId = await pendingPayment(userId, "payme");
+    await call(request, "CreateTransaction", {
+      id: "PM-T1", time: Date.now(), amount: PRICE_TIYIN, account: { order_id: paymentId },
+    });
+    // Age it past Payme's window.
+    const sql = testSql();
+    await sql`
+      update payments
+      set raw_callback = jsonb_set(raw_callback, '{payme,createTime}', to_jsonb(${Date.now() - 43_200_001}::bigint))
+      where id = ${paymentId}`;
+    await sql.end();
+
+    const perform = await call(request, "PerformTransaction", { id: "PM-T1" });
+    expect(perform.error.code).toBe(-31008);
+    const check = await call(request, "CheckTransaction", { id: "PM-T1" });
+    expect(check.result).toMatchObject({ state: -1, reason: 4 });
+    expect(await state(userId, paymentId)).toEqual({ enrollments: 0, payment: "failed" });
+  });
+
+  test("an already-paid order is refused as an account error", async ({ request }) => {
+    const userId = await resetMoney();
+    const paymentId = await pendingPayment(userId, "payme");
+    const account = { order_id: paymentId };
+    await call(request, "CreateTransaction", { id: "PM-P1", time: Date.now(), amount: PRICE_TIYIN, account });
+    await call(request, "PerformTransaction", { id: "PM-P1" });
+
+    const check = await call(request, "CheckPerformTransaction", { amount: PRICE_TIYIN, account });
+    expect(check.error.code).toBeGreaterThanOrEqual(-31099);
+    expect(check.error.code).toBeLessThanOrEqual(-31050);
+  });
+
+  test("an unknown order and an unknown transaction get the codes Payme expects", async ({ request }) => {
+    await resetMoney();
+    const unknownOrder = await call(request, "CheckPerformTransaction", {
+      amount: PRICE_TIYIN, account: { order_id: "00000000-0000-4000-8000-00000000dead" },
+    });
+    expect(unknownOrder.error.code).toBe(-31050);
+    expect(unknownOrder.error.message.uz).toBeTruthy();
+
+    const garbage = await call(request, "CheckPerformTransaction", {
+      amount: PRICE_TIYIN, account: { order_id: "not-a-uuid" },
+    });
+    expect(garbage.error.code).toBe(-31050);
+
+    const unknownTxn = await call(request, "CheckTransaction", { id: "PM-NOPE" });
+    expect(unknownTxn.error.code).toBe(-31003);
+  });
+
+  test("GetStatement lists the transactions created in the window", async ({ request }) => {
+    const userId = await resetMoney();
+    const paymentId = await pendingPayment(userId, "payme");
+    const from = Date.now() - 1000;
+    await call(request, "CreateTransaction", {
+      id: "PM-S1", time: from + 500, amount: PRICE_TIYIN, account: { order_id: paymentId },
+    });
+    await call(request, "PerformTransaction", { id: "PM-S1" });
+
+    const stmt = await call(request, "GetStatement", { from, to: Date.now() + 1000 });
+    const row = stmt.result.transactions.find((t: { id: string }) => t.id === "PM-S1");
+    expect(row).toMatchObject({
+      id: "PM-S1",
+      time: from + 500,
+      amount: PRICE_TIYIN,
+      account: { order_id: paymentId },
+      transaction: paymentId,
+      state: 2,
+    });
+
+    const empty = await call(request, "GetStatement", { from: 1, to: 2 });
+    expect(empty.result.transactions).toEqual([]);
+  });
+
+  test("a login other than Paycom is refused even with the right key", async ({ request }) => {
+    const res = await request.post("/api/webhooks/payme", {
+      headers: { authorization: `Basic ${Buffer.from(`admin:${PAYME_KEY}`).toString("base64")}` },
+      data: rpc("CheckTransaction", { id: "PM-X" }),
+    });
+    expect(res.status()).toBe(200);
+    expect((await res.json()).error.code).toBe(-32504);
+  });
 });

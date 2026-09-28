@@ -3,9 +3,9 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
-import { env } from "@/lib/env";
 import { createPendingPayment } from "./service";
 import { checkoutUrlFor, type PaymentProviderId } from "./index";
+import { publicBaseUrl } from "@/lib/base-url";
 
 /**
  * Begin a real checkout: create a pending payment, then redirect the buyer to
@@ -26,12 +26,14 @@ export async function startCheckoutAction(
     provider,
   });
 
-  const base = env.AUTH_URL ?? "http://localhost:3000";
-  const returnUrl = `${base}/${locale}/courses/${course.slug}`;
+  // publicBaseUrl, not AUTH_URL: AUTH_URL is unset in production, and the old
+  // fallback sent a buyer back to http://localhost:3000 after paying.
+  const returnUrl = `${publicBaseUrl()}/${locale}/courses/${course.slug}`;
   const checkoutUrl = checkoutUrlFor(provider, {
     paymentId: payment.id,
     amountTiyin: payment.amountTiyin,
     returnUrl,
+    locale: locale as "uz" | "ru" | "en",
   });
 
   redirect(checkoutUrl); // external redirect to the provider
