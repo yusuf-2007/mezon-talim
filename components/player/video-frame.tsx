@@ -33,8 +33,13 @@ export async function VideoFrame({
 
   if (!bunnyVideoId) {
     return (
-      <div className="flex aspect-video w-full items-center justify-center rounded-xl border border-line bg-navy-900 text-navy-100">
-        {t("noVideo")}
+      <div className="relative grid aspect-video w-full place-items-center overflow-hidden bg-[#0A1622]">
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: "radial-gradient(ellipse at 60% 40%,#1B3A57,#0A1622 70%)" }}
+        />
+        <p className="relative text-[.9rem] text-lp-on-navy">{t("noVideo")}</p>
       </div>
     );
   }

@@ -49,7 +49,7 @@ export type ExamOverview = {
   /** Student has already sent a retry-access request since their last attempt. */
   retryRequested: boolean;
   /** Recent submitted attempts, newest first (for the history block). */
-  history: { attemptNo: number; scorePct: number | null; passed: boolean; submittedAt: number }[];
+  history: { id: string; attemptNo: number; scorePct: number | null; passed: boolean; submittedAt: number }[];
 };
 
 function timeWindow(assessment: Assessment, startedAt: Date) {
@@ -143,6 +143,7 @@ export async function getExamOverview(
       .sort((a, b) => b.submittedAt!.getTime() - a.submittedAt!.getTime())
       .slice(0, 5)
       .map((a) => ({
+        id: a.id,
         attemptNo: a.attemptNo,
         scorePct: a.scorePct,
         passed: Boolean(a.passed),
@@ -164,6 +165,9 @@ export type FinalExamBox = {
   /** Lessons progress for the lock hint (spec 3.2). */
   lessonsDone: number;
   lessonsTotal: number;
+  /** Null when untimed / unlimited. */
+  timeLimitSeconds: number | null;
+  maxAttempts: number | null;
 };
 
 /**
@@ -205,6 +209,8 @@ export async function getFinalExamBox(
     bestScorePct: overview.bestScorePct,
     lessonsDone: overview.prereq?.lessons.completed ?? 0,
     lessonsTotal: overview.prereq?.lessons.total ?? 0,
+    timeLimitSeconds: finalExam.timeLimitSeconds,
+    maxAttempts: finalExam.maxAttempts,
   };
 }
 
@@ -423,7 +429,27 @@ export async function getResult(attemptId: string, userId: string) {
     }));
   }
 
-  const result = {
+  // Every question gets a row: right or wrong, what the student picked, and
+  // the module it came from (so a wrong answer can point back to the lesson).
+  // The correct options and explanation are only filled in once review is
+  // allowed (B16) — a failed student sees *that* they were wrong, not the key.
+  const answersReview = served.map((q) => {
+    const selected = answerMap.get(q.id) ?? [];
+    return {
+      prompt: q.prompt,
+      correct: correctById.get(q.id) ?? false,
+      moduleId: q.moduleId ?? null,
+      yourLabels: q.options.filter((o) => selected.includes(o.id)).map((o) => o.label),
+      correctLabels: reviewAllowed
+        ? q.options.filter((o) => o.isCorrect).map((o) => o.label)
+        : null,
+      explanation: reviewAllowed ? q.explanation : null,
+    };
+  });
+
+  return {
+    assessment,
+    attemptNo: attempt.attemptNo,
     scorePct: attempt.scorePct ?? 0,
     passed: Boolean(attempt.passed),
     passThresholdPct: assessment.passThresholdPct,
@@ -433,27 +459,8 @@ export async function getResult(attemptId: string, userId: string) {
     totalCount,
     timeSpentSeconds,
     moduleBreakdown,
-    review: null as
-      | null
-      | {
-          prompt: LocalizedText;
-          explanation: LocalizedText | null;
-          options: { id: string; label: LocalizedText; isCorrect: boolean }[];
-          selected: string[];
-          correct: boolean;
-        }[],
+    answers: answersReview,
   };
-
-  if (reviewAllowed) {
-    result.review = served.map((q) => ({
-      prompt: q.prompt,
-      explanation: q.explanation,
-      options: q.options.map((o) => ({ id: o.id, label: o.label, isCorrect: o.isCorrect })),
-      selected: answerMap.get(q.id) ?? [],
-      correct: correctById.get(q.id) ?? false,
-    }));
-  }
-  return { assessment, ...result };
 }
 
 export { type Assessment };

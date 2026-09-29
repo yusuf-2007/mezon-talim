@@ -73,8 +73,9 @@ test.describe("final exam and certificate", () => {
     await login(page, USERS.studentA.email, PASSWORD);
     await sitExam(page, CORRECT);
 
-    await expect(page.getByText(uz.Exam.passed, { exact: true })).toBeVisible();
-    await expect(page.getByText(uz.Exam.yourScore.replace("{pct}", "100"))).toBeVisible();
+    await expect(page.getByText(uz.Exam.passTitle, { exact: true })).toBeVisible();
+    await expect(page.getByText("100%", { exact: true })).toBeVisible();
+    await expect(page.getByText(uz.Exam.certReady, { exact: true })).toBeVisible();
 
     const code = await certificateFor(userId);
     expect(code).toBeTruthy();
@@ -95,7 +96,10 @@ test.describe("final exam and certificate", () => {
     await login(page, USERS.studentA.email, PASSWORD);
     await sitExam(page, WRONG);
 
-    await expect(page.getByText(uz.Exam.failed, { exact: true })).toBeVisible();
+    await expect(page.getByText(uz.Exam.failTitle, { exact: true })).toBeVisible();
+    // B16: a failed student is told which answers were wrong, never the key.
+    await expect(page.getByText(uz.Exam.keyAfterPass)).toBeVisible();
+    await expect(page.getByText(uz.Exam.correctAnswerLabel)).toHaveCount(0);
     expect(await certificateFor(userId)).toBeUndefined();
   });
 

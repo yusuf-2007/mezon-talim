@@ -1,13 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
-import { BrandWordmark } from "@/components/brand-wordmark";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { InlineLanguage } from "@/components/site-header-parts";
 
 export async function SiteFooter() {
-  const [t, nav] = await Promise.all([
-    getTranslations("Footer"),
-    getTranslations("Nav"),
-  ]);
+  const [t, nav] = await Promise.all([getTranslations("Footer"), getTranslations("Nav")]);
 
   const links = [
     { href: "/catalog", label: nav("courses") },
@@ -16,30 +12,33 @@ export async function SiteFooter() {
   ] as const;
 
   return (
-    <footer className="border-t border-line bg-navy-900 text-navy-100">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2">
-          <BrandWordmark tone="light" />
-          <p className="max-w-sm text-sm text-navy-100/80">{t("tagline")}</p>
+    <footer className="bg-lp-navy-deep px-5 pb-6 pt-10 sm:px-12">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap justify-between gap-6">
+        <div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset */}
+          <img
+            src="/brand/mezon-logo-horizontal-white.png"
+            alt="Mezon Ta'lim"
+            width={142}
+            height={28}
+            className="block h-7 w-auto"
+          />
+          <p className="mt-3 max-w-[44ch] text-[.84rem] leading-relaxed text-lp-on-navy-dim">
+            {t("tagline")}
+          </p>
         </div>
-        <nav className="flex flex-wrap gap-x-6 text-sm">
+        <div className="flex flex-wrap items-start gap-x-[26px] gap-y-3 text-[.88rem] text-lp-on-navy">
           {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="flex min-h-11 items-center text-navy-100/80 transition-colors hover:text-white"
-            >
+            <Link key={l.href} href={l.href} className="transition-colors hover:text-white">
               {l.label}
             </Link>
           ))}
-        </nav>
-        <div className="flex flex-col items-start gap-4 md:items-end">
-          <LanguageSwitcher />
-          <p className="text-xs text-navy-100/60">
-            © Mezon Ta&apos;lim. {t("rights")}
-          </p>
+          <InlineLanguage tone="dark" />
         </div>
       </div>
+      <p className="mx-auto mt-8 max-w-[1200px] text-[.74rem] text-lp-on-navy-faint">
+        © Mezon Ta&apos;lim. {t("rights")}
+      </p>
     </footer>
   );
 }

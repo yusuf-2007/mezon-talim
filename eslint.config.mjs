@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Design handoff bundles (vendored prototype runtime, not app code).
+    "docs/**",
     "drizzle/**",
     // Vendored Claude Code skill bundles + agent tooling — not project source.
     ".claude/**",

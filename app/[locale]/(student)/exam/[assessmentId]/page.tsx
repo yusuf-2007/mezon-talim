@@ -1,17 +1,31 @@
-import { Check, Play } from "lucide-react";
+import { Check } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
+import { Link } from "@/lib/i18n/navigation";
 import { getExamOverview } from "@/lib/assessments/service";
 import { startExamAction } from "@/lib/assessments/actions";
-import { modulesRepository } from "@/lib/db/repositories/modules";
 import { coursesRepository } from "@/lib/db/repositories/courses";
+import { getCurriculum } from "@/lib/learning/curriculum";
+import { buildFlow, minutesOf } from "@/lib/learning/flow";
 import { pickLocale } from "@/lib/i18n/localized";
-import { Button } from "@/components/ui/button";
-import { CoursePlayerShell } from "@/components/player/course-player-shell";
+import { APP_TIME_ZONE, cn } from "@/lib/utils";
 import { RequestAccessButton } from "@/components/exam/request-access-button";
+import { Eyebrow, FocusBar, LessonTicks, initialsOf } from "@/components/learn/flow-ui";
 import type { Locale } from "@/lib/i18n/routing";
 
+type ExamT = Awaited<ReturnType<typeof getTranslations<"Exam">>>;
+type Overview = NonNullable<Awaited<ReturnType<typeof getExamOverview>>>;
+
+/**
+ * The page before an exam: what it is, what it takes to sit it, and one
+ * button — or, when it cannot be sat yet, a plain statement of why.
+ *
+ * Every blocked state the service knows about (lessons left, module tests
+ * left, cooldown, out of attempts, not enrolled) gets its own sentence under
+ * the same button, rather than the button disappearing and the student having
+ * to work out what changed.
+ */
 export default async function PreExamPage({
   params,
 }: {
@@ -19,267 +33,307 @@ export default async function PreExamPage({
 }) {
   const { assessmentId } = await params;
   const user = await requireUser();
-  const t = await getTranslations("Exam");
+  const [t, tPlayer] = await Promise.all([getTranslations("Exam"), getTranslations("Player")]);
   const locale = (await getLocale()) as Locale;
 
   const o = await getExamOverview(assessmentId, user.id);
   if (!o) notFound();
   const a = o.assessment;
-  const [modules, course] = await Promise.all([
-    modulesRepository.listByCourse(a.courseId),
+  const [course, curriculum] = await Promise.all([
     coursesRepository.findById(a.courseId),
+    getCurriculum(a.courseId, user.id),
   ]);
-  const moduleCount = modules.length;
+  if (!course) notFound();
 
-  const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ";
-  const fmtDate = (ms: number) => new Date(ms).toLocaleDateString(dateLocale);
-  const cooldownText = o.cooldownUntil
-    ? new Date(o.cooldownUntil).toLocaleString(dateLocale)
-    : "";
+  const flow = buildFlow(curriculum);
+  const isFinal = a.type === "final_exam";
+  const minutes = minutesOf(a.timeLimitSeconds);
+  const passedAttempt = o.history.find((h) => h.passed) ?? null;
 
-  const stats = [
-    { label: t("statQuestions"), value: String(o.questionCount) },
-    {
-      label: t("statPass"),
-      value: a.isScored ? `${a.passThresholdPct}%` : "—",
-    },
-    {
-      label: t("statTime"),
-      value: a.timeLimitSeconds
-        ? `${Math.round(a.timeLimitSeconds / 60)}′`
-        : "∞",
-    },
-    { label: t("statModules"), value: String(moduleCount) },
-  ];
+  const eyebrow =
+    a.type === "final_exam"
+      ? t("eyebrowFinal")
+      : a.type === "module_test"
+        ? t("eyebrowModule")
+        : a.type === "mock_exam"
+          ? t("eyebrowMock")
+          : t("eyebrowQuiz");
 
-  const body = (
-    <section className="mx-auto max-w-2xl">
-      <p className="text-sm text-slate-500">{t("examTitle")}</p>
-      <h1 className="mt-1 font-heading text-3xl font-semibold text-navy-800">
-        {pickLocale(a.title, locale)}
-      </h1>
+  return (
+    <>
+      <FocusBar
+        courseHref={`/courses/${course.slug}`}
+        courseTitle={pickLocale(course.title, locale)}
+        backLabel={tPlayer("backToCourse")}
+        initials={initialsOf(user.fullName ?? user.email ?? user.phone)}
+        progress={{ done: curriculum.completedCount, total: curriculum.lessonCount }}
+      />
 
-      {/* 4-stat grid */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border border-line bg-surface p-4 text-center shadow-sm"
-          >
-            <div className="font-heading text-2xl font-semibold text-navy-800 tabular-nums">
-              {s.value}
+      <div className="mx-auto max-w-[860px] px-5 pb-20 pt-11 sm:px-7">
+        <Eyebrow className="mb-2">{eyebrow}</Eyebrow>
+        <h1 className="font-lp-heading text-[clamp(1.9rem,3.4vw,2.6rem)] font-semibold leading-[1.14] text-lp-navy">
+          {pickLocale(a.title, locale)}
+        </h1>
+        <p className="mt-2.5 max-w-[56ch] text-[1.05rem] text-lp-slate">
+          {isFinal && a.isScored ? t("introFinal", { pct: a.passThresholdPct }) : t("introOther")}
+        </p>
+
+        {/* ── Facts ─────────────────────────────────────────────────── */}
+        <div className="mt-7 grid grid-cols-2 overflow-hidden rounded-2xl border border-lp-line bg-white tabular-nums sm:grid-cols-4">
+          <Stat value={String(o.questionCount)} label={t("statQuestionsLower")} />
+          <Stat value={a.isScored ? `${a.passThresholdPct}%` : "—"} label={t("statPassLower")} />
+          <Stat value={minutes ? t("minutesShort", { count: minutes }) : "∞"} label={t("statTimeLower")} />
+          <Stat
+            value={a.maxAttempts ? String(a.maxAttempts) : "∞"}
+            label={t("statAttemptsLower")}
+          />
+        </div>
+
+        {/* ── Already passed ────────────────────────────────────────── */}
+        {o.alreadyPassed && passedAttempt && (
+          <div className="mt-[22px] flex flex-wrap items-center justify-between gap-4 rounded-[14px] border border-[#BFE3CF] bg-lp-success-tint px-[22px] py-[18px]">
+            <div className="flex items-center gap-3">
+              <span className="grid size-[34px] place-items-center rounded-full bg-lp-success-dot text-white">
+                <Check className="size-4" strokeWidth={3} />
+              </span>
+              <div>
+                <p className="font-bold text-lp-success">
+                  {t("passedBanner", { pct: passedAttempt.scorePct ?? 0 })}
+                </p>
+                <p className="text-[.86rem] text-[#2A6B4E] tabular-nums">
+                  {fmtDate(passedAttempt.submittedAt, locale)} ·{" "}
+                  {t("attemptN", { n: passedAttempt.attemptNo })}
+                </p>
+              </div>
             </div>
-            <div className="mt-1 text-xs text-slate-500">{s.label}</div>
+            <Link
+              href={`/exam/attempt/${passedAttempt.id}/result`}
+              className="text-[.88rem] font-bold text-lp-success hover:underline"
+            >
+              {t("resultAndCertificate")}
+            </Link>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Prerequisites (final exam only) */}
-      {o.prereq && (
-        <div className="mt-6 rounded-xl border border-line bg-surface p-5 shadow-sm">
-          <h2 className="font-medium text-navy-800">{t("prereqTitle")}</h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            <PrereqRow
-              met={o.prereq.lessons.allComplete}
-              label={t("prereqLessons", {
-                done: o.prereq.lessons.completed,
-                total: o.prereq.lessons.total,
-              })}
-              metLabel={t("prereqMet")}
-              unmetLabel={t("prereqUnmet")}
-            />
-            {o.prereq.moduleTests.total > 0 && (
-              <PrereqRow
-                met={o.prereq.moduleTests.allPassed}
-                label={t("prereqModuleTests", {
-                  done: o.prereq.moduleTests.passed,
-                  total: o.prereq.moduleTests.total,
-                })}
-                metLabel={t("prereqMet")}
-                unmetLabel={t("prereqUnmet")}
-              />
-            )}
-          </ul>
+        {/* ── Requirements ──────────────────────────────────────────── */}
+        {o.prereq && (
+          <section className="mt-[22px] rounded-2xl border border-lp-line bg-white px-6 py-[22px]">
+            <Eyebrow className="mb-3">{t("prereqTitle")}</Eyebrow>
+            <div className="space-y-4">
+              <Requirement
+                met={o.prereq.lessons.allComplete}
+                label={t("reqLessons")}
+                status={
+                  o.prereq.lessons.allComplete
+                    ? t("prereqMet")
+                    : `${o.prereq.lessons.completed} / ${o.prereq.lessons.total}`
+                }
+              >
+                <LessonTicks
+                  states={flow.lessons.map((l) => l.state)}
+                  height="sm"
+                  className="mt-2 max-w-[220px]"
+                />
+              </Requirement>
+              {o.prereq.moduleTests.total > 0 && (
+                <Requirement
+                  met={o.prereq.moduleTests.allPassed}
+                  label={t("reqModuleTests")}
+                  status={
+                    o.prereq.moduleTests.allPassed
+                      ? t("prereqMet")
+                      : `${o.prereq.moduleTests.passed} / ${o.prereq.moduleTests.total}`
+                  }
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ── Start ─────────────────────────────────────────────────── */}
+        <div className="mt-[22px] flex flex-wrap items-center gap-4">
+          <StartAction o={o} assessmentId={assessmentId} isFinal={isFinal} t={t} locale={locale} />
         </div>
-      )}
 
-      {/* Your progress (only after attempts) */}
-      {o.history.length > 0 && (
-        <div className="mt-6 rounded-xl border border-line bg-surface p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="font-medium text-navy-800">{t("yourProgress")}</h2>
-            <span className="text-sm text-slate-500">
-              {o.attemptsLeft == null
-                ? t("attemptsUsed", { used: o.attemptsUsed, allowed: "∞" })
-                : t("attemptsUsed", {
-                    used: o.attemptsUsed,
-                    allowed: o.attemptsUsed + o.attemptsLeft,
-                  })}
-            </span>
-          </div>
-          {o.bestScorePct != null && (
-            <p className="mt-1 text-sm text-slate-500">
-              {t("bestScore", { pct: o.bestScorePct })}
-            </p>
-          )}
-          <div className="mt-3">
-            <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
-              {t("attemptHistory")}
-            </p>
-            <ul className="divide-y divide-line text-sm">
-              {o.history.map((h) => (
-                <li key={h.attemptNo} className="flex items-center justify-between py-1.5">
-                  <span className="tabular-nums text-slate-500">
-                    {fmtDate(h.submittedAt)}
-                  </span>
-                  <span className="flex items-center gap-3">
-                    <span className="tabular-nums text-ink">{h.scorePct ?? 0}%</span>
-                    <span
-                      className={
-                        h.passed
-                          ? "font-medium text-success"
-                          : "font-medium text-danger"
-                      }
-                    >
-                      {h.passed ? t("passed") : t("failed")}
-                    </span>
-                  </span>
-                </li>
-              ))}
+        {/* ── Rules + history ───────────────────────────────────────── */}
+        <div className="mt-8 grid gap-[22px] sm:grid-cols-2">
+          <section className="rounded-2xl border border-lp-line bg-white px-6 py-[22px]">
+            <Eyebrow className="mb-3">{t("rulesShort")}</Eyebrow>
+            <ul className="text-[.9rem] leading-normal text-[#2A3B4C]">
+              {[
+                t("instrAnswerAll"),
+                a.timeLimitSeconds ? t("instrTime") : null,
+                t("instrAutosave"),
+                a.maxAttempts ? t("instrRetry") : null,
+              ]
+                .filter(Boolean)
+                .map((r, i, all) => (
+                  <li
+                    key={i}
+                    className={cn("py-2.5", i < all.length - 1 && "border-b border-lp-line-soft")}
+                  >
+                    {r}
+                  </li>
+                ))}
             </ul>
-          </div>
+          </section>
+          <section className="rounded-2xl border border-lp-line bg-white px-6 py-[22px]">
+            <Eyebrow className="mb-3">{t("attemptHistory")}</Eyebrow>
+            {o.history.length === 0 ? (
+              <p className="text-[.88rem] leading-relaxed text-lp-muted">{t("noAttemptsYet")}</p>
+            ) : (
+              <ul>
+                {o.history.map((h) => (
+                  <li
+                    key={h.id}
+                    className="flex items-center justify-between border-b border-lp-line-soft py-2.5 text-[.9rem] tabular-nums last:border-b-0"
+                  >
+                    <Link href={`/exam/attempt/${h.id}/result`} className="text-lp-slate hover:underline">
+                      {fmtDate(h.submittedAt, locale)} · {t("attemptN", { n: h.attemptNo })}
+                    </Link>
+                    <span className={cn("font-bold", h.passed ? "text-lp-success" : "text-lp-danger")}>
+                      {h.scorePct ?? 0}% · {h.passed ? t("passedShort") : t("failedShort")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
-      )}
-
-      {/* Action — 5 states (spec 2.2). Sits above the instructions: once the
-          requirements are met, starting is the thing to do, not the last thing
-          on the page. */}
-      <div className="mt-6">
-        <ExamAction
-          o={o}
-          assessmentId={assessmentId}
-          t={t}
-          cooldownText={cooldownText}
-          isFinal={a.type === "final_exam"}
-        />
       </div>
-
-      {/* Instructions */}
-      <div className="mt-6 rounded-xl border border-line bg-surface p-5 shadow-sm">
-        <h2 className="font-medium text-navy-800">{t("instructionsTitle")}</h2>
-        <ul className="mt-2 space-y-1 text-sm text-slate-600">
-          <li>• {t("instrAnswerAll")}</li>
-          {a.isScored && <li>• {t("instrOverall", { pct: a.passThresholdPct })}</li>}
-          {a.timeLimitSeconds != null && <li>• {t("instrTime")}</li>}
-          <li>• {t("instrRetry")}</li>
-          <li>• {t("instrAutosave")}</li>
-        </ul>
-      </div>
-
-    </section>
+    </>
   );
-
-  // Final exams live inside the course-player shell (sidebar stays); other
-  // assessment types render standalone.
-  if (a.type === "final_exam" && course) {
-    return (
-      <CoursePlayerShell
-        courseId={a.courseId}
-        courseSlug={course.slug}
-        userId={user.id}
-        activeLessonId="exam"
-      >
-        {body}
-      </CoursePlayerShell>
-    );
-  }
-  return <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">{body}</div>;
 }
 
-function PrereqRow({
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="border-lp-line-soft px-[22px] py-[18px] [&:not(:first-child)]:border-l max-sm:[&:nth-child(3)]:border-l-0 max-sm:[&:nth-child(n+3)]:border-t">
+      <p className="font-lp-heading text-[1.9rem] font-semibold leading-none text-lp-navy">{value}</p>
+      <p className="mt-1.5 text-[.8rem] text-lp-muted">{label}</p>
+    </div>
+  );
+}
+
+function Requirement({
   met,
   label,
-  metLabel,
-  unmetLabel,
+  status,
+  children,
 }: {
   met: boolean;
   label: string;
-  metLabel: string;
-  unmetLabel: string;
+  status: string;
+  children?: React.ReactNode;
 }) {
   return (
-    <li className="flex items-center gap-2.5">
+    <div className="grid grid-cols-[28px_1fr_auto] items-center gap-3">
       <span
-        className={`flex size-5 shrink-0 items-center justify-center rounded-full text-xs text-white ${
-          met ? "bg-success" : "bg-line"
-        }`}
         aria-hidden
+        className={cn(
+          "grid size-6 place-items-center rounded-full border-[1.5px]",
+          met ? "border-lp-success-dot bg-lp-success-dot text-white" : "border-lp-line-strong text-lp-line-strong",
+        )}
       >
-        {met && <Check className="size-3" strokeWidth={3} />}
+        <Check className="size-3" strokeWidth={3} />
       </span>
-      <span className={met ? "text-ink" : "text-slate-500"}>{label}</span>
-      <span className={`ml-auto text-xs ${met ? "text-success" : "text-slate-400"}`}>
-        {met ? metLabel : unmetLabel}
+      <div>
+        <p className="text-[.94rem] font-semibold text-lp-ink">{label}</p>
+        {children}
+      </div>
+      <span className={cn("text-[.84rem] font-bold tabular-nums", met ? "text-lp-success" : "text-lp-muted")}>
+        {status}
       </span>
-    </li>
+    </div>
   );
 }
 
-function ExamAction({
+const goldBtn =
+  "inline-flex items-center gap-[9px] rounded-[11px] bg-lp-gold px-[26px] py-[15px] text-[.95rem] font-bold text-lp-navy-deep shadow-[0_6px_18px_rgba(248,184,1,.3)] transition hover:-translate-y-px hover:shadow-[0_8px_22px_rgba(248,184,1,.4)] disabled:cursor-not-allowed disabled:opacity-60";
+const greyBtn =
+  "inline-flex cursor-not-allowed items-center gap-[9px] rounded-[11px] bg-lp-line-soft px-[26px] py-[15px] text-[.95rem] font-bold text-lp-muted";
+
+function StartAction({
   o,
   assessmentId,
-  t,
-  cooldownText,
   isFinal,
+  t,
+  locale,
 }: {
-  o: NonNullable<Awaited<ReturnType<typeof getExamOverview>>>;
+  o: Overview;
   assessmentId: string;
-  t: Awaited<ReturnType<typeof getTranslations<"Exam">>>;
-  cooldownText: string;
   isFinal: boolean;
+  t: ExamT;
+  locale: Locale;
 }) {
-  // (a) In progress or freely startable → Start / Resume, as a card that
-  // states the terms once more right next to the button that accepts them.
+  const minutes = minutesOf(o.assessment.timeLimitSeconds);
+  const note = (text: string) => <span className="text-[.86rem] text-lp-muted">{text}</span>;
+
+  // Startable, or already running.
   if (!o.blockedReason) {
-    const a = o.assessment;
     return (
-      <div className="rounded-xl border border-gold-400 bg-gold-100/50 p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-heading text-lg font-semibold text-navy-800">
-              {o.inProgress ? t("resumeTitle") : t("readyTitle")}
-            </p>
-            <p className="mt-0.5 text-sm text-slate-600">
-              {a.timeLimitSeconds
-                ? t("readyHintTimed", { minutes: Math.round(a.timeLimitSeconds / 60) })
-                : t("readyHint")}
-            </p>
-          </div>
-          <form action={startExamAction.bind(null, assessmentId)} className="shrink-0">
-            <Button type="submit" size="lg" disabled={o.questionCount === 0} className="w-full sm:w-auto">
-              <Play className="size-4" />
-              {o.inProgress ? t("resume") : isFinal ? t("startFinalExam") : t("start")}
-            </Button>
-          </form>
-        </div>
-      </div>
+      <>
+        <form action={startExamAction.bind(null, assessmentId)}>
+          <button type="submit" disabled={o.questionCount === 0} className={goldBtn}>
+            {o.inProgress ? t("resume") : isFinal ? t("startFinalExam") : t("start")}
+          </button>
+        </form>
+        {note(minutes ? t("readyHintTimed", { minutes }) : t("readyHint"))}
+      </>
     );
   }
-  // (b) Out of attempts, not passed → request access.
-  if (o.blockedReason === "no_attempts_left") {
-    return (
-      <RequestAccessButton
-        assessmentId={assessmentId}
-        alreadyRequested={o.retryRequested}
-      />
-    );
+
+  switch (o.blockedReason) {
+    case "already_passed":
+      return null; // the green banner above already says it, with the link.
+    case "no_attempts_left":
+      return (
+        <>
+          <RequestAccessButton assessmentId={assessmentId} alreadyRequested={o.retryRequested} />
+          {note(t("noAttemptsNote"))}
+        </>
+      );
+    case "lessons_incomplete": {
+      const left = o.prereq ? o.prereq.lessons.total - o.prereq.lessons.completed : 0;
+      return (
+        <>
+          <span className={greyBtn}>{t("lessonsLeft", { count: left })}</span>
+          {note(t("blocked_lessons_incomplete"))}
+        </>
+      );
+    }
+    case "cooldown":
+      return (
+        <>
+          <span className={greyBtn}>{t("start")}</span>
+          {note(
+            t("blocked_cooldown", {
+              time: o.cooldownUntil ? fmtDateTime(o.cooldownUntil, locale) : "",
+            }),
+          )}
+        </>
+      );
+    default:
+      return (
+        <>
+          <span className={greyBtn}>{isFinal ? t("startFinalExam") : t("start")}</span>
+          {note(t(`blocked_${o.blockedReason}`))}
+        </>
+      );
   }
-  // (c) Locked / cooldown / other → informational badge, no start.
-  return (
-    <p className="rounded-lg bg-gold-100 px-4 py-3 text-sm text-navy-800">
-      {o.blockedReason === "cooldown"
-        ? t("blocked_cooldown", { time: cooldownText })
-        : t(`blocked_${o.blockedReason}`)}
-    </p>
-  );
+}
+
+function dateLocale(locale: Locale) {
+  return locale === "ru" ? "ru-RU" : locale === "en" ? "en-GB" : "uz-UZ";
+}
+function fmtDate(ms: number, locale: Locale) {
+  return new Date(ms).toLocaleDateString(dateLocale(locale), { timeZone: APP_TIME_ZONE });
+}
+function fmtDateTime(ms: number, locale: Locale) {
+  return new Date(ms).toLocaleString(dateLocale(locale), {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: APP_TIME_ZONE,
+  });
 }

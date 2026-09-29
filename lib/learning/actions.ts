@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { remindFinalExamIfDue } from "./exam-reminder";
 import { z } from "zod";
@@ -120,6 +121,24 @@ export async function addNoteAction(
   const { enrolled, courseId } = await assertLessonEnrollment(user.id, lessonId);
   if (!enrolled) return { ok: false };
   await notesRepository.create(user.id, lessonId, body, timestampSeconds);
+  revalidatePath(`/learn/${courseId}/${lessonId}`);
+  return { ok: true };
+}
+
+/**
+ * Save the current moment of the video as a bookmark — a note pinned to that
+ * time, with a default label the student can edit or delete later.
+ */
+export async function bookmarkAction(
+  lessonId: string,
+  seconds: number,
+): Promise<{ ok: boolean }> {
+  const user = await requireUser();
+  const t = Number.isFinite(seconds) && seconds >= 0 ? Math.min(Math.floor(seconds), 86_400) : 0;
+  const { enrolled, courseId } = await assertLessonEnrollment(user.id, lessonId);
+  if (!enrolled) return { ok: false };
+  const tr = await getTranslations("Player");
+  await notesRepository.create(user.id, lessonId, tr("bookmarkBody"), t);
   revalidatePath(`/learn/${courseId}/${lessonId}`);
   return { ok: true };
 }

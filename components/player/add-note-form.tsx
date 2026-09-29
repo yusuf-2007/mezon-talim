@@ -2,9 +2,6 @@
 
 import { useActionState, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { getVideoTime } from "./video-time-store";
 
 type Action = (prev: { ok: boolean }, fd: FormData) => Promise<{ ok: boolean }>;
@@ -62,33 +59,59 @@ export function AddNoteForm({ action }: { action: Action }) {
   }
 
   return (
-    <form ref={ref} action={formAction} className="space-y-2">
-      <Textarea name="body" rows={3} placeholder={t("notePlaceholder")} required />
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <Input
-          name="timestamp"
-          value={time}
-          onChange={(e) => setTime(maskTime(e.target.value))}
-          placeholder="00:00:00"
-          aria-label={t("noteTimestamp")}
-          pattern="^\d{1,4}(:[0-5]?\d){0,2}$"
-          title="00:00:00"
-          inputMode="numeric"
-          readOnly={useCurrent}
-          className="w-28 tabular-nums"
-        />
-        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-500">
-          <input
-            type="checkbox"
-            checked={useCurrent}
-            onChange={(e) => toggleCurrent(e.target.checked)}
-            className="size-4 accent-navy-800"
-          />
-          {t("useCurrentTime")}
-        </label>
-        <Button type="submit" size="sm" disabled={pending}>
+    <form
+      ref={ref}
+      action={formAction}
+      className="rounded-xl border border-lp-line bg-white p-3.5"
+    >
+      <textarea
+        name="body"
+        rows={3}
+        required
+        placeholder={t("notePlaceholder")}
+        className="block min-h-[60px] w-full resize-y border-0 bg-transparent px-0.5 py-1 text-[.92rem] text-lp-ink outline-none placeholder:text-lp-muted-light"
+      />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-lp-line-soft pt-2.5">
+        <span className="flex flex-wrap items-center gap-2">
+          {/* The time this note is pinned to. Typed as mm:ss, or taken from the
+              playhead with one tap. */}
+          <label className="inline-flex items-center gap-1.5 rounded-full bg-lp-tint px-2.5 py-1 text-[.8rem] font-bold text-lp-navy">
+            <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            <input
+              name="timestamp"
+              value={time}
+              onChange={(e) => {
+                setUseCurrent(false);
+                setTime(maskTime(e.target.value));
+              }}
+              placeholder="00:00"
+              aria-label={t("noteTimestamp")}
+              pattern="^\d{1,4}(:[0-5]?\d){0,2}$"
+              title="00:00:00"
+              inputMode="numeric"
+              className="w-[4.8rem] bg-transparent tabular-nums outline-none placeholder:text-lp-navy/40"
+            />
+            <span className="font-semibold">{t("noteAnchored")}</span>
+          </label>
+          <button
+            type="button"
+            onClick={() => toggleCurrent(!useCurrent)}
+            aria-pressed={useCurrent}
+            className="text-[.8rem] font-bold text-lp-navy-mid hover:underline"
+          >
+            {t("useCurrentTime")}
+          </button>
+        </span>
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-[9px] bg-lp-navy px-4 py-[9px] text-[.84rem] font-bold text-white transition-opacity disabled:opacity-60"
+        >
           {t("addNote")}
-        </Button>
+        </button>
       </div>
     </form>
   );

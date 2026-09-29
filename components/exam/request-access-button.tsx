@@ -23,7 +23,7 @@ export function RequestAccessButton({
 
   if (sent) {
     return (
-      <p className="rounded-lg bg-gold-100 px-4 py-3 text-sm text-navy-800">
+      <p className="rounded-xl border border-lp-gold-band bg-lp-gold-wash px-4 py-3 text-[.88rem] text-lp-gold-ink">
         {t("accessRequested")}
       </p>
     );
@@ -34,6 +34,7 @@ export function RequestAccessButton({
       size="lg"
       variant="outline"
       disabled={pending}
+      className="h-auto rounded-[11px] border-[1.5px] border-lp-navy px-[26px] py-[15px] text-[1rem] font-bold text-lp-navy"
       onClick={() =>
         startTransition(async () => {
           const res = await requestRetryAction(assessmentId);

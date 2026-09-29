@@ -4,131 +4,94 @@ import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { completeLessonAction } from "@/lib/learning/actions";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, Check, GraduationCap, Trophy } from "lucide-react";
-
-/** What comes after the last lesson, when there is a final exam to sit. */
-export type FinalExamNext = {
-  href: string;
-  state: "ready" | "passed" | "locked" | "needs_approval";
-};
 
 /**
- * Mark-complete (with 1–5 self-assessment, B11) + prev/next navigation. The
- * "next" link is gated on completion — sequential unlock (B2) is enforced
- * server-side; this just reflects it. After completing, the server revalidates
- * and re-renders with `completed=true`.
+ * The strip under the video: how well it landed (1–5, optional, B11), mark the
+ * lesson done, and go on.
  *
- * On the last lesson the "next" slot points at the final exam instead of
- * going empty. Before this, finishing the course left a student with only
- * "previous lesson" and the exam had to be discovered in the sidebar.
+ * "Next" is dimmed until the lesson is done, because sequential unlock (B2) is
+ * enforced server-side and a live-looking link to a locked lesson would only
+ * bounce. On the last lesson, next is the exam rather than nothing.
  */
 export function CompleteControls({
   lessonId,
   completed,
-  prevHref,
-  nextHref,
-  finalExam = null,
+  next,
 }: {
   lessonId: string;
   completed: boolean;
-  prevHref: string | null;
-  nextHref: string | null;
-  finalExam?: FinalExamNext | null;
+  /** Where "next" goes: the following lesson, the exam, or nowhere. */
+  next: { href: string; kind: "lesson" | "exam" } | null;
 }) {
   const t = useTranslations("Player");
-  const [score, setScore] = useState<number | "">("");
+  const [score, setScore] = useState<number | null>(null);
   const [, formAction, pending] = useActionState(completeLessonAction, { ok: false });
+  const words = ["", t("rate1"), t("rate2"), t("rate3"), t("rate4"), t("rate5")];
+
+  const nextLabel = next?.kind === "exam" ? t("toExam") : t("nextLesson");
+  const nextCls =
+    "inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-3 text-[.92rem] font-bold text-lp-navy";
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-5">
-      {!completed && (
-        <form action={formAction} className="space-y-3">
-          <input type="hidden" name="lessonId" value={lessonId} />
-          <input type="hidden" name="selfAssessment" value={score} />
-          <div>
-            <p className="text-sm text-slate-500">{t("selfAssessment")}</p>
-            <div className="mt-2 flex gap-1.5">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setScore((s) => (s === n ? "" : n))}
-                  className={cn(
-                    "size-9 rounded-md border text-sm font-medium tabular-nums transition-colors",
-                    score === n
-                      ? "border-navy-800 bg-navy-800 text-white"
-                      : "border-line text-slate-500 hover:border-navy-600",
-                  )}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-          <Button type="submit" disabled={pending}>
-            {t("markComplete")}
-          </Button>
-        </form>
-      )}
+    <form
+      action={formAction}
+      className="flex flex-wrap items-center justify-between gap-5 rounded-[14px] border border-lp-line bg-white px-[22px] py-[18px]"
+    >
+      <input type="hidden" name="lessonId" value={lessonId} />
+      <input type="hidden" name="selfAssessment" value={score ?? ""} />
 
-      {completed && (
-        <p className="inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-sm font-medium text-success">
-          <Check className="size-4" strokeWidth={2.5} /> {t("completed")}
-        </p>
-      )}
-
-      {/* Last lesson done and an exam waits: say so, and make it the obvious
-          next step rather than something to hunt for in the sidebar. */}
-      {completed && !nextHref && finalExam && (
-        <div className="mt-4 rounded-xl border border-gold-400 bg-gold-100/50 p-5">
-          <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
-              {finalExam.state === "passed" ? (
-                <Trophy className="size-5" />
-              ) : (
-                <GraduationCap className="size-5" />
+      <div>
+        <p className="mb-2.5 text-[.86rem] font-bold text-lp-ink">{t("selfAssessment")}</p>
+        <div className="flex items-center gap-1.5">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              disabled={completed}
+              aria-pressed={score === n}
+              onClick={() => setScore((s) => (s === n ? null : n))}
+              className={cn(
+                "grid size-[38px] place-items-center rounded-[9px] border-[1.5px] text-[.92rem] font-bold tabular-nums transition-colors disabled:cursor-default",
+                score === n
+                  ? "border-lp-navy bg-lp-navy text-white"
+                  : "border-lp-line bg-white text-lp-navy hover:border-lp-navy",
               )}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading font-semibold text-navy-800">
-                {t("allLessonsDone")}
-              </p>
-              <p className="mt-0.5 text-sm text-slate-600">
-                {finalExam.state === "passed" ? t("examAlreadyPassed") : t("examNextHint")}
-              </p>
-              <Button
-                render={<Link href={finalExam.href} />}
-                size="lg"
-                className="mt-4 w-full sm:w-auto"
-              >
-                {finalExam.state === "passed" ? t("viewExamResult") : t("proceedToExam")}
-                <ArrowRight className="size-4" />
-              </Button>
-            </div>
-          </div>
+            >
+              {n}
+            </button>
+          ))}
+          <span className="ml-2 text-[.8rem] text-lp-muted">
+            {score ? words[score] : t("rateOptional")}
+          </span>
         </div>
-      )}
-
-      <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-4">
-        {prevHref ? (
-          <Button render={<Link href={prevHref} />} variant="outline" size="sm">
-            <ArrowLeft className="size-4" /> {t("prevLesson")}
-          </Button>
-        ) : (
-          <span />
-        )}
-        {nextHref && (
-          <Button
-            render={<Link href={nextHref} />}
-            size="sm"
-            variant={completed ? "default" : "outline"}
-          >
-            {t("nextLesson")} <ArrowRight className="size-4" />
-          </Button>
-        )}
       </div>
-    </div>
+
+      <div className="flex items-center gap-2.5">
+        {completed ? (
+          <span className="inline-flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#BFE3CF] bg-lp-success-tint px-[18px] py-3 text-[.92rem] font-bold text-lp-success">
+            ✓ {t("completed")}
+          </span>
+        ) : (
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center gap-2 rounded-[10px] border-[1.5px] border-lp-gold bg-lp-gold px-[18px] py-3 text-[.92rem] font-bold text-lp-navy-deep transition hover:-translate-y-px hover:shadow-[0_8px_22px_rgba(248,184,1,.4)] disabled:opacity-60"
+          >
+            {t("markComplete")}
+          </button>
+        )}
+        {next &&
+          (completed ? (
+            <Link href={next.href} className={cn(nextCls, "hover:bg-lp-wash")}>
+              {nextLabel}
+            </Link>
+          ) : (
+            <span aria-disabled className={cn(nextCls, "cursor-not-allowed opacity-45")}>
+              {nextLabel}
+            </span>
+          ))}
+      </div>
+    </form>
   );
 }
