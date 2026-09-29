@@ -1,4 +1,4 @@
-import { Check, Play } from "lucide-react";
+import { Check, ChevronDown, Play } from "lucide-react";
 import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { FlowLessonState } from "@/lib/learning/flow";
@@ -151,6 +151,44 @@ export function FocusBar({
         </Link>
       </div>
     </header>
+  );
+}
+
+/**
+ * One module of a curriculum list, folded behind its header. Every place that
+ * lists modules with their lessons (the course page path, the rail beside the
+ * video) goes through this, so they share one default: the first module open,
+ * the rest collapsed. Native <details>, so it needs no client JS and keeps
+ * whatever the student toggled across server refreshes.
+ */
+export function ModuleAccordion({
+  index,
+  summary,
+  summaryClassName,
+  children,
+}: {
+  /** 0-based position of the module; only the first starts open. */
+  index: number;
+  summary: React.ReactNode;
+  summaryClassName?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details open={index === 0} className="group/module">
+      <summary
+        className={cn(
+          "flex cursor-pointer list-none items-center justify-between gap-3 transition-colors [&::-webkit-details-marker]:hidden",
+          summaryClassName,
+        )}
+      >
+        {summary}
+        <ChevronDown
+          aria-hidden
+          className="size-4 shrink-0 text-lp-muted transition-transform group-open/module:rotate-180"
+        />
+      </summary>
+      {children}
+    </details>
   );
 }
 

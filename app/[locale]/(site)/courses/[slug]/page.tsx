@@ -11,7 +11,7 @@ import { buildFlow, minutesOf, type FlowLesson } from "@/lib/learning/flow";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { Eyebrow, StateDot, initialsOf } from "@/components/learn/flow-ui";
+import { Eyebrow, ModuleAccordion, StateDot, initialsOf } from "@/components/learn/flow-ui";
 import { EnrollCard } from "@/components/catalog/enroll-card";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -160,21 +160,27 @@ export default async function CourseDetailPage({
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-lp-line bg-white shadow-[0_2px_10px_rgba(2,58,105,.05)]">
-              {flow.modules.map((m) => (
-                <div key={m.id}>
-                  <div className="flex items-center justify-between border-b border-lp-line-soft bg-lp-wash-alt px-[22px] py-4">
-                    <span className="flex min-w-0 items-center gap-3">
-                      <span className="font-lp-heading font-semibold text-lp-gold-deep tabular-nums">
-                        {String(m.number).padStart(2, "0")}
+              {flow.modules.map((m, i) => (
+                <ModuleAccordion
+                  key={m.id}
+                  index={i}
+                  summaryClassName="border-b border-lp-line-soft bg-lp-wash-alt px-[22px] py-4 hover:bg-lp-wash"
+                  summary={
+                    <>
+                      <span className="flex min-w-0 flex-1 items-center gap-3">
+                        <span className="font-lp-heading font-semibold text-lp-gold-deep tabular-nums">
+                          {String(m.number).padStart(2, "0")}
+                        </span>
+                        <span className="truncate font-bold text-lp-navy">
+                          {pickLocale(m.title, loc)}
+                        </span>
                       </span>
-                      <span className="truncate font-bold text-lp-navy">
-                        {pickLocale(m.title, loc)}
+                      <span className="shrink-0 text-[.8rem] text-lp-muted tabular-nums">
+                        {t("moduleProgress", { done: m.done, total: m.lessons.length })}
                       </span>
-                    </span>
-                    <span className="shrink-0 text-[.8rem] text-lp-muted tabular-nums">
-                      {t("moduleProgress", { done: m.done, total: m.lessons.length })}
-                    </span>
-                  </div>
+                    </>
+                  }
+                >
                   {m.lessons.map((l) => (
                     <PathLessonRow
                       key={l.id}
@@ -185,7 +191,7 @@ export default async function CourseDetailPage({
                       t={t}
                     />
                   ))}
-                </div>
+                </ModuleAccordion>
               ))}
 
               {exam && (

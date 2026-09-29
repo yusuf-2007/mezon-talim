@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { minutesOf, type FlowModule } from "@/lib/learning/flow";
 import type { FinalExamBox } from "@/lib/assessments/service";
-import { Eyebrow, LessonTicks, StateDot } from "./flow-ui";
+import { Eyebrow, LessonTicks, ModuleAccordion, StateDot } from "./flow-ui";
 
 /**
  * The curriculum beside the video: where you are, what is done, what is
@@ -44,11 +44,22 @@ export async function CourseRail({
         <LessonTicks states={states} height="sm" />
       </div>
 
-      {modules.map((m) => (
-        <div key={m.id}>
-          <p className="px-5 pb-1.5 pt-3 text-[.8rem] font-bold text-lp-muted">
-            {pickLocale(m.title, locale)}
-          </p>
+      {modules.map((m, i) => (
+        <ModuleAccordion
+          key={m.id}
+          index={i}
+          summaryClassName="px-5 pb-1.5 pt-3 hover:bg-lp-wash"
+          summary={
+            <>
+              <span className="min-w-0 flex-1 truncate text-[.8rem] font-bold text-lp-muted">
+                {pickLocale(m.title, locale)}
+              </span>
+              <span className="shrink-0 text-[.74rem] text-lp-muted tabular-nums">
+                {m.done} / {m.lessons.length}
+              </span>
+            </>
+          }
+        >
           <ul>
             {m.lessons.map((l) => {
               const active = l.id === activeLessonId;
@@ -96,7 +107,7 @@ export async function CourseRail({
               );
             })}
           </ul>
-        </div>
+        </ModuleAccordion>
       ))}
 
       {exam && <RailExamCard exam={exam} t={t} />}
