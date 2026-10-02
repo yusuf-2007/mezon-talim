@@ -1343,7 +1343,8 @@
     "msgsOpenLesson": "Darsni ochish",
     "verifiedEmail": "Email",
     "verifiedPhone": "Telefon",
-    "verifiedNone": "Maʼlumot yoʻq"
+    "verifiedNone": "Maʼlumot yoʻq",
+    "copyOrderId": "Buyurtma ID sini nusxalash"
   },
   "Student": {
     "navHome": "Asosiy",

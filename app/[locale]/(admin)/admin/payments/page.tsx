@@ -5,6 +5,7 @@ import { formatTiyin } from "@/lib/payments";
 import { pickLocale } from "@/lib/i18n/localized";
 import { APP_TIME_ZONE } from "@/lib/utils";
 import { AdminPageHeader } from "@/components/admin/page-header";
+import { CopyId } from "@/components/admin/copy-id";
 import {
   Card,
   CardToolbar,
@@ -137,9 +138,12 @@ export default async function AdminPaymentsPage({
             <span key="c" className="block min-w-0 truncate text-[.86rem] text-lp-slate">
               {pickLocale(p.courseTitle, locale)}
             </span>,
-            <span key="r" className="font-mono text-[.78rem] text-lp-muted tabular-nums">
-              {p.providerTxnId || p.id.slice(0, 8)}
-            </span>,
+            <CopyId
+              key="r"
+              value={p.id}
+              display={p.providerTxnId || p.id.slice(0, 8)}
+              label={t("copyOrderId")}
+            />,
             <span key="pr" className="text-[.84rem] capitalize text-lp-slate">
               {p.provider}
             </span>,

@@ -1343,7 +1343,8 @@
     "msgsOpenLesson": "Открыть урок",
     "verifiedEmail": "Email",
     "verifiedPhone": "Телефон",
-    "verifiedNone": "Нет данных"
+    "verifiedNone": "Нет данных",
+    "copyOrderId": "Скопировать ID заказа"
   },
   "Student": {
     "navHome": "Главная",
