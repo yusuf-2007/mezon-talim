@@ -30,9 +30,33 @@ jobs:
       AUTH_SECRET: e2e-only-secret-never-production
       AUTH_URL: http://localhost:3000
       E2E_TEST: "1"
+      # Lesson attachments (tests/e2e/attachments.spec.ts): a throwaway MinIO
+      # started below; global-setup creates the bucket.
+      MINIO_ENDPOINT: localhost
+      MINIO_PORT: "9000"
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: mezon
+      MINIO_SECRET_KEY: mezon-e2e-secret
+      MINIO_BUCKET: mezon-e2e
 
     steps:
       - uses: actions/checkout@v4
+
+      # Not a `services:` container: those cannot pass the `server /data`
+      # command MinIO needs. Started first so it boots while npm installs.
+      # minio/minio can no longer be pulled anonymously from Docker Hub (nor
+      # quay.io/minio/minio; dl.min.io binaries answer 410), and a runner has
+      # no cached copy. Chainguard's public build only publishes `latest`, so
+      # it is pinned by digest (multi-arch index; entrypoint is the minio
+      # binary, runs as non-root). /data on tmpfs: on the container's overlay
+      # root MinIO logs cross-device rename errors at boot.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 --tmpfs /data \
+            -e MINIO_ROOT_USER="$MINIO_ACCESS_KEY" \
+            -e MINIO_ROOT_PASSWORD="$MINIO_SECRET_KEY" \
+            cgr.dev/chainguard/minio@sha256:4cf4831a2bbcf13ddca09c1cbcc9faff716dd3c4247e0babc32864b8ee8e0034 \
+            server /data
 
       # Node 24 LTS ships npm 11, matching the npm that generated the lockfile
       # (npm 10 reads nested peer deps more strictly and rejects `npm ci`).
@@ -49,6 +73,19 @@ jobs:
 
       - name: Apply database migrations
         run: npm run db:migrate
+
+      - name: Wait for MinIO
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "http://localhost:9000/minio/health/ready" > /dev/null; then
+              echo "MinIO is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MinIO did not become ready in 60s"
+          docker logs minio
+          exit 1
 
       - name: Build
         run: npm run build

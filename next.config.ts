@@ -10,8 +10,11 @@ const nextConfig: NextConfig = {
   // Certificate PDFs embed bundled Unicode fonts (read at runtime via fs). Make
   // sure Next's output file tracing ships the .ttf files into the serverless
   // function bundle (otherwise on-demand PDF generation 500s in production).
+  // The attachment slide routes draw their per-viewer watermark from the same
+  // fonts (as glyph outlines — serverless hosts have no system fonts).
   outputFileTracingIncludes: {
     "/api/certificates/**": ["./lib/certificates/assets/*.ttf"],
+    "/api/attachments/**": ["./lib/certificates/assets/*.ttf"],
   },
 
   // Static landing-page mockups live in public/preview/*.html. Serve them at

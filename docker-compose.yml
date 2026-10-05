@@ -24,9 +24,14 @@ services:
       retries: 10
 
   minio:
-    image: minio/minio:latest
+    # minio/minio is no longer pullable anonymously from Docker Hub; this is
+    # Chainguard's public build (same image as CI, pinned by digest).
+    image: cgr.dev/chainguard/minio@sha256:4cf4831a2bbcf13ddca09c1cbcc9faff716dd3c4247e0babc32864b8ee8e0034
     container_name: mezon-minio
     restart: unless-stopped
+    # The image runs as a non-root user; root keeps volumes written by the old
+    # minio/minio image (which ran as root) readable and writable.
+    user: "0:0"
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: mezon

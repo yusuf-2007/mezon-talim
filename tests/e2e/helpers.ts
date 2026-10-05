@@ -34,10 +34,25 @@ export async function openEmailForm(page: Page) {
   await page.waitForSelector("input[name=password]", { timeout: 45_000 });
 }
 
-/** Open a player tab ("Eslatmalar", "Muhokama", "Ustozga savol", …). */
+/**
+ * Open a player tab ("Eslatmalar", "Muhokama", "Ustozga savol", …) and wait
+ * until it is the only panel on the page.
+ *
+ * The switch is not instant: the outgoing panel stays mounted for a moment, and
+ * the Notes, Discussion and Ask forms all have a `textarea[name=body]`. Against
+ * a production build a fill() straight after the click used to land in the
+ * Notes textarea, so the Ask form was submitted empty and blocked by `required`.
+ * The click is retried because, before hydration, it does nothing.
+ */
 export async function openLessonTab(page: Page, url: string, tabName: string) {
   await page.goto(url);
-  await page.getByRole("tab", { name: tabName }).click();
+  const tab = page.getByRole("tab", { name: tabName });
+  await expect(async () => {
+    await tab.click();
+    await expect(tab).toHaveAttribute("aria-selected", "true", { timeout: 2_000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(page.getByRole("tabpanel")).toHaveCount(1);
+  await expect(page.getByRole("tabpanel", { name: tabName })).toBeVisible();
 }
 
 /** The header notification bell (aria-label starts with "Bildirishnomalar"). */

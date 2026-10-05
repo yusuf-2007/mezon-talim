@@ -10,6 +10,10 @@ import {
   updateModuleAction,
 } from "@/lib/content/actions";
 import { deleteVideoQuestionAction } from "@/lib/content/video-question-actions";
+import {
+  isAttachmentStorageConfigured,
+  loadStudioAttachments,
+} from "@/lib/attachments/queries";
 import { pickLocale } from "@/lib/i18n/localized";
 import { ModuleHeader } from "./module-header";
 import { AddLesson, LessonRow } from "./lesson-list";
@@ -47,6 +51,12 @@ export async function ModuleCard({
 }) {
   const t = await getTranslations("Studio");
   const lessons = await lessonsRepository.listByModule(module.id);
+  // One query for the whole module. Skipped when there is no bucket: the
+  // section then only shows its "not configured" notice.
+  const storageConfigured = isAttachmentStorageConfigured();
+  const attachmentsByLesson = storageConfigured
+    ? await loadStudioAttachments(lessons.map((l) => l.id))
+    : {};
 
   return (
     <div className="rounded-xl border border-line bg-surface p-5 shadow-sm">
@@ -74,6 +84,9 @@ export async function ModuleCard({
                 node: (
                   <LessonRow
                     lesson={lesson}
+                    courseId={courseId}
+                    attachments={attachmentsByLesson[lesson.id] ?? []}
+                    storageConfigured={storageConfigured}
                     updateAction={updateLessonAction.bind(null, courseId, lesson.id)}
                     deleteAction={deleteLessonAction.bind(null, courseId, lesson.id)}
                     videoQuestionsCount={vqs.length}
@@ -99,7 +112,11 @@ export async function ModuleCard({
       )}
 
       <div className="mt-4">
-        <AddLesson action={createLessonAction.bind(null, courseId, module.id)} />
+        <AddLesson
+          action={createLessonAction.bind(null, courseId, module.id)}
+          courseId={courseId}
+          storageConfigured={storageConfigured}
+        />
       </div>
     </div>
   );

@@ -290,10 +290,13 @@ export function VideoEmbed({
   return (
     <div>
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
+        {/* data-lesson-video: the slide shield (use-slide-shield.ts) treats
+            focus moving in here as the student using the video, not leaving. */}
         <iframe
           ref={ref}
           src={src}
           title={title}
+          data-lesson-video=""
           loading="lazy"
           allow="accelerated-2d-canvas; fullscreen; picture-in-picture"
           allowFullScreen

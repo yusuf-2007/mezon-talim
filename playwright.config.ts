@@ -10,7 +10,19 @@ import { defineConfig } from "@playwright/test";
  *   2. E2E_TEST=1 DATABASE_URL=postgresql://mezon:mezon@localhost:5433/mezon_test \
  *        npm run db:migrate && E2E_TEST=1 DATABASE_URL=... npm run test:e2e
  *
- * CI (.github/workflows/e2e.yml) does exactly this with a service container.
+ * Lesson attachments (attachments.spec.ts) also need MinIO: `docker compose up
+ * -d minio`, then pass MINIO_ENDPOINT, MINIO_PORT, MINIO_USE_SSL,
+ * MINIO_ACCESS_KEY, MINIO_SECRET_KEY and MINIO_BUCKET — a throwaway bucket
+ * (its name must contain "e2e" or "test", e.g. mezon-e2e), never the dev
+ * bucket: the suite empties its lesson-attachments/. global-setup creates the
+ * bucket; without them, or with a non-localhost endpoint or a bucket that does
+ * not look disposable, that spec is skipped (and says why). The server
+ * under test and the specs read the same values: process.env is passed through
+ * below, and both fall back to .env, so ALWAYS pass DATABASE_URL and MINIO_*
+ * explicitly when your .env points somewhere else.
+ *
+ * CI (.github/workflows/e2e.yml) does exactly this with a Postgres service
+ * container and a MinIO container.
  */
 /** Another dev server may already hold 3000; E2E_PORT moves the suite off it. */
 const PORT = process.env.E2E_PORT ?? "3000";
@@ -39,6 +51,9 @@ export default defineConfig({
     env: {
       ...process.env,
       PORT,
+      // Auth.js builds its URLs from AUTH_URL; it must be the server under
+      // test, whatever port E2E_PORT picked (.env may say :3000).
+      AUTH_URL: BASE_URL,
       // Phone login is flag-gated in production; the suite covers it, so the
       // server under test always has it on.
       OTP_LOGIN_ENABLED: "true",

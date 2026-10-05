@@ -68,11 +68,20 @@ const envSchema = z.object({
 
   // --- Storage (MinIO, in-country) ---
   MINIO_ENDPOINT: optionalText(),
-  MINIO_PORT: z.coerce.number().optional(),
+  // Blank means unset, like the other MINIO_* keys. A bare z.coerce.number()
+  // turned MINIO_PORT="" into port 0, so storage pointed at host:0.
+  MINIO_PORT: z.preprocess(blankToUndefined, z.coerce.number().int().min(1).max(65535).optional()),
   MINIO_USE_SSL: boolFlag("false"),
   MINIO_ACCESS_KEY: optionalText(),
   MINIO_SECRET_KEY: optionalText(),
   MINIO_BUCKET: optionalText(),
+  // Lesson attachments (slides + originals). Falls back to MINIO_BUCKET.
+  MINIO_ATTACHMENTS_BUCKET: optionalText(),
+  // Browser-facing S3 origin (e.g. https://s3.mezontalim.uz), used only to
+  // presign URLs the BROWSER calls (direct uploads, download redirects) when
+  // the server reaches MinIO on a different, internal address. Defaults to
+  // the MINIO_ENDPOINT/PORT/USE_SSL origin.
+  MINIO_PUBLIC_URL: optionalUrl(),
 
   // --- Video (Bunny.net Stream — external, non-personal) ---
   BUNNY_STREAM_LIBRARY_ID: optionalText(),

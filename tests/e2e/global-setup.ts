@@ -1,11 +1,16 @@
 import { hash } from "@node-rs/argon2";
-import { IDS, PASSWORD, USERS, testSql, wipeCommunity } from "./db";
+import { IDS, PASSWORD, USERS, testSql, wipeAttachments, wipeCommunity } from "./db";
+import { e2eStorage, ensureBucket, wipePrefix } from "./storage";
 
 /**
- * Seeds the disposable test database (idempotent): three users, one published
+ * Seeds the disposable test database (idempotent): four users, one published
  * course owned by the admin, one module, two lessons (second one sequentially
- * locked), and active enrollments for both students. Community tables start
- * empty. Refuses to run against anything but localhost (see db.ts).
+ * locked), and active enrollments for both students (the outsider is never
+ * enrolled). Community tables and lesson attachments start empty. Refuses to
+ * run against anything but localhost (see db.ts and storage.ts).
+ *
+ * When MinIO is configured, it also creates the attachments bucket and empties
+ * its lesson-attachments/ prefix.
  */
 export default async function globalSetup() {
   const sql = testSql();
@@ -58,7 +63,11 @@ export default async function globalSetup() {
       on conflict (user_id, course_id) do nothing`;
   }
 
+  // The outsider must stay unenrolled for the access-refusal checks.
+  await sql`delete from enrollments where user_id = ${ids.outsider}`;
+
   await wipeCommunity(sql);
+  await wipeAttachments(sql);
 
   // Clear the limiter. It is Postgres-backed and windowed over minutes, so it
   // outlives a test run: the suite signs the same handful of accounts in
@@ -67,4 +76,34 @@ export default async function globalSetup() {
   await sql`delete from rate_limits`;
 
   await sql.end();
+
+  await prepareAttachmentStorage();
+}
+
+/**
+ * Create the attachments bucket and clear leftovers from earlier runs. A
+ * failure here must not stop the other specs, so it is only logged; the
+ * attachments spec checks the bucket again itself and fails loudly there.
+ */
+async function prepareAttachmentStorage() {
+  let storage;
+  try {
+    storage = e2eStorage();
+  } catch (err) {
+    console.warn(`[e2e] ${(err as Error).message}`);
+    return;
+  }
+  if (!storage) {
+    console.warn("[e2e] MinIO is not configured: attachments.spec.ts will be skipped.");
+    return;
+  }
+  try {
+    await ensureBucket(storage);
+    await wipePrefix(storage);
+  } catch (err) {
+    console.warn(
+      `[e2e] MinIO at ${storage.endpoint} (bucket "${storage.bucket}") is not usable: ` +
+        `${(err as Error).message}. attachments.spec.ts will fail.`,
+    );
+  }
 }

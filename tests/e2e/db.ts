@@ -38,6 +38,8 @@ export const USERS = {
   admin: { email: "admin@e2e.test", name: "E2E Admin" },
   studentA: { email: "student-a@e2e.test", name: "Talaba Alpha" },
   studentB: { email: "student-b@e2e.test", name: "Talaba Beta" },
+  /** A student who is never enrolled in the e2e course (access-refusal checks). */
+  outsider: { email: "outsider@e2e.test", name: "Talaba Tashqi" },
 } as const;
 
 export const PASSWORD = "E2ePass123!";
@@ -49,4 +51,21 @@ export async function wipeCommunity(sql: ReturnType<typeof testSql>) {
   await sql`delete from lesson_comments`;
   await sql`delete from notes`;
   await sql`delete from video_questions`; // responses cascade
+}
+
+/**
+ * Remove lesson attachments, any lesson in the e2e module that the seed did
+ * not create (the attachments spec adds one through the Studio), and any other
+ * module of the e2e course (the attachments spec adds and deletes one; a run
+ * that died midway must not leave it). All of them would change what other
+ * specs see: extra lessons change the curriculum (the final exam would stay
+ * locked), and slides would appear on lesson 1. Objects in the bucket are
+ * removed separately (storage.ts wipePrefix).
+ */
+export async function wipeAttachments(sql: ReturnType<typeof testSql>) {
+  await sql`delete from lesson_attachments`;
+  await sql`
+    delete from lessons
+    where module_id = ${IDS.module} and id not in (${IDS.lesson1}, ${IDS.lesson2})`;
+  await sql`delete from modules where course_id = ${IDS.course} and id <> ${IDS.module}`;
 }

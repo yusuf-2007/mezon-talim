@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
@@ -8,7 +9,14 @@ import { redirectLocalized } from "@/lib/i18n/redirect";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
-import { requireCourseEditor } from "./access";
+import { purgeLessonAttachmentObjects } from "@/lib/attachments/purge";
+import {
+  lessonOwnership,
+  moduleOwnership,
+  requireCourseEditor,
+  requireLessonInCourse,
+  requireModuleInCourse,
+} from "./access";
 import { slugify, somToTiyin } from "./slug";
 import {
   courseUpsertSchema,
@@ -21,6 +29,11 @@ import type { LocalizedText } from "@/lib/db/schema";
 export type ContentFormState = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  /**
+   * Set by createLessonAction on success, so the create form can upload its
+   * queued attachments once the lesson exists.
+   */
+  lessonId?: string;
 };
 
 function fieldErrors(error: z.ZodError): ContentFormState {
@@ -165,6 +178,7 @@ export async function updateModuleAction(
   formData: FormData,
 ): Promise<ContentFormState> {
   await requireCourseEditor(courseId);
+  await requireModuleInCourse(moduleId, courseId);
   const parsed = moduleUpsertSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fieldErrors(parsed.error);
 
@@ -181,7 +195,17 @@ export async function deleteModuleAction(
   moduleId: string,
 ): Promise<void> {
   await requireCourseEditor(courseId);
+  const owner = await moduleOwnership(moduleId, courseId);
+  if (owner === "other") notFound();
+  if (owner === "missing") return; // already gone: a repeated delete is a no-op
+  // Collected first: the hard delete cascades to every lesson of the module
+  // (soft-deleted ones too) and on to their attachment rows, which are the
+  // only record of where those files are stored.
+  const lessonIds = await lessonsRepository.listIdsByModuleIncludingDeleted(moduleId);
   await modulesRepository.remove(moduleId);
+  // After the delete, never before: a failed delete must not leave live
+  // lessons whose slides are already gone.
+  await purgeLessonAttachmentObjects(lessonIds);
   revalidateCourse(courseId);
 }
 
@@ -194,11 +218,12 @@ export async function createLessonAction(
   formData: FormData,
 ): Promise<ContentFormState> {
   await requireCourseEditor(courseId);
+  await requireModuleInCourse(moduleId, courseId);
   const parsed = lessonUpsertSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fieldErrors(parsed.error);
   const d = parsed.data;
 
-  await lessonsRepository.create({
+  const lesson = await lessonsRepository.create({
     moduleId,
     title: loc(d.titleUz, d.titleRu),
     body: optionalLoc(d.bodyUz, d.bodyRu),
@@ -207,7 +232,7 @@ export async function createLessonAction(
     isPreview: d.isPreview,
   });
   revalidateCourse(courseId);
-  return {};
+  return { lessonId: lesson.id };
 }
 
 export async function updateLessonAction(
@@ -217,6 +242,7 @@ export async function updateLessonAction(
   formData: FormData,
 ): Promise<ContentFormState> {
   await requireCourseEditor(courseId);
+  await requireLessonInCourse(lessonId, courseId);
   const parsed = lessonUpsertSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fieldErrors(parsed.error);
   const d = parsed.data;
@@ -288,6 +314,9 @@ export async function deleteLessonAction(
   lessonId: string,
 ): Promise<void> {
   await requireCourseEditor(courseId);
+  const owner = await lessonOwnership(lessonId, courseId);
+  if (owner === "other") notFound();
+  if (owner === "missing") return; // already deleted: a repeated delete is a no-op
   await lessonsRepository.softDelete(lessonId);
   revalidateCourse(courseId);
 }

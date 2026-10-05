@@ -25,6 +25,19 @@ export const lessonsRepository = {
       .orderBy(asc(lessons.orderIndex));
   },
 
+  /**
+   * Ids of every lesson in a module, soft-deleted ones included: a hard
+   * module delete cascades to all of them, so cleanup that has to follow it
+   * (stored attachment objects) must see them all.
+   */
+  async listIdsByModuleIncludingDeleted(moduleId: string): Promise<string[]> {
+    const rows = await db
+      .select({ id: lessons.id })
+      .from(lessons)
+      .where(eq(lessons.moduleId, moduleId));
+    return rows.map((r) => r.id);
+  },
+
   async findById(id: string) {
     const [row] = await db
       .select()

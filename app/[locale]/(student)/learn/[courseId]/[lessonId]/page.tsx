@@ -14,12 +14,15 @@ import { glossaryRepository } from "@/lib/db/repositories/glossary";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
 import { getCurriculum, locateLesson } from "@/lib/learning/curriculum";
+import { isCourseInstructor } from "@/lib/learning/lesson-access";
 import { buildFlow, clock } from "@/lib/learning/flow";
 import { addNoteAction, deleteNoteAction } from "@/lib/learning/actions";
 import { pickLocale } from "@/lib/i18n/localized";
+import { loadLessonSlideDecks } from "@/lib/attachments/queries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VideoFrame } from "@/components/player/video-frame";
 import { CompleteControls } from "@/components/player/complete-controls";
+import { LessonSlides } from "@/components/player/lesson-slides";
 import { AddNoteForm } from "@/components/player/add-note-form";
 import { BookmarkButton } from "@/components/player/bookmark-button";
 import { DiscussionPanel } from "@/components/player/discussion-panel";
@@ -88,8 +91,7 @@ export default async function PlayerPage({
   // The course owner (and super admins) bypass the sequential lock: they must
   // be able to open any of their lessons — to check content and, crucially, to
   // read and answer private student questions on non-preview lessons.
-  const isInstructor =
-    user.role === "super_admin" || (user.role === "teacher" && course.createdBy === user.id);
+  const isInstructor = isCourseInstructor(user, course);
 
   if (!lesson.accessible && !isInstructor) {
     return (
@@ -120,7 +122,7 @@ export default async function PlayerPage({
 
   // Private messaging: instructors see every student's thread; everyone else
   // fetches only their own. Privacy is enforced at fetch time.
-  const [full, notes, comments, privateMessages, glossary, quiz, videoQuestions] =
+  const [full, notes, comments, privateMessages, glossary, quiz, videoQuestions, slideDecks] =
     await Promise.all([
       lessonsRepository.findById(lessonId),
       notesRepository.listForLesson(user.id, lessonId),
@@ -131,6 +133,13 @@ export default async function PlayerPage({
       glossaryRepository.listForCourse(courseId),
       assessmentsRepository.findForLesson(lessonId),
       videoQuestionsRepository.listForLessonWithAnswers(lessonId, user.id),
+      // Lesson materials (slides). Only loaded here, past the access check: a
+      // locked lesson never learns which attachments exist. Supplementary, so
+      // a failure hides the slides rather than the lesson.
+      loadLessonSlideDecks(lessonId, locale).catch((err: unknown) => {
+        console.error("[learn] lesson slides failed to load", lessonId, err);
+        return [];
+      }),
     ]);
   const quizCount = quiz ? await questionsRepository.countByAssessment(quiz.id) : 0;
   const lessonTitle = pickLocale(lesson.title, locale);
@@ -189,6 +198,12 @@ export default async function PlayerPage({
             <BookmarkButton lessonId={lessonId} />
           </div>
         </div>
+
+        {slideDecks.length > 0 && (
+          <div className="mt-5">
+            <LessonSlides decks={slideDecks} />
+          </div>
+        )}
 
         <div className="mt-5">
           <CompleteControls lessonId={lessonId} completed={lesson.completed} next={next} />

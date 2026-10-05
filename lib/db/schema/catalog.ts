@@ -1,8 +1,10 @@
 import {
   bigint,
   boolean,
+  index,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   text,
   uuid,
@@ -70,6 +72,61 @@ export const lessons = pgTable("lessons", {
   updatedAt: updatedAt(),
   deletedAt: deletedAt(),
 });
+
+/** What a lesson attachment was uploaded as. Each PDF page / image = one slide. */
+export const attachmentKind = pgEnum("attachment_kind", ["pdf", "image"]);
+
+/**
+ * Upload lifecycle. The row is written before the browser uploads straight to
+ * the bucket (`uploading`); finalize verifies every object exists and flips it
+ * to `ready`, or `failed` when something is missing or not an image.
+ */
+export const attachmentStatus = pgEnum("attachment_status", [
+  "uploading",
+  "ready",
+  "failed",
+]);
+
+/** Pixel size of one rendered slide (for layout before the bytes arrive). */
+export type AttachmentPageSize = { w: number; h: number };
+
+/**
+ * Lesson materials shown as slides under the video. Files live in the
+ * in-country MinIO bucket under `storage_prefix`:
+ *   {storage_prefix}/original    — the uploaded file (private)
+ *   {storage_prefix}/p/{n}.webp  — slide n (1-based), rendered in the browser
+ *                                  (`.jpg` when slide_mime is image/jpeg)
+ * The original reaches a student only when `allow_download` is on; otherwise
+ * slides are served through the app with a per-viewer watermark. Hard delete
+ * (row + objects).
+ */
+export const lessonAttachments = pgTable(
+  "lesson_attachments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    lessonId: uuid("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    orderIndex: integer("order_index").notNull(),
+    title: jsonb("title").$type<LocalizedText>().notNull(),
+    kind: attachmentKind("kind").notNull(),
+    status: attachmentStatus("status").notNull().default("uploading"),
+    fileName: text("file_name").notNull(), // original name, for the download
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    pageCount: integer("page_count").notNull(),
+    pages: jsonb("pages").$type<AttachmentPageSize[]>().notNull(),
+    // Format of the rendered slides. WebP everywhere it can be encoded; JPEG is
+    // the fallback for browsers whose canvas cannot encode WebP (Safari).
+    slideMime: text("slide_mime").$type<"image/webp" | "image/jpeg">().notNull().default("image/webp"),
+    storagePrefix: text("storage_prefix").notNull(), // lesson-attachments/{lessonId}/{id}
+    allowDownload: boolean("allow_download").notNull().default(false),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("lesson_attachments_lesson_idx").on(t.lessonId, t.orderIndex)],
+);
 
 /** Per-locale subtitle tracks for a lesson (B5). */
 export const lessonSubtitles = pgTable("lesson_subtitles", {
