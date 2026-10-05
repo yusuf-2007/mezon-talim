@@ -82,6 +82,9 @@ const envSchema = z.object({
   // the server reaches MinIO on a different, internal address. Defaults to
   // the MINIO_ENDPOINT/PORT/USE_SSL origin.
   MINIO_PUBLIC_URL: optionalUrl(),
+  // SigV4 signing region. MinIO ignores it; hosted S3-compatible stores
+  // (Neon Object Storage, AWS S3) reject signatures made for the wrong one.
+  MINIO_REGION: optionalText(),
 
   // --- Video (Bunny.net Stream — external, non-personal) ---
   BUNNY_STREAM_LIBRARY_ID: optionalText(),

@@ -4,6 +4,7 @@ import {
   DeleteObjectsCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -101,6 +102,15 @@ export async function ensureBucket(s: E2EStorage): Promise<void> {
     if (!isMissing(err)) throw err;
     await s.client.send(new CreateBucketCommand({ Bucket: s.bucket }));
   }
+}
+
+/** Stored metadata of an object (what every GET of it will carry). */
+export async function headObject(
+  s: E2EStorage,
+  key: string,
+): Promise<{ contentType?: string; contentDisposition?: string }> {
+  const res = await s.client.send(new HeadObjectCommand({ Bucket: s.bucket, Key: key }));
+  return { contentType: res.ContentType, contentDisposition: res.ContentDisposition };
 }
 
 /** Whole object as bytes, or null when it does not exist. */

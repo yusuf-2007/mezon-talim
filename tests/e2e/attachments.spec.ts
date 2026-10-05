@@ -17,6 +17,7 @@ import {
   e2eStorage,
   ensureBucket,
   getObject,
+  headObject,
   listKeys,
   putObject,
   wipePrefix,
@@ -294,6 +295,12 @@ test("(1) admin uploads a 2-page PDF in the lesson edit form: ready, 2 slides, d
     ].sort(),
   );
   expect(await getObject(store(), `${row.storage_prefix}/original`)).toEqual(pdfBytes);
+  // Finalize stores the download name WITH the original (some stores, e.g.
+  // Neon, ignore the presigned GET's response-content-disposition override).
+  const meta = await headObject(store(), `${row.storage_prefix}/original`);
+  expect(meta.contentType).toBe("application/pdf");
+  expect(meta.contentDisposition).toContain("attachment");
+  expect(meta.contentDisposition).toContain(PDF_NAME);
 
   // Closing the editor leaves the attachment count on the lesson row.
   const lesson = lessonRow(page, "Birinchi dars");

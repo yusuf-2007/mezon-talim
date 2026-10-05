@@ -1,5 +1,6 @@
 import "server-only";
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
@@ -75,10 +76,11 @@ function internalEndpoint(): string {
 
 function makeClient(endpoint: string): S3Client {
   return new S3Client({
-    // MinIO ignores region but the SDK requires one.
-    region: "us-east-1",
+    // MinIO ignores the region but the SDK requires one; hosted S3-compatible
+    // stores (Neon, AWS) sign with theirs, so it is configurable.
+    region: env.MINIO_REGION ?? "us-east-1",
     endpoint,
-    forcePathStyle: true, // required for MinIO
+    forcePathStyle: true, // required by MinIO and Neon Object Storage
     credentials: {
       accessKeyId: env.MINIO_ACCESS_KEY!,
       secretAccessKey: env.MINIO_SECRET_KEY!,
@@ -315,8 +317,36 @@ export function attachmentDisposition(filename: string): string {
 }
 
 /**
+ * Stamp an object with a download file name, stored WITH the object so every
+ * GET of it carries `Content-Disposition: attachment`.
+ *
+ * Why not just the presigned GET's response-content-disposition override:
+ * Neon Object Storage ignores it (and drops a Content-Disposition sent in a
+ * browser POST upload), so a download would open inline and save as
+ * "original". A server-side copy onto itself with REPLACE metadata works on
+ * Neon, MinIO and AWS S3 alike, and never moves the bytes through the app.
+ */
+export async function setDownloadName(
+  key: string,
+  opts: { filename: string; contentType: string; bucket?: string },
+): Promise<void> {
+  const bucket = opts.bucket ?? BUCKET;
+  await client().send(
+    new CopyObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      CopySource: `${bucket}/${key.split("/").map(encodeURIComponent).join("/")}`,
+      MetadataDirective: "REPLACE",
+      ContentType: opts.contentType,
+      ContentDisposition: attachmentDisposition(opts.filename),
+    }),
+  );
+}
+
+/**
  * Short-lived presigned GET for the browser, forcing a download with the
- * given file name (MinIO echoes the response-* overrides as headers).
+ * given file name (MinIO and AWS echo the response-* overrides as headers; on
+ * Neon the name comes from setDownloadName, stamped at finalize).
  */
 export async function getSignedDownloadUrl(
   key: string,

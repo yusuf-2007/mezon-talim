@@ -17,6 +17,7 @@ import {
   headObject,
   isAttachmentStorageConfigured,
   presignPost,
+  setDownloadName,
   type PresignedPost,
 } from "@/lib/storage";
 import { toStudioAttachment, type StudioAttachment } from "./dto";
@@ -456,6 +457,21 @@ export async function finalizeAttachmentUploadAction(
     // Storage unreachable: leave the status alone so a retry can succeed.
     console.error("[attachments] finalize failed", err);
     return fail("failed");
+  }
+
+  // Store the download name with the original, so "Download" saves
+  // "<original name>.pdf" on every store (see setDownloadName for why the
+  // presigned GET's own override is not enough). Best effort: MinIO and AWS
+  // still honour that override, so a failure here only costs the file name on
+  // stores that ignore it — never the upload.
+  try {
+    await setDownloadName(originalKey(row.storagePrefix), {
+      filename: row.fileName,
+      contentType: row.mimeType,
+      bucket,
+    });
+  } catch (err) {
+    console.error("[attachments] could not store the download name", row.id, err);
   }
 
   const ready = await lessonAttachmentsRepository.setStatus(row.id, "ready");

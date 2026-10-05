@@ -14,6 +14,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed-admin.ts",
+    "storage:setup": "tsx scripts/setup-attachment-storage.ts",
     "db:seed:demo": "tsx scripts/seed-demo.ts",
     "test:e2e": "playwright test"
   },
