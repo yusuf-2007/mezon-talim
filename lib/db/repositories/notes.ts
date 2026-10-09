@@ -39,10 +39,12 @@ export const notesRepository = {
     lessonId: string,
     body: string,
     timestampSeconds: number | null = null,
+    /** The video part the timestamp belongs to (multi-part lessons). */
+    videoId: string | null = null,
   ) {
     const [row] = await db
       .insert(notes)
-      .values({ userId, lessonId, body, timestampSeconds })
+      .values({ userId, lessonId, body, timestampSeconds, videoId })
       .returning();
     return row;
   },

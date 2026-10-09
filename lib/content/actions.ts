@@ -9,6 +9,10 @@ import { redirectLocalized } from "@/lib/i18n/redirect";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
+import {
+  lessonVideosRepository,
+  type LessonVideoInput,
+} from "@/lib/db/repositories/lesson-videos";
 import { purgeLessonAttachmentObjects } from "@/lib/attachments/purge";
 import {
   lessonOwnership,
@@ -23,6 +27,7 @@ import {
   lessonUpsertSchema,
   moduleUpsertSchema,
   reorderSchema,
+  type LessonUpsertInput,
 } from "./schemas";
 import type { LocalizedText } from "@/lib/db/schema";
 
@@ -211,6 +216,16 @@ export async function deleteModuleAction(
 
 // ── Lesson ───────────────────────────────────────────────────────────────────
 
+/** Editor rows → repository parts (empty titles dropped, ru optional). */
+function toVideoParts(videos: LessonUpsertInput["videos"]): LessonVideoInput[] {
+  return videos.map((v) => ({
+    id: v.id,
+    bunnyVideoId: v.bunnyVideoId,
+    durationSeconds: v.durationSeconds ?? null,
+    title: v.titleUz ? loc(v.titleUz, v.titleRu) : null,
+  }));
+}
+
 export async function createLessonAction(
   courseId: string,
   moduleId: string,
@@ -227,10 +242,9 @@ export async function createLessonAction(
     moduleId,
     title: loc(d.titleUz, d.titleRu),
     body: optionalLoc(d.bodyUz, d.bodyRu),
-    bunnyVideoId: d.bunnyVideoId || null,
-    durationSeconds: d.durationSeconds ?? null,
     isPreview: d.isPreview,
   });
+  await lessonVideosRepository.replaceForLesson(lesson.id, toVideoParts(d.videos));
   revalidateCourse(courseId);
   return { lessonId: lesson.id };
 }
@@ -250,10 +264,10 @@ export async function updateLessonAction(
   await lessonsRepository.update(lessonId, {
     title: loc(d.titleUz, d.titleRu),
     body: optionalLoc(d.bodyUz, d.bodyRu),
-    bunnyVideoId: d.bunnyVideoId || null,
-    durationSeconds: d.durationSeconds ?? null,
     isPreview: d.isPreview,
   });
+  // Parts keep their ids, so notes and in-video questions stay pinned to them.
+  await lessonVideosRepository.replaceForLesson(lessonId, toVideoParts(d.videos));
   revalidateCourse(courseId);
   return {};
 }

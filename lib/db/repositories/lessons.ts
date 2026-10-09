@@ -8,7 +8,6 @@ export type LessonInsert = {
   moduleId: string;
   title: LocalizedText;
   body?: LocalizedText | null;
-  bunnyVideoId?: string | null;
   durationSeconds?: number | null;
   isPreview: boolean;
 };

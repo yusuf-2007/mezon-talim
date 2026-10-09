@@ -19,6 +19,8 @@ export type FlowLesson = {
   /** Whether the viewer may open it. */
   openable: boolean;
   durationSeconds: number | null;
+  /** Video parts (more than 1 = a long lesson split into parts). */
+  partCount: number;
 };
 
 export type FlowModule = {
@@ -49,6 +51,7 @@ export function buildFlow(c: Curriculum): { modules: FlowModule[]; lessons: Flow
         state,
         openable: l.accessible,
         durationSeconds: l.durationSeconds,
+        partCount: l.partCount,
       };
     });
     return {

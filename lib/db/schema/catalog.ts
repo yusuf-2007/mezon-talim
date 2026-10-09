@@ -65,7 +65,11 @@ export const lessons = pgTable("lessons", {
   orderIndex: integer("order_index").notNull(),
   title: jsonb("title").$type<LocalizedText>().notNull(),
   body: jsonb("body").$type<LocalizedText>(), // rich text shown under the video
-  bunnyVideoId: text("bunny_video_id"), // Bunny Stream GUID
+  // DEPRECATED — superseded by lesson_videos (parts); nothing reads or writes
+  // it. Kept one release so the previous deploy keeps working while the
+  // additive migrations run; drop it in a follow-up migration.
+  bunnyVideoId: text("bunny_video_id"),
+  // Total of the lesson's video parts (lesson_videos), kept in sync on save.
   durationSeconds: integer("duration_seconds"),
   isPreview: boolean("is_preview").notNull().default(false), // free preview (B1)
   createdAt: createdAt(),
@@ -126,6 +130,29 @@ export const lessonAttachments = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index("lesson_attachments_lesson_idx").on(t.lessonId, t.orderIndex)],
+);
+
+/**
+ * The video parts of a lesson, in play order. A long lesson (2–3 hours) is
+ * split into parts — Part 1, Part 2 … — that stay ONE lesson for progress,
+ * sequential unlock and exams. `lessons.duration_seconds` holds the total.
+ */
+export const lessonVideos = pgTable(
+  "lesson_videos",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    lessonId: uuid("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    orderIndex: integer("order_index").notNull(),
+    // Optional: without one the part shows as "1-qism", "2-qism"…
+    title: jsonb("title").$type<LocalizedText>(),
+    bunnyVideoId: text("bunny_video_id").notNull(), // Bunny Stream GUID
+    durationSeconds: integer("duration_seconds"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("lesson_videos_lesson_idx").on(t.lessonId, t.orderIndex)],
 );
 
 /** Per-locale subtitle tracks for a lesson (B5). */

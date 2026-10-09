@@ -18,9 +18,18 @@ export function CompleteControls({
   lessonId,
   completed,
   next,
+  videoId = null,
+  partsLeft = null,
 }: {
   lessonId: string;
   completed: boolean;
+  /** The part on screen; sent along so it counts as opened. */
+  videoId?: string | null;
+  /**
+   * A lesson in parts with some still unopened: completion waits for them
+   * (the server checks too). `href` opens the first part not yet opened.
+   */
+  partsLeft?: { opened: number; total: number; href: string } | null;
   /** Where "next" goes: the following lesson, the exam, or nowhere. */
   next: { href: string; kind: "lesson" | "exam" } | null;
 }) {
@@ -40,6 +49,7 @@ export function CompleteControls({
     >
       <input type="hidden" name="lessonId" value={lessonId} />
       <input type="hidden" name="selfAssessment" value={score ?? ""} />
+      {videoId && <input type="hidden" name="videoId" value={videoId} />}
 
       <div>
         <p className="mb-2.5 text-[.86rem] font-bold text-lp-ink">{t("selfAssessment")}</p>
@@ -73,13 +83,27 @@ export function CompleteControls({
             ✓ {t("completed")}
           </span>
         ) : (
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex items-center gap-2 rounded-[10px] border-[1.5px] border-lp-gold bg-lp-gold px-[18px] py-3 text-[.92rem] font-bold text-lp-navy-deep transition hover:-translate-y-px hover:shadow-[0_8px_22px_rgba(248,184,1,.4)] disabled:opacity-60"
-          >
-            {t("markComplete")}
-          </button>
+          partsLeft ? (
+            <span className="flex flex-col items-end gap-1 text-right">
+              <span
+                aria-disabled
+                className="inline-flex cursor-not-allowed items-center gap-2 rounded-[10px] border-[1.5px] border-lp-line bg-lp-line-soft px-[18px] py-3 text-[.92rem] font-bold text-lp-muted"
+              >
+                {t("markComplete")}
+              </span>
+              <Link href={partsLeft.href} className="text-[.8rem] font-bold text-lp-navy-mid hover:underline">
+                {t("partsLeftToComplete", { opened: partsLeft.opened, total: partsLeft.total })}
+              </Link>
+            </span>
+          ) : (
+            <button
+              type="submit"
+              disabled={pending}
+              className="inline-flex items-center gap-2 rounded-[10px] border-[1.5px] border-lp-gold bg-lp-gold px-[18px] py-3 text-[.92rem] font-bold text-lp-navy-deep transition hover:-translate-y-px hover:shadow-[0_8px_22px_rgba(248,184,1,.4)] disabled:opacity-60"
+            >
+              {t("markComplete")}
+            </button>
+          )
         )}
         {next &&
           (completed ? (

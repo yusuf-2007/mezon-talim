@@ -1,6 +1,7 @@
 import "server-only";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
+import { lessonVideosRepository } from "@/lib/db/repositories/lesson-videos";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import type { LocalizedText } from "@/lib/db/schema";
@@ -11,6 +12,8 @@ export type CurriculumLesson = {
   durationSeconds: number | null;
   isPreview: boolean;
   hasVideo: boolean;
+  /** Number of video parts (0 = no video, 1 = a normal lesson). */
+  partCount: number;
   completed: boolean;
   /** Student may open it: preview, or (enrolled AND sequentially unlocked). */
   accessible: boolean;
@@ -45,6 +48,10 @@ export async function getCurriculum(
     lessonsRepository.listByCourse(courseId),
   ]);
 
+  const partsByLesson = await lessonVideosRepository.listByLessons(
+    lessonRows.map((r) => r.lesson.id),
+  );
+
   const enrolled = userId
     ? await enrollmentsRepository.isActive(userId, courseId)
     : false;
@@ -75,7 +82,8 @@ export async function getCurriculum(
       title: lesson.title,
       durationSeconds: lesson.durationSeconds,
       isPreview: lesson.isPreview,
-      hasVideo: Boolean(lesson.bunnyVideoId),
+      hasVideo: (partsByLesson.get(lesson.id)?.length ?? 0) > 0,
+      partCount: partsByLesson.get(lesson.id)?.length ?? 0,
       completed: completedSet.has(lesson.id),
       accessible: accessibleSet.has(lesson.id),
     };

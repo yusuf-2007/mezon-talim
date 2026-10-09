@@ -33,3 +33,4 @@ export { auditRepository } from "./audit";
 export { userAvatarsRepository } from "./user-avatars";
 export { applicationsRepository } from "./applications";
 export { lessonAttachmentsRepository } from "./lesson-attachments";
+export { lessonVideosRepository } from "./lesson-videos";

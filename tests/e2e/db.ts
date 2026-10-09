@@ -54,6 +54,32 @@ export async function wipeCommunity(sql: ReturnType<typeof testSql>) {
 }
 
 /**
+ * Remove every video part of the e2e lessons and reset their durations. The
+ * seed lessons have no video: specs that need parts (lesson-parts,
+ * video-questions) add them and must not leak them into the others.
+ */
+export async function wipeLessonVideos(sql: ReturnType<typeof testSql>) {
+  await sql`
+    delete from lesson_videos
+    where lesson_id in (select id from lessons where module_id = ${IDS.module})`;
+  await sql`update lessons set duration_seconds = null where module_id = ${IDS.module}`;
+}
+
+/** Give a lesson one video part (fake Bunny GUID; CI has no Bunny account). */
+export async function seedLessonVideo(
+  sql: ReturnType<typeof testSql>,
+  lessonId: string,
+  opts: { order?: number; guid?: string; duration?: number } = {},
+): Promise<string> {
+  const [row] = await sql`
+    insert into lesson_videos (lesson_id, order_index, bunny_video_id, duration_seconds)
+    values (${lessonId}, ${opts.order ?? 0}, ${opts.guid ?? "00000000-e2e0-4000-8000-000000000001"},
+      ${opts.duration ?? 600})
+    returning id`;
+  return row.id as string;
+}
+
+/**
  * Remove lesson attachments, any lesson in the e2e module that the seed did
  * not create (the attachments spec adds one through the Studio), and any other
  * module of the e2e course (the attachments spec adds and deletes one; a run

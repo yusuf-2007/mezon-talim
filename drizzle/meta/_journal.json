@@ -148,6 +148,20 @@
       "when": 1791207211519,
       "tag": "0020_shallow_swarm",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791506469769,
+      "tag": "0021_lesson_video_parts",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791506509317,
+      "tag": "0022_backfill_lesson_video_parts",
+      "breakpoints": true
     }
   ]
 }

@@ -10,7 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
-import { courses, lessons, modules } from "./catalog";
+import { courses, lessonVideos, lessons, modules } from "./catalog";
 import {
   assessmentType,
   createdAt,
@@ -141,6 +141,9 @@ export const videoQuestions = pgTable(
     lessonId: uuid("lesson_id")
       .notNull()
       .references(() => lessons.id, { onDelete: "cascade" }),
+    // The part the question pops in. Nullable only for rows that predate
+    // parts; the 0022 backfill points those at their lesson's Part 1.
+    videoId: uuid("video_id").references(() => lessonVideos.id, { onDelete: "cascade" }),
     timestampSeconds: integer("timestamp_seconds").notNull(),
     prompt: jsonb("prompt").$type<LocalizedText>().notNull(),
     options: jsonb("options").$type<LocalizedText[]>().notNull(),

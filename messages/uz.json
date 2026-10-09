@@ -626,7 +626,21 @@
     "attachmentClose": "Yopish",
     "attachmentBusy": "Materiallar yuklanishi tugashini kuting",
     "attachmentCount": "{count} ta material",
-    "attachmentThumbAlt": "{title} — birinchi slayd"
+    "attachmentThumbAlt": "{title} — birinchi slayd",
+    "partN": "{n}-qism",
+    "partsCount": "{count} qism",
+    "videosTitle": "Videolar",
+    "videosHint": "Uzun darsni qismlarga bo'ling: har bir qism alohida video. Talaba qismlarni ketma-ket ko'radi, dars esa bitta dars bo'lib qoladi.",
+    "videosAdd": "Qism qo'shish",
+    "videosTotal": "{count} qism · jami {duration}",
+    "videosMoveUp": "{part}ni yuqoriga",
+    "videosMoveDown": "{part}ni pastga",
+    "videosRemove": "{part}ni o'chirish",
+    "partTitleUz": "Qism nomi (o'zbekcha)",
+    "partTitleRu": "Qism nomi (ruscha)",
+    "partTitleHint": "Ixtiyoriy. Bo'sh bo'lsa «{part}» deb ko'rsatiladi.",
+    "vqPart": "Qaysi qismda",
+    "vqNeedsVideo": "Avval darsga video qo'shing — savollar video ichida chiqadi."
   },
   "Catalog": {
     "title": "Kurslar",
@@ -711,7 +725,8 @@
     "factAccessValue": "{days} kun",
     "factLanguage": "Til",
     "factLanguageValue": "Oʻzbek",
-    "certDisclaimer": "Kurs yakunida Mezon Taʼlimning tamomlaganlik sertifikati beriladi. Bu AAOIFI sertifikati emas."
+    "certDisclaimer": "Kurs yakunida Mezon Taʼlimning tamomlaganlik sertifikati beriladi. Bu AAOIFI sertifikati emas.",
+    "lessonParts": "{count} qism"
   },
   "Player": {
     "backToCourse": "Kurs sahifasi",
@@ -815,7 +830,12 @@
     "slidesViewOnly": "Faqat koʻrish uchun · yuklab olish va nusxalash oʻchirilgan",
     "slidesDownloadable": "Asl faylni yuklab olishingiz mumkin",
     "slidesKeysHint": "← → tugmalari bilan varaqlang",
-    "slidesPrintDisabled": "Dars materiallarini chop etish oʻchirilgan."
+    "slidesPrintDisabled": "Dars materiallarini chop etish oʻchirilgan.",
+    "partN": "{n}-qism",
+    "partsCount": "{count} qism",
+    "partsNav": "Dars qismlari",
+    "nextPart": "Keyingi qism →",
+    "partsLeftToComplete": "Avval barcha qismlarni oching ({opened}/{total}) →"
   },
   "Assess": {
     "tab": "Testlar",

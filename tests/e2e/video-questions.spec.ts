@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { IDS, PASSWORD, USERS, testSql } from "./db";
+import { IDS, PASSWORD, USERS, seedLessonVideo, testSql, wipeLessonVideos } from "./db";
 import { login } from "./helpers";
 
 /**
@@ -11,6 +11,16 @@ test.describe.serial("in-video questions authoring", () => {
   test.beforeAll(async () => {
     const sql = testSql();
     await sql`delete from video_questions`;
+    // Questions pop inside a video part; the seed lessons have none.
+    await wipeLessonVideos(sql);
+    await seedLessonVideo(sql, IDS.lesson1);
+    await sql.end();
+  });
+
+  test.afterAll(async () => {
+    const sql = testSql();
+    await sql`delete from video_questions`;
+    await wipeLessonVideos(sql);
     await sql.end();
   });
 

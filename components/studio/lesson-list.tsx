@@ -8,14 +8,13 @@ import type { StudioAttachment } from "@/lib/attachments/dto";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LessonForm } from "./lesson-form";
+import type { StudioLessonVideo } from "./lesson-videos-field";
 import { ConfirmSubmit } from "./confirm-submit";
 
 type LessonLike = {
   id: string;
   title: { uz: string; ru?: string };
   body?: { uz: string; ru?: string } | null;
-  bunnyVideoId?: string | null;
-  durationSeconds?: number | null;
   isPreview: boolean;
 };
 
@@ -29,6 +28,7 @@ type Action = (prev: ContentFormState, fd: FormData) => Promise<ContentFormState
  */
 export function LessonRow({
   lesson,
+  videos = [],
   courseId,
   updateAction,
   deleteAction,
@@ -38,6 +38,8 @@ export function LessonRow({
   storageConfigured = false,
 }: {
   lesson: LessonLike;
+  /** The lesson's video parts, loaded by ModuleCard. */
+  videos?: StudioLessonVideo[];
   courseId: string;
   updateAction: Action;
   deleteAction: () => Promise<void>;
@@ -64,8 +66,13 @@ export function LessonRow({
           {lesson.isPreview && (
             <Badge className="bg-gold-100 text-navy-800">{t("previewBadge")}</Badge>
           )}
-          {lesson.bunnyVideoId && (
-            <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Video className="size-3" aria-hidden /> {lesson.bunnyVideoId.slice(0, 8)}…</span>
+          {videos.length === 1 && (
+            <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Video className="size-3" aria-hidden /> {videos[0].bunnyVideoId.slice(0, 8)}…</span>
+          )}
+          {videos.length > 1 && (
+            <span className="inline-flex items-center gap-1 text-xs text-slate-500 tabular-nums" data-testid="lesson-parts-badge">
+              <Video className="size-3" aria-hidden /> {t("partsCount", { count: videos.length })}
+            </span>
           )}
           {readyAttachments > 0 && (
             <span
@@ -113,6 +120,7 @@ export function LessonRow({
             mode="edit"
             onDone={() => setEditing(false)}
             courseId={courseId}
+            videos={videos}
             attachments={attachments}
             storageConfigured={storageConfigured}
             onBusyChange={setAttachmentsBusy}

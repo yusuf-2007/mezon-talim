@@ -86,7 +86,10 @@ export async function CourseRail({
                     >
                       {pickLocale(l.title, locale)}
                     </span>
-                    <span className="block text-[.74rem] text-lp-muted">{meta}</span>
+                    <span className="block text-[.74rem] text-lp-muted">
+                      {meta}
+                      {l.partCount > 1 ? ` · ${t("partsCount", { count: l.partCount })}` : ""}
+                    </span>
                   </span>
                 </span>
               );

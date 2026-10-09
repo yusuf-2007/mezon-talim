@@ -11,14 +11,21 @@ import { getVideoTime } from "./video-time-store";
  * current time. Bookmarks and notes are the same thing here (B7 + B8): a
  * bookmark is simply a note with a timestamp and no text of its own yet.
  */
-export function BookmarkButton({ lessonId }: { lessonId: string }) {
+export function BookmarkButton({
+  lessonId,
+  videoId = null,
+}: {
+  lessonId: string;
+  /** The part on screen: the bookmark is pinned to its timeline. */
+  videoId?: string | null;
+}) {
   const t = useTranslations("Player");
   const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
 
   function save() {
     start(async () => {
-      const res = await bookmarkAction(lessonId, Math.floor(getVideoTime()));
+      const res = await bookmarkAction(lessonId, Math.floor(getVideoTime()), videoId);
       if (res.ok) setSaved(true);
     });
   }

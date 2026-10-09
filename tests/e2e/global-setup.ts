@@ -1,5 +1,5 @@
 import { hash } from "@node-rs/argon2";
-import { IDS, PASSWORD, USERS, testSql, wipeAttachments, wipeCommunity } from "./db";
+import { IDS, PASSWORD, USERS, testSql, wipeAttachments, wipeCommunity, wipeLessonVideos } from "./db";
 import { e2eStorage, ensureBucket, wipePrefix } from "./storage";
 
 /**
@@ -68,6 +68,7 @@ export default async function globalSetup() {
 
   await wipeCommunity(sql);
   await wipeAttachments(sql);
+  await wipeLessonVideos(sql);
 
   // Clear the limiter. It is Postgres-backed and windowed over minutes, so it
   // outlives a test run: the suite signs the same handful of accounts in

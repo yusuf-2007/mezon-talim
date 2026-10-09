@@ -626,7 +626,21 @@
     "attachmentClose": "Закрыть",
     "attachmentBusy": "Дождитесь окончания загрузки материалов",
     "attachmentCount": "{count, plural, one {# материал} few {# материала} other {# материалов}}",
-    "attachmentThumbAlt": "{title} — первый слайд"
+    "attachmentThumbAlt": "{title} — первый слайд",
+    "partN": "Часть {n}",
+    "partsCount": "{count, plural, one {# часть} few {# части} other {# частей}}",
+    "videosTitle": "Видео",
+    "videosHint": "Разделите длинный урок на части: каждая часть — отдельное видео. Студент смотрит их по порядку, а урок остаётся одним уроком.",
+    "videosAdd": "Добавить часть",
+    "videosTotal": "Частей: {count} · всего {duration}",
+    "videosMoveUp": "{part}: выше",
+    "videosMoveDown": "{part}: ниже",
+    "videosRemove": "Удалить: {part}",
+    "partTitleUz": "Название части (узбекский)",
+    "partTitleRu": "Название части (русский)",
+    "partTitleHint": "Необязательно. Если пусто — «{part}».",
+    "vqPart": "В какой части",
+    "vqNeedsVideo": "Сначала добавьте видео к уроку — вопросы появляются внутри видео."
   },
   "Catalog": {
     "title": "Курсы",
@@ -711,7 +725,8 @@
     "factAccessValue": "{days} дней",
     "factLanguage": "Язык",
     "factLanguageValue": "Узбекский",
-    "certDisclaimer": "По окончании курса выдаётся сертификат Mezon Ta'lim о прохождении. Это не сертификат AAOIFI."
+    "certDisclaimer": "По окончании курса выдаётся сертификат Mezon Ta'lim о прохождении. Это не сертификат AAOIFI.",
+    "lessonParts": "{count, plural, one {# часть} few {# части} other {# частей}}"
   },
   "Player": {
     "backToCourse": "Страница курса",
@@ -815,7 +830,12 @@
     "slidesViewOnly": "Только просмотр · скачивание и копирование отключены",
     "slidesDownloadable": "Исходный файл можно скачать",
     "slidesKeysHint": "Листайте клавишами ← →",
-    "slidesPrintDisabled": "Печать материалов урока отключена."
+    "slidesPrintDisabled": "Печать материалов урока отключена.",
+    "partN": "Часть {n}",
+    "partsCount": "{count, plural, one {# часть} few {# части} other {# частей}}",
+    "partsNav": "Части урока",
+    "nextPart": "Следующая часть →",
+    "partsLeftToComplete": "Сначала откройте все части ({opened}/{total}) →"
   },
   "Assess": {
     "tab": "Тесты",

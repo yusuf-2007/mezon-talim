@@ -14,6 +14,8 @@ import { FormError } from "@/components/auth/form-bits";
 
 export type StudioVideoQuestion = {
   id: string;
+  /** Label of the part the question pops in, e.g. "2-qism". */
+  part: string;
   time: string; // formatted mm:ss / h:mm:ss
   prompt: string;
   options: string[];
@@ -42,10 +44,13 @@ const initial: VideoQuestionFormState = {};
  */
 export function VideoQuestionsEditor({
   lessonId,
+  parts,
   questions,
   deleteAction,
 }: {
   lessonId: string;
+  /** The lesson's video parts; a question pops in exactly one of them. */
+  parts: { id: string; label: string }[];
   questions: StudioVideoQuestion[];
   deleteAction: (questionId: string) => Promise<void>;
 }) {
@@ -82,6 +87,11 @@ export function VideoQuestionsEditor({
             >
               <div className="min-w-0 text-sm">
                 <p>
+                  {parts.length > 1 && (
+                    <span className="mr-2 rounded bg-navy-100 px-1.5 py-0.5 text-xs font-medium text-navy-800">
+                      {q.part}
+                    </span>
+                  )}
                   <span className="mr-2 rounded bg-gold-100 px-1.5 py-0.5 font-medium tabular-nums text-navy-800">
                     {q.time}
                   </span>
@@ -106,13 +116,34 @@ export function VideoQuestionsEditor({
         </ul>
       )}
 
-      {!adding ? (
+      {parts.length === 0 ? (
+        <p className="text-sm text-slate-500">{t("vqNeedsVideo")}</p>
+      ) : !adding ? (
         <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
           + {t("vqAdd")}
         </Button>
       ) : (
         <form ref={formRef} action={formAction} className="space-y-3">
           {state.error && <FormError message={t("vqError")} />}
+
+          {parts.length === 1 ? (
+            <input type="hidden" name="videoId" value={parts[0].id} />
+          ) : (
+            <Field label={t("vqPart")}>
+              <select
+                name="videoId"
+                aria-label={t("vqPart")}
+                defaultValue={parts[0].id}
+                className="h-9 w-full rounded-md border border-line bg-surface px-3 text-sm sm:w-64"
+              >
+                {parts.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label={t("vqTime")}>

@@ -63,13 +63,37 @@ export type ModuleUpsertInput = z.infer<typeof moduleUpsertSchema>;
 
 // ── Lesson ───────────────────────────────────────────────────────────────────
 
+/** Upper bound on parts per lesson — generous for a 3-hour lesson. */
+export const MAX_LESSON_VIDEOS = 20;
+
+/** One video part of a lesson (Part 1, Part 2 …). */
+const lessonVideoPartSchema = z.object({
+  id: z.uuid().optional(), // existing part: keeps its notes/questions
+  bunnyVideoId: z.string().trim().min(1).max(100),
+  durationSeconds: z.coerce.number().int().min(0).max(86_400).nullable().optional(),
+  titleUz: z.string().trim().max(200).optional(),
+  titleRu: z.string().trim().max(200).optional(),
+});
+
 export const lessonUpsertSchema = z.object({
   titleUz: z.string().trim().min(1, "Dars nomi shart"),
   titleRu: z.string().trim().optional(),
   bodyUz: z.string().trim().optional(),
   bodyRu: z.string().trim().optional(),
-  bunnyVideoId: z.string().trim().optional(),
-  durationSeconds: z.coerce.number().int().min(0).max(86_400).optional(),
+  // The lesson's video parts, in order, as JSON from the editor's parts list.
+  videos: z.preprocess(
+    (v) => {
+      if (typeof v !== "string" || v.trim() === "") return [];
+      try {
+        return JSON.parse(v);
+      } catch {
+        return v; // not JSON → fails the array check below
+      }
+    },
+    z
+      .array(lessonVideoPartSchema)
+      .max(MAX_LESSON_VIDEOS, `Bitta darsda ko'pi bilan ${MAX_LESSON_VIDEOS} ta qism bo'lishi mumkin`),
+  ),
   isPreview: checkbox,
 });
 export type LessonUpsertInput = z.infer<typeof lessonUpsertSchema>;

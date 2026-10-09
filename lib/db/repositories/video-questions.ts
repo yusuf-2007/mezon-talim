@@ -24,6 +24,7 @@ export const videoQuestionsRepository = {
     const rows = await db
       .select({
         id: videoQuestions.id,
+        videoId: videoQuestions.videoId,
         timestampSeconds: videoQuestions.timestampSeconds,
         prompt: videoQuestions.prompt,
         options: videoQuestions.options,
@@ -54,6 +55,7 @@ export const videoQuestionsRepository = {
 
   async create(input: {
     lessonId: string;
+    videoId: string;
     timestampSeconds: number;
     prompt: LocalizedText;
     options: LocalizedText[];

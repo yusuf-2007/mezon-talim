@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireCourseEditor } from "./access";
 import { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
+import { lessonVideosRepository } from "@/lib/db/repositories/lesson-videos";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import { syncVideoMoments } from "@/lib/video";
 import type { LocalizedText } from "@/lib/db/schema";
@@ -27,6 +28,7 @@ function parseTimestamp(raw: string): number | null {
 }
 
 const schema = z.object({
+  videoId: z.uuid(),
   timestamp: z.string().trim().min(1),
   promptUz: z.string().trim().min(1).max(500),
   promptRu: z.string().trim().max(500).optional(),
@@ -44,20 +46,22 @@ async function requireLessonEditor(lessonId: string) {
 }
 
 /**
- * Mirror the lesson's question timestamps onto the Bunny video as native
- * "moments", so dots appear inside the embed player's own seek bar. Best
- * effort: authoring succeeds even when Bunny is unreachable/unconfigured.
+ * Mirror a part's question timestamps onto its Bunny video as native
+ * "moments", so dots appear inside the embed player's own seek bar. Moments
+ * are per VIDEO, so each part gets only its own questions. Best effort:
+ * authoring succeeds even when Bunny is unreachable/unconfigured.
  */
-async function syncMomentsForLesson(
-  lessonId: string,
-  bunnyVideoId: string | null,
-): Promise<void> {
-  if (!bunnyVideoId) return;
+async function syncMomentsForPart(videoId: string | null): Promise<void> {
+  if (!videoId) return;
   try {
-    const questions = await videoQuestionsRepository.listForLesson(lessonId);
+    const part = await lessonVideosRepository.findById(videoId);
+    if (!part) return;
+    const questions = await videoQuestionsRepository.listForLesson(part.lessonId);
     await syncVideoMoments(
-      bunnyVideoId,
-      questions.map((q) => ({ label: "Savol", timestamp: q.timestampSeconds })),
+      part.bunnyVideoId,
+      questions
+        .filter((q) => q.videoId === videoId)
+        .map((q) => ({ label: "Savol", timestamp: q.timestampSeconds })),
     );
   } catch (err) {
     console.error("moments sync skipped:", err);
@@ -75,14 +79,14 @@ export async function createVideoQuestionAction(
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "invalid" };
 
+  // The question pops in one part's video, which must belong to this lesson.
+  const part = await lessonVideosRepository.findById(parsed.data.videoId);
+  if (!part || part.lessonId !== lessonId) return { error: "invalid" };
+
   const timestampSeconds = parseTimestamp(parsed.data.timestamp);
   if (timestampSeconds == null) return { error: "invalid_time" };
-  // A timestamp past the video's end would author a question that never fires.
-  if (
-    ctx.lesson.durationSeconds != null &&
-    ctx.lesson.durationSeconds > 0 &&
-    timestampSeconds > ctx.lesson.durationSeconds
-  ) {
+  // A timestamp past the part's end would author a question that never fires.
+  if (part.durationSeconds != null && part.durationSeconds > 0 && timestampSeconds > part.durationSeconds) {
     return { error: "invalid_time" };
   }
 
@@ -104,6 +108,7 @@ export async function createVideoQuestionAction(
 
   await videoQuestionsRepository.create({
     lessonId,
+    videoId: part.id,
     timestampSeconds,
     prompt: parsed.data.promptRu
       ? { uz: parsed.data.promptUz, ru: parsed.data.promptRu }
@@ -112,7 +117,7 @@ export async function createVideoQuestionAction(
     correctIndex,
   });
 
-  await syncMomentsForLesson(lessonId, ctx.lesson.bunnyVideoId);
+  await syncMomentsForPart(part.id);
   revalidatePath(`/studio/courses/${ctx.courseId}`);
   return { ok: true };
 }
@@ -126,6 +131,6 @@ export async function deleteVideoQuestionAction(
   const ctx = await requireLessonEditor(question.lessonId);
   if (!ctx) return;
   await videoQuestionsRepository.remove(questionId);
-  await syncMomentsForLesson(question.lessonId, ctx.lesson.bunnyVideoId);
+  await syncMomentsForPart(question.videoId);
   revalidatePath(`/studio/courses/${ctx.courseId}`);
 }

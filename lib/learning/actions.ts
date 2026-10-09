@@ -11,6 +11,7 @@ import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { notesRepository } from "@/lib/db/repositories/notes";
+import { lessonVideosRepository } from "@/lib/db/repositories/lesson-videos";
 
 /**
  * Student learning actions. Enrollment is dev-only here (free enroll) — Phase 5
@@ -34,6 +35,34 @@ async function assertLessonEnrollment(userId: string, lessonId: string) {
   if (!courseId) throw new Error("Lesson not found");
   const enrolled = await enrollmentsRepository.isActive(userId, courseId);
   return { courseId, enrolled };
+}
+
+/**
+ * The id of `videoId` when it is one of this lesson's parts, else null. Every
+ * part id a client sends is checked here: a part of another lesson must never
+ * be recorded as opened, or pinned to a note.
+ */
+async function partOfLesson(lessonId: string, videoId: unknown): Promise<string | null> {
+  if (typeof videoId !== "string" || !z.uuid().safeParse(videoId).success) return null;
+  const part = await lessonVideosRepository.findById(videoId);
+  return part && part.lessonId === lessonId ? part.id : null;
+}
+
+/**
+ * The student opened one part of a multi-part lesson: remember it (resume to
+ * that part next time) and count it towards completion.
+ */
+export async function markVideoOpenedAction(
+  lessonId: string,
+  videoId: string,
+): Promise<{ ok: boolean }> {
+  const user = await requireUser();
+  const part = await partOfLesson(lessonId, videoId);
+  if (!part) return { ok: false };
+  const { enrolled } = await assertLessonEnrollment(user.id, lessonId);
+  if (!enrolled) return { ok: false };
+  await lessonProgressRepository.markVideoOpened(user.id, lessonId, part);
+  return { ok: true };
 }
 
 // ── Enrollment (DEV ONLY — replaced by payments in Phase 5) ───────────────────
@@ -65,17 +94,20 @@ export async function devEnrollAction(courseId: string): Promise<void> {
 
 const completeSchema = z.object({
   lessonId: z.uuid(),
+  // The part on screen when "Mark complete" was pressed (counts as opened).
+  videoId: z.uuid().optional(),
   selfAssessment: z.coerce.number().int().min(1).max(5).optional(),
 });
 
 export async function completeLessonAction(
   _prev: unknown,
   formData: FormData,
-): Promise<{ ok: boolean }> {
+): Promise<{ ok: boolean; partsLeft?: boolean }> {
   const user = await requireUser();
   const parsed = completeSchema.safeParse({
     lessonId: formData.get("lessonId"),
     selfAssessment: formData.get("selfAssessment") || undefined,
+    videoId: formData.get("videoId") || undefined,
   });
   if (!parsed.success) return { ok: false };
 
@@ -84,6 +116,19 @@ export async function completeLessonAction(
     parsed.data.lessonId,
   );
   if (!enrolled) return { ok: false };
+
+  // A lesson in parts is complete only once every part has been opened —
+  // enforced here too, not just by the disabled button.
+  const parts = await lessonVideosRepository.listByLesson(parsed.data.lessonId);
+  if (parts.length > 1) {
+    const current = await partOfLesson(parsed.data.lessonId, parsed.data.videoId);
+    if (current) {
+      await lessonProgressRepository.markVideoOpened(user.id, parsed.data.lessonId, current);
+    }
+    const progress = await lessonProgressRepository.forLesson(user.id, parsed.data.lessonId);
+    const opened = new Set(progress?.openedVideoIds ?? []);
+    if (!parts.every((p) => opened.has(p.id))) return { ok: false, partsLeft: true };
+  }
 
   await lessonProgressRepository.markComplete(
     user.id,
@@ -120,7 +165,9 @@ export async function addNoteAction(
   );
   const { enrolled, courseId } = await assertLessonEnrollment(user.id, lessonId);
   if (!enrolled) return { ok: false };
-  await notesRepository.create(user.id, lessonId, body, timestampSeconds);
+  // A timestamp means a moment in one part's video; pin the note to it.
+  const videoId = timestampSeconds != null ? await partOfLesson(lessonId, formData.get("videoId")) : null;
+  await notesRepository.create(user.id, lessonId, body, timestampSeconds, videoId);
   revalidatePath(`/learn/${courseId}/${lessonId}`);
   return { ok: true };
 }
@@ -132,13 +179,14 @@ export async function addNoteAction(
 export async function bookmarkAction(
   lessonId: string,
   seconds: number,
+  videoId?: string | null,
 ): Promise<{ ok: boolean }> {
   const user = await requireUser();
   const t = Number.isFinite(seconds) && seconds >= 0 ? Math.min(Math.floor(seconds), 86_400) : 0;
   const { enrolled, courseId } = await assertLessonEnrollment(user.id, lessonId);
   if (!enrolled) return { ok: false };
   const tr = await getTranslations("Player");
-  await notesRepository.create(user.id, lessonId, tr("bookmarkBody"), t);
+  await notesRepository.create(user.id, lessonId, tr("bookmarkBody"), t, await partOfLesson(lessonId, videoId));
   revalidatePath(`/learn/${courseId}/${lessonId}`);
   return { ok: true };
 }

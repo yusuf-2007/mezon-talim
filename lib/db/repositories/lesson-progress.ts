@@ -37,6 +37,29 @@ export const lessonProgressRepository = {
       );
   },
 
+  /**
+   * The student opened one part of a lesson: remember it as where they are
+   * (resume) and add it to the parts they have opened (completion waits for
+   * all of them). Idempotent — opening a part twice records it once.
+   */
+  async markVideoOpened(userId: string, lessonId: string, videoId: string) {
+    await db
+      .insert(lessonProgress)
+      .values({ userId, lessonId, lastVideoId: videoId, openedVideoIds: [videoId] })
+      .onConflictDoUpdate({
+        target: [lessonProgress.userId, lessonProgress.lessonId],
+        set: {
+          lastVideoId: videoId,
+          openedVideoIds: sql`case
+            when ${lessonProgress.openedVideoIds} @> ${JSON.stringify([videoId])}::jsonb
+              then ${lessonProgress.openedVideoIds}
+            else ${lessonProgress.openedVideoIds} || ${JSON.stringify([videoId])}::jsonb
+          end`,
+          updatedAt: sql`now()`,
+        },
+      });
+  },
+
   /** Mark a lesson complete (idempotent), optionally recording self-assessment. */
   async markComplete(
     userId: string,

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
+import { lessonVideosRepository } from "@/lib/db/repositories/lesson-videos";
 import { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
 import {
   createLessonAction,
@@ -51,6 +52,7 @@ export async function ModuleCard({
 }) {
   const t = await getTranslations("Studio");
   const lessons = await lessonsRepository.listByModule(module.id);
+  const partsByLesson = await lessonVideosRepository.listByLessons(lessons.map((l) => l.id));
   // One query for the whole module. Skipped when there is no bucket: the
   // section then only shows its "not configured" notice.
   const storageConfigured = isAttachmentStorageConfigured();
@@ -78,12 +80,24 @@ export async function ModuleCard({
           items={await Promise.all(
             lessons.map(async (lesson) => {
               const vqs = await videoQuestionsRepository.listForLesson(lesson.id);
+              const parts = partsByLesson.get(lesson.id) ?? [];
+              const partLabel = (id: string | null) => {
+                const i = parts.findIndex((p) => p.id === id);
+                return i === -1 ? "—" : (pickLocale(parts[i].title, "uz") || t("partN", { n: i + 1 }));
+              };
               return {
                 id: lesson.id,
                 label: lesson.title.uz,
                 node: (
                   <LessonRow
                     lesson={lesson}
+                    videos={parts.map((p) => ({
+                      id: p.id,
+                      bunnyVideoId: p.bunnyVideoId,
+                      durationSeconds: p.durationSeconds,
+                      titleUz: p.title?.uz ?? "",
+                      titleRu: p.title?.ru ?? "",
+                    }))}
                     courseId={courseId}
                     attachments={attachmentsByLesson[lesson.id] ?? []}
                     storageConfigured={storageConfigured}
@@ -93,9 +107,11 @@ export async function ModuleCard({
                     videoQuestionsSlot={
                       <VideoQuestionsEditor
                         lessonId={lesson.id}
+                        parts={parts.map((p) => ({ id: p.id, label: partLabel(p.id) }))}
                         deleteAction={deleteVideoQuestionAction}
                         questions={vqs.map((q) => ({
                           id: q.id,
+                          part: partLabel(q.videoId),
                           time: fmtTime(q.timestampSeconds),
                           prompt: pickLocale(q.prompt, "uz") ?? "",
                           options: q.options.map((o) => pickLocale(o, "uz") ?? ""),

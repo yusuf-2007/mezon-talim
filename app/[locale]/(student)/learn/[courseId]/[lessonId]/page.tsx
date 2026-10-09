@@ -10,6 +10,8 @@ import { notesRepository } from "@/lib/db/repositories/notes";
 import { commentsRepository } from "@/lib/db/repositories/comments";
 import { messagesRepository } from "@/lib/db/repositories/messages";
 import { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
+import { lessonVideosRepository } from "@/lib/db/repositories/lesson-videos";
+import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
 import { glossaryRepository } from "@/lib/db/repositories/glossary";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { questionsRepository } from "@/lib/db/repositories/questions";
@@ -22,6 +24,7 @@ import { loadLessonSlideDecks } from "@/lib/attachments/queries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VideoFrame } from "@/components/player/video-frame";
 import { CompleteControls } from "@/components/player/complete-controls";
+import { LessonParts } from "@/components/player/lesson-parts";
 import { LessonSlides } from "@/components/player/lesson-slides";
 import { AddNoteForm } from "@/components/player/add-note-form";
 import { BookmarkButton } from "@/components/player/bookmark-button";
@@ -46,10 +49,10 @@ export default async function PlayerPage({
   searchParams,
 }: {
   params: Promise<{ courseId: string; lessonId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; part?: string }>;
 }) {
   const { courseId, lessonId } = await params;
-  const { tab } = await searchParams;
+  const { tab, part: partParam } = await searchParams;
   // Deep link from bell notifications: /learn/...?tab=ask|discussion
   const initialTab = (PLAYER_TABS as readonly string[]).includes(tab ?? "") ? tab! : "notes";
   const user = await requireUser();
@@ -122,7 +125,7 @@ export default async function PlayerPage({
 
   // Private messaging: instructors see every student's thread; everyone else
   // fetches only their own. Privacy is enforced at fetch time.
-  const [full, notes, comments, privateMessages, glossary, quiz, videoQuestions, slideDecks] =
+  const [full, notes, comments, privateMessages, glossary, quiz, videoQuestions, slideDecks, parts, progress] =
     await Promise.all([
       lessonsRepository.findById(lessonId),
       notesRepository.listForLesson(user.id, lessonId),
@@ -140,7 +143,39 @@ export default async function PlayerPage({
         console.error("[learn] lesson slides failed to load", lessonId, err);
         return [];
       }),
+      lessonVideosRepository.listByLesson(lessonId),
+      lessonProgressRepository.forLesson(user.id, lessonId),
     ]);
+
+  // Which part is on screen: ?part=n, else where the student left off, else
+  // the first. A lesson without parts has no video yet.
+  const requested = Number(partParam);
+  const lastIndex = parts.findIndex((p) => p.id === progress?.lastVideoId);
+  const currentIndex =
+    Number.isInteger(requested) && requested >= 1 && requested <= parts.length
+      ? requested - 1
+      : Math.max(0, lastIndex);
+  const currentPart = parts[currentIndex] ?? null;
+  const multiPart = parts.length > 1;
+  const partLabel = (i: number) => pickLocale(parts[i]?.title, locale) || t("partN", { n: i + 1 });
+  // The part on screen counts as opened (it is recorded as the page mounts).
+  const openedIds = new Set(progress?.openedVideoIds ?? []);
+  if (currentPart) openedIds.add(currentPart.id);
+  const firstUnopened = parts.findIndex((p) => !openedIds.has(p.id));
+  const lessonHref = `/learn/${courseId}/${lessonId}`;
+  const partsLeft =
+    multiPart && !lesson.completed && firstUnopened !== -1
+      ? {
+          opened: parts.filter((p) => openedIds.has(p.id)).length,
+          total: parts.length,
+          href: `${lessonHref}?part=${firstUnopened + 1}`,
+        }
+      : null;
+  // In-video questions pop only in the part they were written for (rows from
+  // before parts existed belong to Part 1).
+  const partQuestions = videoQuestions.filter((q) =>
+    q.videoId ? q.videoId === currentPart?.id : currentIndex === 0,
+  );
   const quizCount = quiz ? await questionsRepository.countByAssessment(quiz.id) : 0;
   const lessonTitle = pickLocale(lesson.title, locale);
   const bodyText = pickLocale(full?.body, locale);
@@ -166,12 +201,23 @@ export default async function PlayerPage({
       <Layout rail={rail}>
         <div className="overflow-hidden rounded-[14px] bg-[#0A1622] shadow-[0_16px_40px_rgba(1,20,40,.22)]">
           <VideoFrame
-            bunnyVideoId={full?.bunnyVideoId ?? null}
-            title={lessonTitle}
-            videoQuestions={videoQuestions}
-            durationSeconds={full?.durationSeconds ?? null}
+            bunnyVideoId={currentPart?.bunnyVideoId ?? null}
+            title={multiPart ? `${lessonTitle} · ${partLabel(currentIndex)}` : lessonTitle}
+            videoQuestions={partQuestions}
+            durationSeconds={currentPart?.durationSeconds ?? null}
           />
         </div>
+
+        {multiPart && (
+          <LessonParts
+            href={lessonHref}
+            lessonId={lessonId}
+            parts={parts.map((p, i) => ({ id: p.id, label: partLabel(i), durationSeconds: p.durationSeconds }))}
+            currentIndex={currentIndex}
+            openedIds={new Set(progress?.openedVideoIds ?? [])}
+            trackOpen={curriculum.enrolled}
+          />
+        )}
 
         <div className="mt-[22px] flex flex-wrap items-start justify-between gap-5">
           <div className="min-w-0">
@@ -184,6 +230,7 @@ export default async function PlayerPage({
             <p className="mt-1 text-[.86rem] text-lp-muted">
               {courseTitle}
               {full?.durationSeconds ? ` · ${clock(full.durationSeconds)}` : ""}
+              {multiPart ? ` · ${t("partsCount", { count: parts.length })}` : ""}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -195,7 +242,7 @@ export default async function PlayerPage({
                 {tExam("takeQuiz")}
               </Link>
             )}
-            <BookmarkButton lessonId={lessonId} />
+            <BookmarkButton lessonId={lessonId} videoId={currentPart?.id ?? null} />
           </div>
         </div>
 
@@ -206,7 +253,13 @@ export default async function PlayerPage({
         )}
 
         <div className="mt-5">
-          <CompleteControls lessonId={lessonId} completed={lesson.completed} next={next} />
+          <CompleteControls
+            lessonId={lessonId}
+            completed={lesson.completed}
+            next={next}
+            videoId={currentPart?.id ?? null}
+            partsLeft={partsLeft}
+          />
         </div>
 
         <Tabs defaultValue={initialTab} className="mt-7 gap-0">
@@ -232,7 +285,7 @@ export default async function PlayerPage({
 
           {/* Notes (B7 + B8 merged: a note may be pinned to a moment) */}
           <TabsContent value="notes" className="pt-5">
-            <AddNoteForm action={addNoteAction.bind(null, lessonId)} />
+            <AddNoteForm action={addNoteAction.bind(null, lessonId)} videoId={currentPart?.id ?? null} />
             {notes.length === 0 ? (
               <p className="px-1 pt-4 text-[.88rem] text-lp-muted">{t("noNotes")}</p>
             ) : (
@@ -243,6 +296,14 @@ export default async function PlayerPage({
                     className="grid grid-cols-[64px_1fr_auto] items-start gap-3.5 border-b border-lp-line-soft px-1 py-4"
                   >
                     <span className="pt-0.5 text-[.8rem] font-bold text-lp-navy-mid tabular-nums">
+                      {multiPart && n.timestampSeconds != null && n.videoId && parts.some((p) => p.id === n.videoId) ? (
+                        <Link
+                          href={`${lessonHref}?part=${parts.findIndex((p) => p.id === n.videoId) + 1}`}
+                          className="block text-[.74rem] font-bold text-lp-muted hover:underline"
+                        >
+                          {partLabel(parts.findIndex((p) => p.id === n.videoId))}
+                        </Link>
+                      ) : null}
                       {n.timestampSeconds != null ? `▶ ${clock(n.timestampSeconds)}` : "—"}
                     </span>
                     <p className="whitespace-pre-line text-[.92rem] leading-relaxed text-lp-ink">

@@ -331,7 +331,10 @@ function PathLessonRow({
         >
           {title}
         </span>
-        <span className="mt-0.5 block text-[.8rem] text-lp-muted">{meta}</span>
+        <span className="mt-0.5 block text-[.8rem] text-lp-muted">
+          {meta}
+          {lesson.partCount > 1 ? ` · ${t("lessonParts", { count: lesson.partCount })}` : ""}
+        </span>
       </span>
       <span
         className={cn(

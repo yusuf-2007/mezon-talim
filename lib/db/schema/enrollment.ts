@@ -1,13 +1,14 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgTable,
   text,
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
-import { courses, lessons } from "./catalog";
+import { courses, lessonVideos, lessons } from "./catalog";
 import { payments } from "./payment";
 import {
   createdAt,
@@ -55,6 +56,12 @@ export const lessonProgress = pgTable(
       .references(() => lessons.id, { onDelete: "cascade" }),
     completed: boolean("completed").notNull().default(false),
     lastPositionSeconds: integer("last_position_seconds").notNull().default(0),
+    // Multi-part lessons: the part the student was last on (resume), and
+    // every part they have opened — completion waits until all are opened.
+    lastVideoId: uuid("last_video_id").references(() => lessonVideos.id, {
+      onDelete: "set null",
+    }),
+    openedVideoIds: jsonb("opened_video_ids").$type<string[]>().notNull().default([]),
     selfAssessment: integer("self_assessment"), // 1–5, "how well I understood"
     updatedAt: updatedAt(),
   },
@@ -77,6 +84,8 @@ export const notes = pgTable("notes", {
     .references(() => lessons.id, { onDelete: "cascade" }),
   body: text("body").notNull(),
   timestampSeconds: integer("timestamp_seconds"),
+  // Which part the timestamp belongs to (null: lesson-level note).
+  videoId: uuid("video_id").references(() => lessonVideos.id, { onDelete: "set null" }),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });

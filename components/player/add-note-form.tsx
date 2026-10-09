@@ -35,7 +35,14 @@ function maskTime(raw: string): string {
  * time is typed as mm:ss / hh:mm:ss (parsed server-side), or captured from
  * the live playhead via the "current time" checkbox.
  */
-export function AddNoteForm({ action }: { action: Action }) {
+export function AddNoteForm({
+  action,
+  videoId = null,
+}: {
+  action: Action;
+  /** The part on screen: a timestamped note is pinned to it. */
+  videoId?: string | null;
+}) {
   const t = useTranslations("Player");
   const ref = useRef<HTMLFormElement>(null);
   const [time, setTime] = useState("");
@@ -64,6 +71,7 @@ export function AddNoteForm({ action }: { action: Action }) {
       action={formAction}
       className="rounded-xl border border-lp-line bg-white p-3.5"
     >
+      {videoId && <input type="hidden" name="videoId" value={videoId} />}
       <textarea
         name="body"
         rows={3}
