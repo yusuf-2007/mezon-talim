@@ -80,11 +80,13 @@ export default async function PlayerPage({
       progress={{ done: curriculum.completedCount, total: curriculum.lessonCount }}
     />
   );
-  const rail = (
+  // A function: the part on screen is only known once the lesson is open.
+  const railFor = (activePartId: string | null) => (
     <CourseRail
       courseId={courseId}
       modules={flow.modules}
       activeLessonId={lessonId}
+      activePartId={activePartId}
       done={curriculum.completedCount}
       total={curriculum.lessonCount}
       exam={examBox}
@@ -100,7 +102,7 @@ export default async function PlayerPage({
     return (
       <>
         {bar}
-        <Layout rail={rail}>
+        <Layout rail={railFor(null)}>
           <div className="rounded-2xl border border-lp-line bg-white px-8 py-14 text-center">
             <span className="mx-auto grid size-14 place-items-center rounded-full border-[1.5px] border-dashed border-lp-line-strong text-lp-muted">
               <Lock className="size-6" strokeWidth={1.75} />
@@ -198,7 +200,7 @@ export default async function PlayerPage({
   return (
     <>
       {bar}
-      <Layout rail={rail}>
+      <Layout rail={railFor(currentPart?.id ?? null)}>
         <div className="overflow-hidden rounded-[14px] bg-[#0A1622] shadow-[0_16px_40px_rgba(1,20,40,.22)]">
           <VideoFrame
             bunnyVideoId={currentPart?.bunnyVideoId ?? null}

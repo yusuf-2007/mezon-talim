@@ -1,8 +1,9 @@
+import { Check } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { minutesOf, type FlowModule } from "@/lib/learning/flow";
+import { clock, minutesOf, type FlowModule } from "@/lib/learning/flow";
 import type { FinalExamBox } from "@/lib/assessments/service";
 import { Eyebrow, LessonTicks, ModuleAccordion, StateDot } from "./flow-ui";
 
@@ -18,6 +19,7 @@ export async function CourseRail({
   courseId,
   modules,
   activeLessonId,
+  activePartId = null,
   done,
   total,
   exam,
@@ -25,6 +27,8 @@ export async function CourseRail({
   courseId: string;
   modules: FlowModule[];
   activeLessonId: string | null;
+  /** The part on screen, in a lesson split into parts. */
+  activePartId?: string | null;
   done: number;
   total: number;
   exam: FinalExamBox | null;
@@ -105,6 +109,67 @@ export async function CourseRail({
                     </Link>
                   ) : (
                     <div title={t("locked")}>{row}</div>
+                  )}
+                  {l.parts.length > 1 && (
+                    <ol
+                      aria-label={t("partsNav")}
+                      className={cn(
+                        "border-l-[3px] pb-2 pl-[58px] pr-5",
+                        active ? "border-l-lp-gold bg-lp-gold-wash" : "border-l-transparent",
+                      )}
+                      data-testid="rail-lesson-parts"
+                    >
+                      {l.parts.map((p, i) => {
+                        const onScreen = active && p.id === activePartId;
+                        const label = pickLocale(p.title, locale) || t("partN", { n: i + 1 });
+                        const inner = (
+                          <span className="grid grid-cols-[14px_1fr_auto] items-center gap-2 py-[5px]">
+                            <span aria-hidden className="grid place-items-center">
+                              {p.opened && !onScreen ? (
+                                <Check className="size-3 text-lp-success" strokeWidth={3} />
+                              ) : (
+                                <span
+                                  className={cn(
+                                    "size-[7px] rounded-full",
+                                    onScreen ? "bg-lp-gold" : "border-[1.5px] border-lp-line-strong",
+                                  )}
+                                />
+                              )}
+                            </span>
+                            <span
+                              className={cn(
+                                "truncate text-[.8rem]",
+                                onScreen ? "font-bold text-lp-ink" : "font-medium text-lp-slate",
+                              )}
+                            >
+                              {label}
+                            </span>
+                            {p.durationSeconds ? (
+                              <span className="text-[.74rem] text-lp-muted tabular-nums">
+                                {clock(p.durationSeconds)}
+                              </span>
+                            ) : (
+                              <span />
+                            )}
+                          </span>
+                        );
+                        return (
+                          <li key={p.id}>
+                            {l.openable ? (
+                              <Link
+                                href={`/learn/${courseId}/${l.id}?part=${i + 1}`}
+                                aria-current={onScreen ? "step" : undefined}
+                                className="block rounded-md transition-colors hover:text-lp-navy"
+                              >
+                                {inner}
+                              </Link>
+                            ) : (
+                              <div>{inner}</div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ol>
                   )}
                 </li>
               );

@@ -6,6 +6,15 @@ import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress"
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import type { LocalizedText } from "@/lib/db/schema";
 
+/** One video part of a lesson, as the viewer has it. */
+export type CurriculumPart = {
+  id: string;
+  title: LocalizedText | null;
+  durationSeconds: number | null;
+  /** The viewer has opened this part. */
+  opened: boolean;
+};
+
 export type CurriculumLesson = {
   id: string;
   title: LocalizedText;
@@ -14,6 +23,7 @@ export type CurriculumLesson = {
   hasVideo: boolean;
   /** Number of video parts (0 = no video, 1 = a normal lesson). */
   partCount: number;
+  parts: CurriculumPart[];
   completed: boolean;
   /** Student may open it: preview, or (enrolled AND sequentially unlocked). */
   accessible: boolean;
@@ -60,6 +70,7 @@ export async function getCurriculum(
   const progress = userId
     ? await lessonProgressRepository.forLessons(userId, lessonIds)
     : [];
+  const openedByLesson = new Map(progress.map((p) => [p.lessonId, new Set(p.openedVideoIds)]));
   const completedSet = new Set(
     progress.filter((p) => p.completed).map((p) => p.lessonId),
   );
@@ -84,6 +95,12 @@ export async function getCurriculum(
       isPreview: lesson.isPreview,
       hasVideo: (partsByLesson.get(lesson.id)?.length ?? 0) > 0,
       partCount: partsByLesson.get(lesson.id)?.length ?? 0,
+      parts: (partsByLesson.get(lesson.id) ?? []).map((p) => ({
+        id: p.id,
+        title: p.title,
+        durationSeconds: p.durationSeconds,
+        opened: openedByLesson.get(lesson.id)?.has(p.id) ?? false,
+      })),
       completed: completedSet.has(lesson.id),
       accessible: accessibleSet.has(lesson.id),
     };

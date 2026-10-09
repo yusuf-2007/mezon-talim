@@ -178,6 +178,11 @@ test.describe.serial("lesson video parts", () => {
     await expect(page).toHaveURL(/\?part=2$/);
     await expect(nav.getByRole("link", { name: new RegExp(PART_2_TITLE) })).toHaveAttribute("aria-current", "page");
     await expect(nav.getByRole("link", { name: P.nextPart })).toHaveCount(0);
+
+    // The course rail lists the parts under the lesson, the one on screen marked.
+    const railParts = page.getByTestId("rail-lesson-parts");
+    await expect(railParts.getByRole("link")).toHaveCount(2);
+    await expect(railParts.getByRole("link", { name: new RegExp(PART_2_TITLE) })).toHaveAttribute("aria-current", "step");
     await page.getByRole("button", { name: P.markComplete }).click();
     await expect(page.getByText(`✓ ${P.completed}`)).toBeVisible();
 

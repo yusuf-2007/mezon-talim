@@ -1,4 +1,4 @@
-import type { Curriculum } from "./curriculum";
+import type { Curriculum, CurriculumPart } from "./curriculum";
 import type { LocalizedText } from "@/lib/db/schema";
 
 /**
@@ -21,6 +21,7 @@ export type FlowLesson = {
   durationSeconds: number | null;
   /** Video parts (more than 1 = a long lesson split into parts). */
   partCount: number;
+  parts: CurriculumPart[];
 };
 
 export type FlowModule = {
@@ -52,6 +53,7 @@ export function buildFlow(c: Curriculum): { modules: FlowModule[]; lessons: Flow
         openable: l.accessible,
         durationSeconds: l.durationSeconds,
         partCount: l.partCount,
+        parts: l.parts,
       };
     });
     return {
