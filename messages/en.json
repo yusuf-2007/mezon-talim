@@ -788,6 +788,8 @@
     "vqWrong": "Incorrect",
     "vqContinue": "Continue",
     "vqSkip": "Skip",
+    "resumedFrom": "Picking up where you left off ({time})",
+    "startOver": "Start over",
     "allLessonsDone": "All lessons completed",
     "examNextHint": "Sit the final exam to earn your certificate.",
     "proceedToExam": "Proceed to the final exam",

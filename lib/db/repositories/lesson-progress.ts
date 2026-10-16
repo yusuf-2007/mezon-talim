@@ -50,6 +50,12 @@ export const lessonProgressRepository = {
         target: [lessonProgress.userId, lessonProgress.lessonId],
         set: {
           lastVideoId: videoId,
+          // The saved playhead belongs to the part it was saved on: moving to
+          // another part starts that one from the beginning.
+          lastPositionSeconds: sql`case
+            when ${lessonProgress.lastVideoId} = ${videoId} then ${lessonProgress.lastPositionSeconds}
+            else 0
+          end`,
           openedVideoIds: sql`case
             when ${lessonProgress.openedVideoIds} @> ${JSON.stringify([videoId])}::jsonb
               then ${lessonProgress.openedVideoIds}
@@ -114,15 +120,13 @@ export const lessonProgressRepository = {
     return rows.map((r) => ({ userId: r.userId, completed: Number(r.completed) }));
   },
 
-  /** Persist the last playback position for resume. */
   /**
    * Lessons completed per day over the last `days` days, oldest first.
    *
-   * Deliberately counts lessons, not minutes. `savePosition` exists but is
-   * called by nothing, so no watch-time has ever been recorded and any
-   * duration shown here would be invented. A completion carries a real
-   * timestamp, so this is the strongest honest signal available — swap it for
-   * true watch-time once the player actually reports position.
+   * Deliberately counts lessons, not minutes. Only the playhead is saved
+   * (`savePosition`), not time spent watching, so any duration shown here
+   * would be invented. A completion carries a real timestamp, so this is the
+   * strongest honest signal available.
    */
   async completionsByDay(userId: string, days = 7) {
     const rows = await db
@@ -148,13 +152,18 @@ export const lessonProgressRepository = {
     return rows.map((r) => ({ day: r.day, count: Number(r.count) }));
   },
 
-  async savePosition(userId: string, lessonId: string, seconds: number) {
+  /**
+   * Where the student is in a lesson's video (resume, B3): the part and the
+   * playhead in it. Leaves `updatedAt` alone — it dates completions
+   * (`completionsByDay`), and rewatching a lesson is not completing it again.
+   */
+  async savePosition(userId: string, lessonId: string, videoId: string, seconds: number) {
     await db
       .insert(lessonProgress)
-      .values({ userId, lessonId, lastPositionSeconds: seconds })
+      .values({ userId, lessonId, lastVideoId: videoId, lastPositionSeconds: seconds })
       .onConflictDoUpdate({
         target: [lessonProgress.userId, lessonProgress.lessonId],
-        set: { lastPositionSeconds: seconds, updatedAt: sql`now()` },
+        set: { lastVideoId: videoId, lastPositionSeconds: seconds },
       });
   },
 };

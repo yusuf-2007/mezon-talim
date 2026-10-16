@@ -20,6 +20,7 @@ import { isCourseInstructor } from "@/lib/learning/lesson-access";
 import { buildFlow, clock } from "@/lib/learning/flow";
 import { getModuleMilestones } from "@/lib/learning/milestones";
 import { moduleCertificatesActive } from "@/lib/learning/modules";
+import { resumeSeconds } from "@/lib/learning/position";
 import { addNoteAction, deleteNoteAction } from "@/lib/learning/actions";
 import { pickLocale } from "@/lib/i18n/localized";
 import { loadLessonSlideDecks } from "@/lib/attachments/queries";
@@ -223,6 +224,10 @@ export default async function PlayerPage({
             title={multiPart ? `${lessonTitle} · ${partLabel(currentIndex)}` : lessonTitle}
             videoQuestions={partQuestions}
             durationSeconds={currentPart?.durationSeconds ?? null}
+            position={
+              curriculum.enrolled && currentPart ? { lessonId, videoId: currentPart.id } : null
+            }
+            startAt={curriculum.enrolled ? resumeSeconds(progress, currentPart) : 0}
           />
         </div>
 

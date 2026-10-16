@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { signPlaybackToken } from "@/lib/video";
 import { pickLocale } from "@/lib/i18n/localized";
 import type { videoQuestionsRepository } from "@/lib/db/repositories/video-questions";
-import { VideoEmbed } from "./video-embed";
+import { VideoEmbed, type VideoPosition } from "./video-embed";
 
 type QuestionRows = Awaited<
   ReturnType<typeof videoQuestionsRepository.listForLessonWithAnswers>
@@ -14,17 +14,27 @@ type QuestionRows = Awaited<
  * they come for free inside the iframe. Falls back to a placeholder when the
  * lesson has no video yet. In-video questions are serialized here WITHOUT
  * their correct answers (revealed only by the answer action).
+ *
+ * `startAt` resumes where the student left off: Bunny's `t` embed parameter,
+ * with Bunny's own per-browser position memory off so ours (saved per student,
+ * on any device) is the only one.
  */
 export async function VideoFrame({
   bunnyVideoId,
   title,
   videoQuestions = [],
   durationSeconds = null,
+  position = null,
+  startAt = 0,
 }: {
   bunnyVideoId: string | null;
   title: string;
   videoQuestions?: QuestionRows;
   durationSeconds?: number | null;
+  /** Save the playhead for this part (enrolled students only). */
+  position?: VideoPosition | null;
+  /** Saved playhead to resume from, in seconds (0 = the beginning). */
+  startAt?: number;
 }) {
   const [t, locale] = await Promise.all([
     getTranslations("Player"),
@@ -45,11 +55,17 @@ export async function VideoFrame({
   }
 
   const playback = signPlaybackToken(bunnyVideoId);
+  // The token signs the embed path only, so extra parameters are safe to add.
+  const src = new URL(playback.url);
+  src.searchParams.set("rememberPosition", "false");
+  if (startAt > 0) src.searchParams.set("t", String(startAt));
 
   return (
     <VideoEmbed
-      key={playback.url}
-      src={playback.url}
+      key={src.href}
+      src={src.href}
+      position={position}
+      startAt={startAt}
       title={title}
       initialDuration={durationSeconds ?? 0}
       questions={videoQuestions.map((q) => ({

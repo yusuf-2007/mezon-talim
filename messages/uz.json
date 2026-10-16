@@ -788,6 +788,8 @@
     "vqWrong": "Noto'g'ri",
     "vqContinue": "Davom etish",
     "vqSkip": "O'tkazib yuborish",
+    "resumedFrom": "To'xtagan joyingizdan davom etmoqda ({time})",
+    "startOver": "Boshidan ko'rish",
     "allLessonsDone": "Barcha darslar tugallandi",
     "examNextHint": "Endi yakuniy imtihonni topshirib, sertifikat oling.",
     "proceedToExam": "Yakuniy imtihonga oʻtish",
