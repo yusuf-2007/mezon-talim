@@ -9,10 +9,12 @@ import { coursesRepository } from "@/lib/db/repositories/courses";
 import { userAvatarsRepository } from "@/lib/db/repositories/user-avatars";
 import { lessonsRepository } from "@/lib/db/repositories/lessons";
 import { lessonProgressRepository } from "@/lib/db/repositories/lesson-progress";
+import { modulesRepository } from "@/lib/db/repositories/modules";
 import {
   adminEnrollAction,
   grantRetryAction,
   issueCertificateAction,
+  issueModuleCertificateAction,
   reissueCertificateAction,
   removeEnrollmentAction,
   resetProgressAction,
@@ -100,7 +102,9 @@ export default async function AdminUserDetailPage({
   // Course pickers: not-yet-enrolled / not-actively-certified.
   const enrolledIds = new Set(enrollments.map((e) => e.course.id));
   const activeCertIds = new Set(
-    certs.filter((c) => !c.revokedAt).map((c) => c.courseId),
+    // Course certificates only: holding a module certificate must not hide
+    // the course from the "issue course certificate" picker.
+    certs.filter((c) => !c.revokedAt && c.kind === "course").map((c) => c.courseId),
   );
   const toLabel = (c: (typeof allCourses)[number]) => ({
     id: c.id,
@@ -108,6 +112,37 @@ export default async function AdminUserDetailPage({
   });
   const enrollCandidates = allCourses.filter((c) => !enrolledIds.has(c.id)).map(toLabel);
   const certCandidates = allCourses.filter((c) => !activeCertIds.has(c.id)).map(toLabel);
+
+  // Manual module certificate: modules of the courses this user is enrolled
+  // in that they do not already hold an ACTIVE module certificate for.
+  const activeModuleCertIds = new Set(
+    certs
+      .filter((c) => !c.revokedAt && c.kind === "module" && c.moduleId)
+      .map((c) => c.moduleId!),
+  );
+  // A revoked certificate whose target already has an active one again
+  // (re-issued) offers no "re-issue" button.
+  const hasActiveReplacement = (c: (typeof certs)[number]) =>
+    c.revokedAt !== null &&
+    (c.kind === "course"
+      ? activeCertIds.has(c.courseId)
+      : c.moduleId !== null && activeModuleCertIds.has(c.moduleId));
+  const moduleCandidates = (
+    await Promise.all(
+      enrollments.map(async ({ course }) =>
+        (await modulesRepository.listByCourse(course.id)).map((m, i) => ({
+          id: m.id,
+          label: t("moduleCertOption", {
+            course: pickLocale(course.title, locale),
+            n: i + 1,
+            module: pickLocale(m.title, locale),
+          }),
+        })),
+      ),
+    )
+  )
+    .flat()
+    .filter((m) => !activeModuleCertIds.has(m.id));
 
   const fmtDate = (d: Date) =>
     new Date(d).toLocaleDateString(locale === "ru" ? "ru-RU" : locale === "en" ? "en-US" : "uz-UZ");
@@ -298,13 +333,23 @@ export default async function AdminUserDetailPage({
 
         {/* ── Certificates ── */}
         <TabsContent value="certificates" className="space-y-4 pt-6">
-          <CoursePicker
-            userId={userId}
-            courses={certCandidates}
-            action={issueCertificateAction}
-            buttonLabel={t("issueCert")}
-            placeholder={t("selectCourse")}
-          />
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <CoursePicker
+              userId={userId}
+              courses={certCandidates}
+              action={issueCertificateAction}
+              buttonLabel={t("issueCert")}
+              placeholder={t("selectCourse")}
+            />
+            {/* Admin override: skips the lessons + module-exam gate. */}
+            <CoursePicker
+              userId={userId}
+              courses={moduleCandidates}
+              action={issueModuleCertificateAction}
+              buttonLabel={t("issueModuleCert")}
+              placeholder={t("selectModule")}
+            />
+          </div>
           {certs.length === 0 ? (
             <p className="text-sm text-slate-500">{t("noCertificates")}</p>
           ) : (
@@ -315,9 +360,27 @@ export default async function AdminUserDetailPage({
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface p-4 shadow-sm"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-navy-800">
-                      {pickLocale(c.courseTitle, locale)}
+                    <p className="flex flex-wrap items-center gap-2 font-medium text-navy-800">
+                      <Badge
+                        className={
+                          c.kind === "module"
+                            ? "bg-lp-gold-tint text-lp-gold-ink"
+                            : "bg-navy-100 text-navy-800"
+                        }
+                      >
+                        {c.kind === "module" ? t("certKindModule") : t("certKindCourse")}
+                      </Badge>
+                      {/* Module certificates show the module title snapshot. */}
+                      {c.kind === "module" && c.moduleTitle
+                        ? pickLocale(c.moduleTitle, locale)
+                        : pickLocale(c.courseTitle, locale)}
                     </p>
+                    {c.kind === "module" && (
+                      <p className="text-xs text-slate-500">
+                        {pickLocale(c.courseTitle, locale)}
+                        {c.moduleId === null && ` · ${t("certModuleDeleted")}`}
+                      </p>
+                    )}
                     <p className="font-mono text-xs text-slate-500">
                       {c.verificationCode} · {fmtDate(c.issuedAt)}
                     </p>
@@ -337,9 +400,11 @@ export default async function AdminUserDetailPage({
                       {t("downloadCert")}
                     </a>
                     {c.revokedAt ? (
-                      <form action={reissueCertificateAction.bind(null, c.id)}>
-                        <ConfirmSubmit label={t("reissueCert")} />
-                      </form>
+                      hasActiveReplacement(c) ? null : (
+                        <form action={reissueCertificateAction.bind(null, c.id)}>
+                          <ConfirmSubmit label={t("reissueCert")} />
+                        </form>
+                      )
                     ) : (
                       <form action={revokeCertificateAction.bind(null, c.id)}>
                         <ConfirmSubmit label={t("revokeCert")} />

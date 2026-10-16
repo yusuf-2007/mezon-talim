@@ -9,7 +9,7 @@ export type NotificationInsert = {
   /** Null when the recipient has no account yet (sign-up login codes). */
   userId: string | null;
   channel: Channel;
-  type: string; // 'welcome' | 'receipt' | 'certificate' | 'exam_reminder' | ...
+  type: string; // 'welcome' | 'receipt' | 'certificate' | 'module_certificate' | 'exam_reminder' | ...
   payload?: unknown;
 };
 

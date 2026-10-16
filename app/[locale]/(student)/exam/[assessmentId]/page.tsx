@@ -8,6 +8,7 @@ import { startExamAction } from "@/lib/assessments/actions";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { getCurriculum } from "@/lib/learning/curriculum";
 import { buildFlow, minutesOf } from "@/lib/learning/flow";
+import { moduleCertificatesActive } from "@/lib/learning/modules";
 import { pickLocale } from "@/lib/i18n/localized";
 import { APP_TIME_ZONE, cn } from "@/lib/utils";
 import { RequestAccessButton } from "@/components/exam/request-access-button";
@@ -49,15 +50,31 @@ export default async function PreExamPage({
   const isFinal = a.type === "final_exam";
   const minutes = minutesOf(a.timeLimitSeconds);
   const passedAttempt = o.history.find((h) => h.passed) ?? null;
+  const mp = o.modulePrereq;
+  const moduleCerts = a.type === "module_test" && a.isScored && moduleCertificatesActive(course);
+  // Only promise a certificate where one can actually follow the pass.
+  const certFollows = (isFinal && course.certificateEnabled) || moduleCerts;
+  const moduleLessonStates =
+    (mp && flow.modules.find((m) => m.id === mp.moduleId)?.lessons.map((l) => l.state)) || [];
 
   const eyebrow =
     a.type === "final_exam"
       ? t("eyebrowFinal")
       : a.type === "module_test"
-        ? t("eyebrowModule")
+        ? mp
+          ? t("eyebrowModuleN", { n: mp.number })
+          : t("eyebrowModule")
         : a.type === "mock_exam"
           ? t("eyebrowMock")
           : t("eyebrowQuiz");
+  const intro =
+    isFinal && a.isScored
+      ? t("introFinal", { pct: a.passThresholdPct })
+      : a.type === "module_test"
+        ? moduleCerts
+          ? t("introModuleCert", { pct: a.passThresholdPct })
+          : t("introModule", { pct: a.passThresholdPct })
+        : t("introOther");
 
   return (
     <>
@@ -75,7 +92,7 @@ export default async function PreExamPage({
           {pickLocale(a.title, locale)}
         </h1>
         <p className="mt-2.5 max-w-[56ch] text-[1.05rem] text-lp-slate">
-          {isFinal && a.isScored ? t("introFinal", { pct: a.passThresholdPct }) : t("introOther")}
+          {intro}
         </p>
 
         {/* ── Facts ─────────────────────────────────────────────────── */}
@@ -110,7 +127,7 @@ export default async function PreExamPage({
               href={`/exam/attempt/${passedAttempt.id}/result`}
               className="text-[.88rem] font-bold text-lp-success hover:underline"
             >
-              {t("resultAndCertificate")}
+              {certFollows ? t("resultAndCertificate") : t("resultLink")}
             </Link>
           </div>
         )}
@@ -147,6 +164,21 @@ export default async function PreExamPage({
                 />
               )}
             </div>
+          </section>
+        )}
+
+        {/* A module exam waits for its own module's lessons (not the course's). */}
+        {mp && mp.total > 0 && (
+          <section className="mt-[22px] rounded-2xl border border-lp-line bg-white px-6 py-[22px]">
+            <Eyebrow className="mb-3">{t("prereqTitle")}</Eyebrow>
+            <Requirement
+              met={mp.allComplete}
+              label={t("reqModuleLessons")}
+              status={mp.allComplete ? t("prereqMet") : `${mp.completed} / ${mp.total}`}
+            >
+              <p className="mt-0.5 text-[.8rem] text-lp-muted">{pickLocale(mp.title, locale)}</p>
+              <LessonTicks states={moduleLessonStates} height="sm" className="mt-2 max-w-[220px]" />
+            </Requirement>
           </section>
         )}
 
@@ -298,6 +330,16 @@ function StartAction({
         <>
           <span className={greyBtn}>{t("lessonsLeft", { count: left })}</span>
           {note(t("blocked_lessons_incomplete"))}
+        </>
+      );
+    }
+    case "module_lessons_incomplete": {
+      const mp = o.modulePrereq;
+      const left = mp ? mp.total - mp.completed : 0;
+      return (
+        <>
+          <span className={greyBtn}>{t("moduleLessonsLeft", { count: left })}</span>
+          {note(t("blocked_module_lessons_incomplete"))}
         </>
       );
     }

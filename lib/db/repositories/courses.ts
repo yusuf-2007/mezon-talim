@@ -22,6 +22,8 @@ export type CourseInsert = {
   accessDurationDays: number;
   passThresholdPct: number;
   certificateEnabled: boolean;
+  /** Per-module certificates; omitted → the column default (true). */
+  moduleCertificatesEnabled?: boolean;
   createdBy: string;
 };
 

@@ -3,6 +3,7 @@ import { getEmailSender, getSmsSender } from "./index";
 import {
   certificateEmail,
   examReminderSms,
+  moduleCertificateEmail,
   paymentConfirmSms,
   receiptEmail,
   welcomeEmail,
@@ -16,6 +17,7 @@ import { pickLocale } from "@/lib/i18n/localized";
 import { publicBaseUrl } from "@/lib/base-url";
 import { deliveryCallbackUrl } from "./callback";
 import type { Locale } from "@/lib/i18n/routing";
+import type { LocalizedText } from "@/lib/db/schema";
 
 /**
  * Transactional notification service. Every send is recorded in the
@@ -213,6 +215,40 @@ export async function notifyCertificateIssued(
     );
   } catch (err) {
     console.error("notifyCertificateIssued failed (non-fatal):", err);
+  }
+}
+
+/**
+ * Module-certificate email. Its own notification type ('module_certificate')
+ * so delivery logs and the admin view can tell it from the course certificate.
+ * `moduleTitle` is the snapshot stored on the certificate.
+ */
+export async function notifyModuleCertificateIssued(
+  userId: string,
+  courseId: string,
+  moduleTitle: LocalizedText,
+  verificationCode: string,
+): Promise<void> {
+  try {
+    const [user, course] = await Promise.all([
+      usersRepository.findById(userId),
+      coursesRepository.findById(courseId),
+    ]);
+    if (!user || !course) return;
+    const locale = (user.locale ?? "uz") as Locale;
+    await dispatchEmail(
+      userId,
+      "module_certificate",
+      user.email,
+      moduleCertificateEmail(locale, {
+        moduleTitle: pickLocale(moduleTitle, locale),
+        courseTitle: pickLocale(course.title, locale),
+        verifyUrl: `${baseUrl()}/verify/${verificationCode}`,
+        code: verificationCode,
+      }),
+    );
+  } catch (err) {
+    console.error("notifyModuleCertificateIssued failed (non-fatal):", err);
   }
 }
 

@@ -16,6 +16,7 @@ import {
   CardToolbar,
   FilterChips,
   KpiStrip,
+  Pill,
   SearchForm,
   StatusDot,
   Table,
@@ -26,31 +27,46 @@ import type { Locale } from "@/lib/i18n/routing";
  * Certificates: the queue of people who have earned one, then the ledger of
  * every one ever issued.
  *
- * Passing the exam does not mint the document. A person confirms the spelling
- * first, because the name goes on something with a public verification page and
- * a typo there outlives the mistake.
+ * Passing the FINAL exam does not mint the course document. A person confirms
+ * the spelling first, because the name goes on something with a public
+ * verification page and a typo there outlives the mistake. Module certificates
+ * are milestones and issue automatically, so the queue stays course-only; they
+ * appear in the ledger with a kind badge and can be revoked/re-issued the same
+ * way (a re-issue keeps the kind and the module).
  */
 export default async function AdminCertificatesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; kind?: string }>;
 }) {
   const me = await requireRole("super_admin");
   const t = await getTranslations("Admin");
   const locale = (await getLocale()) as Locale;
-  const { q, status } = await searchParams;
+  const { q, status, kind: kindParam } = await searchParams;
 
   const active = status === "active" || status === "revoked" ? status : null;
+  const kind = kindParam === "course" || kindParam === "module" ? kindParam : null;
 
   const [counts, certs, pending] = await Promise.all([
     certificatesRepository.statusCounts(),
-    certificatesRepository.listAll({ search: q, status: active ?? undefined }),
+    certificatesRepository.listAll({
+      search: q,
+      status: active ?? undefined,
+      kind: kind ?? undefined,
+    }),
     certificatesRepository.pendingIssuance(50),
   ]);
 
-  const href = (s: string | null) => {
+  // Status chip counts follow the kind filter, so "Faol 3" under "Modul"
+  // means three active MODULE certificates, not three of any kind.
+  const scoped = kind ? counts.byKind[kind] : counts;
+
+  const href = (next: { status?: string | null; kind?: string | null }) => {
     const p = new URLSearchParams();
+    const s = next.status === undefined ? active : next.status;
+    const k = next.kind === undefined ? kind : next.kind;
     if (s) p.set("status", s);
+    if (k) p.set("kind", k);
     if (q) p.set("q", q);
     const qs = p.toString();
     return `/admin/certificates${qs ? `?${qs}` : ""}`;
@@ -68,11 +84,24 @@ export default async function AdminCertificatesPage({
       <div className="mb-[18px]">
         <KpiStrip
           cells={[
-            { label: t("statCertsTotal"), value: String(counts.total) },
-            { label: t("statCertsActive"), value: String(counts.active), tone: "green" },
+            // Course and module certificates are different documents (one
+            // proves the course, the other one module), so they never share
+            // a number.
+            {
+              label: t("statCertsCourse"),
+              value: String(counts.activeCourse),
+              sub: t("statCertsActiveSub"),
+              tone: "green",
+            },
+            {
+              label: t("statCertsModule"),
+              value: String(counts.activeModule),
+              sub: t("statCertsActiveSub"),
+            },
             {
               label: t("statCertsRevoked"),
               value: String(counts.revoked),
+              sub: t("statCertsRevokedSub", { total: counts.total }),
               tone: counts.revoked > 0 ? "red" : undefined,
             },
             {
@@ -130,20 +159,32 @@ export default async function AdminCertificatesPage({
 
       <Card>
         <CardToolbar>
-          <FilterChips
-            active={active}
-            hrefFor={href}
-            options={[
-              { value: null, label: t("filterAll"), count: counts.total },
-              { value: "active", label: t("certActive"), count: counts.active },
-              { value: "revoked", label: t("certRevoked"), count: counts.revoked },
-            ]}
-          />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <FilterChips
+              active={kind}
+              hrefFor={(v) => href({ kind: v })}
+              options={[
+                { value: null, label: t("certKindAll"), count: counts.total },
+                { value: "course", label: t("certKindCourse"), count: counts.byKind.course.total },
+                { value: "module", label: t("certKindModule"), count: counts.byKind.module.total },
+              ]}
+            />
+            <span aria-hidden className="hidden h-6 w-px bg-lp-line sm:block" />
+            <FilterChips
+              active={active}
+              hrefFor={(v) => href({ status: v })}
+              options={[
+                { value: null, label: t("filterAll"), count: scoped.total },
+                { value: "active", label: t("certActive"), count: scoped.active },
+                { value: "revoked", label: t("certRevoked"), count: scoped.revoked },
+              ]}
+            />
+          </div>
           <SearchForm
             action="/admin/certificates"
             defaultValue={q}
             placeholder={t("searchCerts")}
-            hidden={{ status: active ?? undefined }}
+            hidden={{ status: active ?? undefined, kind: kind ?? undefined }}
           />
         </CardToolbar>
 
@@ -152,21 +193,42 @@ export default async function AdminCertificatesPage({
           head={[
             { label: t("colCode") },
             { label: t("colStudent") },
-            { label: t("colCourse"), hide: true },
+            { label: t("colCourseOrModule"), hide: true },
             { label: t("colIssued"), hide: true },
             { label: t("colStatus") },
             { label: t("colActions"), align: "right" },
           ]}
           rows={certs.map((c) => [
-            <span key="c" className="font-mono text-[.82rem] font-bold text-lp-navy tabular-nums">
-              {c.verificationCode}
+            // The kind badge sits under the code (always visible) rather than
+            // in the course column, which collapses on narrow screens.
+            <span key="c" className="flex flex-col items-start gap-1">
+              <span className="whitespace-nowrap font-mono text-[.82rem] font-bold text-lp-navy tabular-nums">
+                {c.verificationCode}
+              </span>
+              <Pill tone={c.kind === "module" ? "gold" : "navy"}>
+                {c.kind === "module" ? t("certKindModule") : t("certKindCourse")}
+              </Pill>
             </span>,
             <span key="s" className="block min-w-0 truncate font-semibold text-lp-ink">
               {c.userName || c.userEmail || "—"}
             </span>,
-            <span key="co" className="block min-w-0 truncate text-[.86rem] text-lp-slate">
-              {pickLocale(c.courseTitle, locale)}
-            </span>,
+            c.kind === "module" ? (
+              // Module title from the snapshot taken at issue — the live module
+              // may have been renamed or deleted since.
+              <span key="co" className="block min-w-0">
+                <span className="block truncate text-[.86rem] font-semibold text-lp-ink">
+                  {c.moduleTitle ? pickLocale(c.moduleTitle, locale) : "—"}
+                </span>
+                <span className="block truncate text-[.8rem] text-lp-muted">
+                  {pickLocale(c.courseTitle, locale)}
+                  {c.moduleId === null && ` · ${t("certModuleDeleted")}`}
+                </span>
+              </span>
+            ) : (
+              <span key="co" className="block min-w-0 truncate text-[.86rem] text-lp-slate">
+                {pickLocale(c.courseTitle, locale)}
+              </span>
+            ),
             <span key="i" className="whitespace-nowrap text-[.84rem] text-lp-slate tabular-nums">
               {fmt(c.issuedAt, locale)}
             </span>,
@@ -197,9 +259,11 @@ export default async function AdminCertificatesPage({
                 {t("downloadCert")}
               </a>
               {c.revokedAt ? (
-                <form action={reissueCertificateAction.bind(null, c.id)}>
-                  <ConfirmSubmit label={t("reissueCert")} />
-                </form>
+                c.superseded ? null : (
+                  <form action={reissueCertificateAction.bind(null, c.id)}>
+                    <ConfirmSubmit label={t("reissueCert")} />
+                  </form>
+                )
               ) : (
                 <form action={revokeCertificateAction.bind(null, c.id)}>
                   <ConfirmSubmit label={t("revokeCert")} />

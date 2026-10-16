@@ -165,16 +165,19 @@ export function ModuleAccordion({
   index,
   summary,
   summaryClassName,
+  defaultOpen,
   children,
 }: {
   /** 0-based position of the module; only the first starts open. */
   index: number;
+  /** Override the first-open default (e.g. the module being watched). */
+  defaultOpen?: boolean;
   summary: React.ReactNode;
   summaryClassName?: string;
   children: React.ReactNode;
 }) {
   return (
-    <details open={index === 0} className="group/module">
+    <details open={defaultOpen ?? index === 0} className="group/module">
       <summary
         className={cn(
           "flex cursor-pointer list-none items-center justify-between gap-3 transition-colors [&::-webkit-details-marker]:hidden",

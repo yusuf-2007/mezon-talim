@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
  *
  * "Next" is dimmed until the lesson is done, because sequential unlock (B2) is
  * enforced server-side and a live-looking link to a locked lesson would only
- * bounce. On the last lesson, next is the exam rather than nothing.
+ * bounce. On the last lesson of a module with an exam still to pass, next is
+ * that module exam; on the last lesson of the course, the final exam.
  */
 export function CompleteControls({
   lessonId,
@@ -31,14 +32,19 @@ export function CompleteControls({
    */
   partsLeft?: { opened: number; total: number; href: string } | null;
   /** Where "next" goes: the following lesson, the exam, or nowhere. */
-  next: { href: string; kind: "lesson" | "exam" } | null;
+  next: { href: string; kind: "lesson" | "exam" | "module_exam" } | null;
 }) {
   const t = useTranslations("Player");
   const [score, setScore] = useState<number | null>(null);
   const [, formAction, pending] = useActionState(completeLessonAction, { ok: false });
   const words = ["", t("rate1"), t("rate2"), t("rate3"), t("rate4"), t("rate5")];
 
-  const nextLabel = next?.kind === "exam" ? t("toExam") : t("nextLesson");
+  const nextLabel =
+    next?.kind === "exam"
+      ? t("toExam")
+      : next?.kind === "module_exam"
+        ? t("toModuleExam")
+        : t("nextLesson");
   const nextCls =
     "inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-3 text-[.92rem] font-bold text-lp-navy";
 

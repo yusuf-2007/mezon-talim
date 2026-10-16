@@ -167,6 +167,47 @@ export function certificateEmail(
 }
 
 /**
+ * Module-certificate email (a milestone inside a course). Its own copy: the
+ * course certificate's "you completed the course" would be wrong here.
+ */
+export function moduleCertificateEmail(
+  locale: Locale,
+  data: { moduleTitle: string; courseTitle: string; verifyUrl: string; code: string },
+): EmailTemplate {
+  if (locale === "ru") {
+    const body = `<p>Поздравляем! 🎓</p>
+      <p>Вы успешно завершили модуль <b>${esc(data.moduleTitle)}</b> курса <b>${esc(data.courseTitle)}</b> и получили сертификат модуля.</p>
+      <p>Код проверки: <b>${esc(data.code)}</b></p>
+      <p style="margin-top:20px">${button(data.verifyUrl, "Открыть сертификат")}</p>`;
+    return {
+      subject: `Сертификат модуля — ${data.moduleTitle}`,
+      html: shell("Сертификат модуля получен", body, FOOTER.ru),
+      text: `Поздравляем! Вы завершили модуль «${data.moduleTitle}» курса «${data.courseTitle}». Сертификат модуля (код ${data.code}): ${data.verifyUrl}`,
+    };
+  }
+  if (locale === "en") {
+    const body = `<p>Congratulations! 🎓</p>
+      <p>You have completed the module <b>${esc(data.moduleTitle)}</b> of the course <b>${esc(data.courseTitle)}</b> and earned a module certificate.</p>
+      <p>Verification code: <b>${esc(data.code)}</b></p>
+      <p style="margin-top:20px">${button(data.verifyUrl, "Open certificate")}</p>`;
+    return {
+      subject: `Module certificate — ${data.moduleTitle}`,
+      html: shell("Module certificate earned", body, FOOTER.en),
+      text: `Congratulations! You completed the module "${data.moduleTitle}" of "${data.courseTitle}". Module certificate (code ${data.code}): ${data.verifyUrl}`,
+    };
+  }
+  const body = `<p>Tabriklaymiz! 🎓</p>
+    <p>Siz <b>${esc(data.courseTitle)}</b> kursining <b>${esc(data.moduleTitle)}</b> modulini muvaffaqiyatli tamomladingiz va modul sertifikatini oldingiz.</p>
+    <p>Tekshirish kodi: <b>${esc(data.code)}</b></p>
+    <p style="margin-top:20px">${button(data.verifyUrl, "Sertifikatni ochish")}</p>`;
+  return {
+    subject: `Modul sertifikati — ${data.moduleTitle}`,
+    html: shell("Modul sertifikati berildi", body, FOOTER.uz),
+    text: `Tabriklaymiz! Siz "${data.courseTitle}" kursining "${data.moduleTitle}" modulini tamomladingiz. Modul sertifikati (kod ${data.code}): ${data.verifyUrl}`,
+  };
+}
+
+/**
  * Email-address confirmation link.
  *
  * Sent when an account claims an address — at email sign-up, or from the

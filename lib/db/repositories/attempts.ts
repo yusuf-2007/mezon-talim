@@ -1,7 +1,19 @@
 import "server-only";
-import { and, desc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../client";
 import { assessments, attemptAnswers, attempts, courses, questions, users } from "../schema";
+
+/**
+ * SQL twin of `isCountedPass` (lib/assessments/passed.ts): submitted, passed,
+ * not voided. Change both together.
+ */
+function passedAttemptWhere() {
+  return and(
+    isNotNull(attempts.submittedAt),
+    eq(attempts.passed, true),
+    eq(attempts.voided, false),
+  );
+}
 
 /** Exam attempts + saved answers. Enforcement (limits/cooldown/window) lives in
  * the attempt service; this is pure persistence. */
@@ -137,6 +149,62 @@ export const attemptsRepository = {
       .orderBy(desc(attempts.attemptNo));
   },
 
+  /** Has the user a counted (submitted, passed, non-voided) attempt? */
+  async hasPassed(userId: string, assessmentId: string): Promise<boolean> {
+    const [row] = await db
+      .select({ id: attempts.id })
+      .from(attempts)
+      .where(
+        and(
+          eq(attempts.userId, userId),
+          eq(attempts.assessmentId, assessmentId),
+          passedAttemptWhere(),
+        ),
+      )
+      .limit(1);
+    return Boolean(row);
+  },
+
+  /** Which of `assessmentIds` the user has a counted pass on (one query). */
+  async passedAssessmentIds(
+    userId: string,
+    assessmentIds: string[],
+  ): Promise<Set<string>> {
+    if (assessmentIds.length === 0) return new Set();
+    const rows = await db
+      .selectDistinct({ assessmentId: attempts.assessmentId })
+      .from(attempts)
+      .where(
+        and(
+          eq(attempts.userId, userId),
+          inArray(attempts.assessmentId, assessmentIds),
+          passedAttemptWhere(),
+        ),
+      );
+    return new Set(rows.map((r) => r.assessmentId));
+  },
+
+  /**
+   * A user's attempts on several assessments in one query (incl. in-progress
+   * and voided rows — callers apply `isCountedPass` and the voided rule).
+   */
+  async listForUserAssessments(userId: string, assessmentIds: string[]) {
+    if (assessmentIds.length === 0) return [];
+    return db
+      .select({
+        id: attempts.id,
+        assessmentId: attempts.assessmentId,
+        attemptNo: attempts.attemptNo,
+        scorePct: attempts.scorePct,
+        passed: attempts.passed,
+        voided: attempts.voided,
+        submittedAt: attempts.submittedAt,
+      })
+      .from(attempts)
+      .where(and(eq(attempts.userId, userId), inArray(attempts.assessmentId, assessmentIds)))
+      .orderBy(desc(attempts.attemptNo));
+  },
+
   /** Every submitted attempt for a user, joined with its assessment (admin view). */
   async listForUserAll(userId: string) {
     return db
@@ -147,6 +215,7 @@ export const attemptsRepository = {
           type: assessments.type,
           title: assessments.title,
           courseId: assessments.courseId,
+          moduleId: assessments.moduleId,
           isScored: assessments.isScored,
           passThresholdPct: assessments.passThresholdPct,
           maxAttempts: assessments.maxAttempts,

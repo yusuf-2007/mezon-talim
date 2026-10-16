@@ -3,6 +3,7 @@
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { remindFinalExamIfDue } from "./exam-reminder";
+import { issueModuleCertificateIfEligible } from "@/lib/certificates/service";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { redirectLocalized } from "@/lib/i18n/redirect";
@@ -28,6 +29,16 @@ async function courseIdForLesson(lessonId: string): Promise<string | null> {
   );
   const mod = await modulesRepository.findById(lesson.moduleId);
   return mod?.courseId ?? null;
+}
+
+/** Issue the module certificate of a lesson's module if now eligible (never throws). */
+async function issueModuleCertificateForLesson(userId: string, lessonId: string) {
+  try {
+    const lesson = await lessonsRepository.findById(lessonId);
+    if (lesson) await issueModuleCertificateIfEligible(userId, lesson.moduleId);
+  } catch (err) {
+    console.error("module certificate on lesson completion failed (non-fatal):", err);
+  }
 }
 
 async function assertLessonEnrollment(userId: string, lessonId: string) {
@@ -137,6 +148,10 @@ export async function completeLessonAction(
   );
   // If that was the last lesson and a final exam is waiting, say so by SMS.
   await remindFinalExamIfDue(user.id, courseId);
+  // Finishing a module's lessons can complete a module certificate for a
+  // student who passed its exam earlier (module exams used to open any time).
+  // Best-effort and idempotent; it re-checks every condition itself.
+  await issueModuleCertificateForLesson(user.id, parsed.data.lessonId);
   revalidatePath(`/learn/${courseId}/${parsed.data.lessonId}`);
   return { ok: true };
 }

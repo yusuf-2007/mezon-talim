@@ -162,6 +162,27 @@
       "when": 1791506509317,
       "tag": "0022_backfill_lesson_video_parts",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792176701714,
+      "tag": "0023_module_certificates",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792176710822,
+      "tag": "0024_dedupe_active_course_certificates",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792176725036,
+      "tag": "0025_certificate_active_unique",
+      "breakpoints": true
     }
   ]
 }

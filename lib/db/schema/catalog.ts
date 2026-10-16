@@ -38,6 +38,11 @@ export const courses = pgTable("courses", {
   accessDurationDays: integer("access_duration_days").notNull().default(365),
 
   certificateEnabled: boolean("certificate_enabled").notNull().default(true),
+  // Per-module "milestone" certificates. Issued only when BOTH this and
+  // certificate_enabled are on; module exams exist and gate either way.
+  moduleCertificatesEnabled: boolean("module_certificates_enabled")
+    .notNull()
+    .default(true),
   passThresholdPct: integer("pass_threshold_pct").notNull().default(70),
 
   createdBy: uuid("created_by").references(() => users.id),

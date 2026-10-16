@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { AssessFormState } from "@/lib/assessments/studio-actions";
 import { pickLocale } from "@/lib/i18n/localized";
@@ -37,12 +37,15 @@ export function AssessmentForm({
   modules,
   lessons,
   assessment,
+  takenModuleIds = [],
 }: {
   action: (prev: AssessFormState, fd: FormData) => Promise<AssessFormState>;
   submitLabel: string;
   modules: Opt[];
   lessons: Opt[];
   assessment?: AssessmentLike;
+  /** Modules that already have a module exam (other than this one). */
+  takenModuleIds?: string[];
 }) {
   const t = useTranslations("Assess");
   const locale = useLocale();
@@ -50,9 +53,22 @@ export function AssessmentForm({
   const [type, setType] = useState<AssessmentLike["type"]>(
     assessment?.type ?? "lesson_quiz",
   );
+  const taken = new Set(takenModuleIds);
+  const isModuleExam = type === "module_test";
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form
+      // Submit through onSubmit instead of `action`: a form `action` is reset
+      // by React after every run, so a refused save (e.g. "this module
+      // already has an exam") wiped the author's input and left the type
+      // <select> showing its default while the module fields stayed open.
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        startTransition(() => formAction(fd));
+      }}
+      className="space-y-5"
+    >
       <FormError message={state.error} />
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -79,15 +95,36 @@ export function AssessmentForm({
         <Input name="titleRu" defaultValue={assessment?.title.ru ?? ""} />
       </Field>
 
-      {type === "module_test" && (
-        <Field label={t("module")}>
-          <select name="moduleId" defaultValue={assessment?.moduleId ?? ""} className={selectCls}>
-            <option value="">{t("none")}</option>
-            {modules.map((m) => (
-              <option key={m.id} value={m.id}>
-                {pickLocale(m.title, locale)}
-              </option>
-            ))}
+      {isModuleExam && (
+        <Field
+          label={t("module")}
+          htmlFor="moduleId"
+          hint={t("moduleExamHint")}
+          errors={state.fieldErrors?.moduleId}
+        >
+          {/* Required: a module exam with no module decides nothing. A module
+              that already has its exam is shown but not selectable — the
+              server refuses a second one anyway (one exam per module). */}
+          <select
+            id="moduleId"
+            name="moduleId"
+            required
+            defaultValue={assessment?.moduleId ?? ""}
+            className={selectCls}
+          >
+            <option value="" disabled>
+              {t("chooseModule")}
+            </option>
+            {modules.map((m) => {
+              const busy = taken.has(m.id) && m.id !== assessment?.moduleId;
+              return (
+                <option key={m.id} value={m.id} disabled={busy}>
+                  {busy
+                    ? t("moduleHasExam", { title: pickLocale(m.title, locale) })
+                    : pickLocale(m.title, locale)}
+                </option>
+              );
+            })}
           </select>
         </Field>
       )}
@@ -158,10 +195,25 @@ export function AssessmentForm({
       </div>
 
       <div className="flex flex-wrap gap-6">
-        <label className="flex items-center gap-3">
-          <Switch name="isScored" value="true" defaultChecked={assessment?.isScored ?? true} />
-          <span className="text-sm">{t("scored")}</span>
-        </label>
+        {isModuleExam ? (
+          // A module exam is always scored: an unscored attempt "passes" on
+          // submit, which would hand out module certificates for nothing. The
+          // server forces it too; the locked switch just says so up front.
+          <label key="scored-locked" className="flex items-center gap-3">
+            <Switch checked disabled aria-describedby="scored-locked-hint" />
+            <span className="text-sm">
+              {t("scored")}
+              <span id="scored-locked-hint" className="block text-xs text-slate-500">
+                {t("moduleExamAlwaysScored")}
+              </span>
+            </span>
+          </label>
+        ) : (
+          <label key="scored" className="flex items-center gap-3">
+            <Switch name="isScored" value="true" defaultChecked={assessment?.isScored ?? true} />
+            <span className="text-sm">{t("scored")}</span>
+          </label>
+        )}
         <label className="flex items-center gap-3">
           <Switch name="randomize" value="true" defaultChecked={assessment?.randomize ?? false} />
           <span className="text-sm">{t("randomize")}</span>

@@ -36,12 +36,17 @@ export async function AssessmentEditor({
   const assessment = await assessmentsRepository.findById(assessmentId);
   if (!assessment || assessment.courseId !== courseId) notFound();
 
-  const [questions, modules, lessonRows] = await Promise.all([
+  const [questions, modules, lessonRows, siblings] = await Promise.all([
     questionsRepository.listByAssessment(assessmentId),
     modulesRepository.listByCourse(courseId),
     lessonsRepository.listByCourse(courseId),
+    assessmentsRepository.listByCourse(courseId),
   ]);
   const lessons = lessonRows.map((r) => ({ id: r.lesson.id, title: r.lesson.title }));
+  // Modules whose exam is another assessment — one module exam per module.
+  const takenModuleIds = siblings
+    .filter((a) => a.type === "module_test" && a.moduleId && a.id !== assessmentId)
+    .map((a) => a.moduleId!);
 
   return (
     <>
@@ -71,6 +76,7 @@ export async function AssessmentEditor({
             modules={modules.map((m) => ({ id: m.id, title: m.title }))}
             lessons={lessons}
             assessment={assessment}
+            takenModuleIds={takenModuleIds}
           />
         </CardContent>
       </Card>

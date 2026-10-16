@@ -50,6 +50,9 @@ export const courseUpsertSchema = z.object({
   accessDurationDays: z.coerce.number().int().min(1).max(3650),
   passThresholdPct: z.coerce.number().int().min(1).max(100),
   certificateEnabled: checkbox,
+  // Module certificates also need certificateEnabled; both switches are posted
+  // by CourseForm, so a missing field here means "off", not "unchanged".
+  moduleCertificatesEnabled: checkbox,
 });
 export type CourseUpsertInput = z.infer<typeof courseUpsertSchema>;
 

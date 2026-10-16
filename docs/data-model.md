@@ -62,6 +62,7 @@ rewrite. Conventions below, then entities.
 | price_tiyin | bigint | **TBD pricing**; per-course default |
 | access_duration_days | int | default 365 (~1-year access) |
 | certificate_enabled | bool | default true |
+| module_certificates_enabled | bool | default true; module certificates issue only when this AND certificate_enabled are on |
 | pass_threshold_pct | int | default 70 (final exam) |
 | created_by | uuid → users | teacher/admin |
 | created_at / updated_at / deleted_at | | |
@@ -197,13 +198,26 @@ lesson's access rule, never by a storage URL.
 | id | uuid PK | |
 | user_id | uuid → users | |
 | course_id | uuid → courses | |
+| kind | enum `certificate_kind` | `course` (default) \| `module` — kind is the truth |
+| module_id | uuid → modules | module certificates; ON DELETE SET NULL (modules are hard-deleted) |
+| module_title | jsonb | module certificates: title snapshot taken at issue |
 | verification_code | text unique | public, e.g. base32; powers /verify/:code |
 | issued_at | timestamptz | |
 | pdf_object_key | text | MinIO key (in-country) |
 | revoked_at | timestamptz | nullable |
 
+Partial unique indexes: one ACTIVE course certificate per `(user_id, course_id)` and one
+ACTIVE module certificate per `(user_id, module_id)` (revoked rows are history and excluded).
+Migration 0024 revoked any pre-existing duplicate active course certificates (kept the earliest).
+
+**Module certificates ("milestones").** Issued when the module has ≥1 lesson, every lesson is
+completed, and the module's published, scored `module_test` has a non-voided pass — triggered on
+exam submit, on lesson completion, and on the module exam's result page. They never mark the
+enrollment completed and never affect the course certificate. **No backfill was run** (pre-launch):
+students who met the rule before this shipped get theirs the next time a trigger fires.
+
 Public verification page reads by `verification_code` and shows minimal data (name,
-course, date, valid/revoked) — no other personal data exposed.
+course, module for module certificates, date, valid/revoked) — no other personal data exposed.
 
 > **TBD #2 (cert authority):** this is **Mezon's own completion certificate**. Leave a
 > nullable `aaoifi_registration_ref` hook for a future official-exam handoff.

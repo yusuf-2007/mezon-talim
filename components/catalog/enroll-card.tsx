@@ -12,7 +12,8 @@ import type { FlowLessonState } from "@/lib/learning/flow";
  * The course page's side card. Two modes, one shape:
  *
  * - enrolled: where you are (ticks, "2 / 4") and one button to carry on — to
- *   the next lesson, or to the exam once the lessons are done.
+ *   a module exam whose lessons are done (the milestone comes before the next
+ *   module), else the next lesson, or the exam once the lessons are done.
  * - not enrolled: the price and the way to pay, plus the free preview lesson
  *   when there is one.
  *
@@ -26,6 +27,8 @@ export async function EnrollCard({
   lessonCount,
   accessDurationDays,
   certificateEnabled,
+  moduleCertCount = 0,
+  moduleExamDue = null,
   isAuthed,
   enrolled,
   lessonStates,
@@ -40,6 +43,10 @@ export async function EnrollCard({
   lessonCount: number;
   accessDurationDays: number;
   certificateEnabled: boolean;
+  /** Module certificates the course can issue (0 when they are switched off). */
+  moduleCertCount?: number;
+  /** The first open, unpassed module exam whose lessons are done (module order). */
+  moduleExamDue?: { id: string; moduleNumber: number } | null;
   isAuthed: boolean;
   enrolled: boolean;
   lessonStates: FlowLessonState[];
@@ -54,7 +61,12 @@ export async function EnrollCard({
 
   // Where the thumbnail's play button and the main button lead.
   const next = enrolled
-    ? allDone && exam
+    ? moduleExamDue
+      ? {
+          href: `/exam/${moduleExamDue.id}`,
+          label: t("ctaModuleExam", { n: moduleExamDue.moduleNumber }),
+        }
+      : allDone && exam
       ? exam.passed
         ? { href: "/dashboard/certificates", label: t("ctaCertificate") }
         : { href: `/exam/${exam.id}`, label: t("ctaExam") }
@@ -71,7 +83,9 @@ export async function EnrollCard({
 
   const thumbHref = next?.href ?? (preview ? `/learn/${courseId}/${preview.id}` : null);
   const thumbLabel = enrolled
-    ? resume
+    ? moduleExamDue
+      ? (next?.label ?? null)
+      : resume
       ? t("thumbNext", { title: resume.title })
       : null
     : preview
@@ -182,6 +196,12 @@ export async function EnrollCard({
             <Fact
               label={t("examTitle")}
               value={t("factExamValue", { count: exam.questions, pct: exam.threshold })}
+            />
+          )}
+          {moduleCertCount > 0 && (
+            <Fact
+              label={t("factModuleCerts")}
+              value={t("factModuleCertsValue", { count: moduleCertCount })}
             />
           )}
           <Fact label={t("factAccess")} value={t("factAccessValue", { days: accessDurationDays })} />

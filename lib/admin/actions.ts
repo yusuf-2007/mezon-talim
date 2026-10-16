@@ -11,7 +11,11 @@ import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
 import { applicationsRepository } from "@/lib/db/repositories/applications";
 import { auditRepository } from "@/lib/db/repositories/audit";
-import { issueManual } from "@/lib/certificates/service";
+import {
+  issueManual,
+  issueManualModule,
+  reissueLike,
+} from "@/lib/certificates/service";
 import type { Role } from "@/lib/auth/types";
 
 const ROLES: Role[] = ["student", "teacher", "accountant", "super_admin"];
@@ -211,6 +215,8 @@ export async function issueCertificateAction(
   courseId: string,
 ): Promise<void> {
   const actor = await requireRole("super_admin");
+  // Only an ACTIVE course certificate makes this a no-op: a module
+  // certificate is a different document, and a revoked one is history.
   const existing = await certificatesRepository.findForUserCourse(userId, courseId);
   if (existing) return;
 
@@ -226,7 +232,36 @@ export async function issueCertificateAction(
   revalidatePath("/admin");
 }
 
-/** Revoke a certificate (super_admin). Audited. */
+/**
+ * Issue a MODULE certificate directly (admin override, super_admin): skips the
+ * lessons + module-exam gate and the course switches. Idempotent — an active
+ * module certificate for the pair is reused.
+ */
+export async function issueModuleCertificateAction(
+  userId: string,
+  moduleId: string,
+): Promise<void> {
+  const actor = await requireRole("super_admin");
+  const existing = await certificatesRepository.findForUserModule(userId, moduleId);
+  if (existing) return;
+
+  const cert = await issueManualModule(userId, moduleId);
+  await auditRepository.record({
+    actorUserId: actor.id,
+    action: "certificate.issue_manual_module",
+    entityType: "certificate",
+    entityId: cert?.id ?? `${userId}:${moduleId}`,
+    meta: { moduleId },
+  });
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath("/admin/certificates");
+}
+
+/**
+ * Revoke a certificate (super_admin). Audited. Revoking one certificate never
+ * touches another — a module certificate and the course certificate are
+ * independent records.
+ */
 export async function revokeCertificateAction(certId: string): Promise<void> {
   const actor = await requireRole("super_admin");
   const cert = await certificatesRepository.findById(certId);
@@ -237,24 +272,41 @@ export async function revokeCertificateAction(certId: string): Promise<void> {
     action: "certificate.revoke",
     entityType: "certificate",
     entityId: certId,
+    meta: { kind: cert.kind, moduleId: cert.moduleId },
   });
   revalidatePath(`/admin/users/${cert.userId}`);
   revalidatePath("/admin/certificates");
 }
 
-/** Re-issue: revoke the old certificate and issue a fresh one. Audited. */
+/**
+ * Re-issue: revoke the old certificate and issue a fresh one of the SAME kind
+ * (a module certificate is re-issued for the same module, never as a course
+ * certificate). Audited.
+ */
 export async function reissueCertificateAction(certId: string): Promise<void> {
   const actor = await requireRole("super_admin");
   const cert = await certificatesRepository.findById(certId);
   if (!cert) return;
-  await certificatesRepository.revoke(certId);
-  const fresh = await issueManual(cert.userId, cert.courseId);
+  // An old revoked row whose replacement is already active: nothing to do
+  // (re-issuing would only re-stamp the revocation and log a bogus reissue).
+  if (cert.revokedAt) {
+    const replacement =
+      cert.kind === "course"
+        ? await certificatesRepository.findForUserCourse(cert.userId, cert.courseId)
+        : cert.moduleId
+          ? await certificatesRepository.findForUserModule(cert.userId, cert.moduleId)
+          : null;
+    if (replacement) return;
+  } else {
+    await certificatesRepository.revoke(certId);
+  }
+  const fresh = await reissueLike(cert);
   await auditRepository.record({
     actorUserId: actor.id,
     action: "certificate.reissue",
     entityType: "certificate",
     entityId: fresh?.id ?? certId,
-    meta: { revoked: certId },
+    meta: { revoked: certId, kind: cert.kind, moduleId: cert.moduleId },
   });
   revalidatePath(`/admin/users/${cert.userId}`);
   revalidatePath("/admin/certificates");

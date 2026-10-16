@@ -8,8 +8,18 @@ import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import type { LocalizedText } from "@/lib/db/schema";
 import { grade, orderQuestionsForAttempt } from "./grading";
-import { getExamPrerequisites, type ExamPrerequisites } from "./gating";
-import { issueIfEligible } from "@/lib/certificates/service";
+import {
+  getExamPrerequisites,
+  moduleLessonsStatus,
+  type ExamPrerequisites,
+} from "./gating";
+import { isCountedPass } from "./passed";
+import { getCurriculum } from "@/lib/learning/curriculum";
+import { moduleExamLocked, type ModuleLessonsStatus } from "@/lib/learning/modules";
+import {
+  issueIfEligible,
+  issueModuleCertificateIfEligible,
+} from "@/lib/certificates/service";
 
 type Assessment = NonNullable<
   Awaited<ReturnType<typeof assessmentsRepository.findById>>
@@ -31,7 +41,20 @@ export type BlockReason =
   | "cooldown"
   | "unpublished"
   | "lessons_incomplete"
-  | "module_tests_incomplete";
+  | "module_tests_incomplete"
+  | "module_lessons_incomplete";
+
+/**
+ * A module exam's own prerequisite: that module's lessons (module_test only).
+ * `number` is the module's 1-based position in the course.
+ */
+export type ModulePrereq = ModuleLessonsStatus & {
+  moduleId: string;
+  title: LocalizedText;
+  number: number;
+  /** Locked by this prerequisite (false for an empty module — see modules.ts). */
+  locked: boolean;
+};
 
 export type ExamOverview = {
   assessment: Assessment;
@@ -46,6 +69,8 @@ export type ExamOverview = {
   cooldownUntil: number | null; // unix ms
   /** Final-exam prerequisite chain (null for non-final assessments). */
   prereq: ExamPrerequisites | null;
+  /** Module-exam prerequisite (null unless a module_test with a module). */
+  modulePrereq: ModulePrereq | null;
   /** Student has already sent a retry-access request since their last attempt. */
   retryRequested: boolean;
   /** Recent submitted attempts, newest first (for the history block). */
@@ -58,6 +83,25 @@ function timeWindow(assessment: Assessment, startedAt: Date) {
   return { expired: Date.now() >= endsAt, endsAt };
 }
 
+/** The module exam's prerequisite box: that module's lessons. */
+async function loadModulePrereq(
+  userId: string,
+  courseId: string,
+  moduleId: string,
+): Promise<ModulePrereq | null> {
+  const curriculum = await getCurriculum(courseId, userId);
+  const index = curriculum.modules.findIndex((m) => m.id === moduleId);
+  if (index === -1) return null;
+  const status = await moduleLessonsStatus(userId, courseId, moduleId, curriculum);
+  return {
+    ...status,
+    moduleId,
+    title: curriculum.modules[index].title,
+    number: index + 1,
+    locked: moduleExamLocked(status),
+  };
+}
+
 export async function getExamOverview(
   assessmentId: string,
   userId: string,
@@ -66,17 +110,21 @@ export async function getExamOverview(
   if (!assessment) return null;
 
   const isFinal = assessment.type === "final_exam";
-  const [questionCount, all, enrolled, prereq] = await Promise.all([
+  const isModuleTest = assessment.type === "module_test";
+  const [questionCount, all, enrolled, prereq, modulePrereq] = await Promise.all([
     questionsRepository.countByAssessment(assessmentId),
     attemptsRepository.listForUser(userId, assessmentId),
     enrollmentsRepository.isActive(userId, assessment.courseId),
     isFinal ? getExamPrerequisites(userId, assessment.courseId) : Promise.resolve(null),
+    isModuleTest && assessment.moduleId
+      ? loadModulePrereq(userId, assessment.courseId, assessment.moduleId)
+      : Promise.resolve(null),
   ]);
 
   // Voided attempts ("grant retry") don't count toward limits or cooldown.
   const submitted = all.filter((a) => a.submittedAt && !a.voided);
   const attemptsUsed = submitted.length;
-  const alreadyPassed = submitted.some((a) => a.passed);
+  const alreadyPassed = submitted.some(isCountedPass);
   const bestScorePct = submitted.reduce<number | null>(
     (best, a) => (a.scorePct != null && (best == null || a.scorePct > best) ? a.scorePct : best),
     null,
@@ -121,6 +169,13 @@ export async function getExamOverview(
     blockedReason = prereq.lessons.allComplete
       ? "module_tests_incomplete"
       : "lessons_incomplete";
+  // Module exam: opens once that module's lessons are done. Checked after
+  // already_passed so a legacy pass (module exams used to be open any time) is
+  // never hidden, and skipped while an attempt is in progress so one started
+  // before this lock existed stays resumable — its pass still issues no module
+  // certificate until the lessons are done (eligibility re-checks them).
+  else if (isModuleTest && !inProgress && modulePrereq?.locked)
+    blockedReason = "module_lessons_incomplete";
   else if (!inProgress && attemptsLeft === 0) blockedReason = "no_attempts_left";
   else if (!inProgress && cooldownUntil && Date.now() < cooldownUntil)
     blockedReason = "cooldown";
@@ -137,6 +192,7 @@ export async function getExamOverview(
     blockedReason: inProgress ? null : blockedReason,
     cooldownUntil,
     prereq,
+    modulePrereq,
     retryRequested,
     history: submitted
       .slice()
@@ -366,6 +422,20 @@ export async function submitAttempt(attemptId: string, userId: string) {
       console.error("auto-issue certificate failed (non-fatal):", err);
     }
   }
+  // Passing a scored module exam issues that module's certificate when its
+  // lessons are done too (otherwise completing the last lesson issues it).
+  if (
+    passed &&
+    assessment.isScored &&
+    assessment.type === "module_test" &&
+    assessment.moduleId
+  ) {
+    try {
+      await issueModuleCertificateIfEligible(userId, assessment.moduleId);
+    } catch (err) {
+      console.error("auto-issue module certificate failed (non-fatal):", err);
+    }
+  }
 
   return { scorePct: result.scorePct, passed };
 }
@@ -386,9 +456,7 @@ export async function getResult(attemptId: string, userId: string) {
   const { attempt, assessment } = await loadOwnedAttempt(attemptId, userId);
   if (!attempt.submittedAt) return null;
 
-  const passedSomewhere = (
-    await attemptsRepository.listForUser(userId, assessment.id)
-  ).some((a) => a.passed);
+  const passedSomewhere = await attemptsRepository.hasPassed(userId, assessment.id);
   const reviewAllowed = !assessment.isScored || passedSomewhere;
 
   const qs = await questionsRepository.listByAssessment(assessment.id);

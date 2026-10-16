@@ -37,6 +37,9 @@ export async function AssessmentsList({
     ),
   );
   const lessons = lessonRows.map((r) => ({ id: r.lesson.id, title: r.lesson.title }));
+  const takenModuleIds = list
+    .filter((a) => a.type === "module_test" && a.moduleId)
+    .map((a) => a.moduleId!);
 
   return (
     <>
@@ -84,6 +87,7 @@ export async function AssessmentsList({
             submitLabel={t("create")}
             modules={modules.map((m) => ({ id: m.id, title: m.title }))}
             lessons={lessons}
+            takenModuleIds={takenModuleIds}
           />
         </CardContent>
       </Card>

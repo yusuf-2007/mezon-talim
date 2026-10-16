@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Award,
   Bookmark,
   Download,
   FileText,
@@ -123,10 +124,11 @@ export default async function DashboardHomePage() {
                       {t("verifyPage")} <ArrowRight className="size-3.5" />
                     </Link>
                   </div>
+                  {d.moduleCertificates && <ModuleCertsLine data={d.moduleCertificates} t={t} />}
                 </div>
               </div>
             ) : (
-              <NoCertificateYet t={t} />
+              <NoCertificateYet moduleCertificates={d.moduleCertificates} t={t} />
             )}
 
             <div className="overflow-hidden rounded-2xl border border-lp-line bg-surface shadow-[0_2px_10px_rgba(2,58,105,.05)]">
@@ -276,7 +278,11 @@ function ResumePanel({
   );
 }
 
-const MODULE_STATE: Record<ModuleProgress["state"], { key: "modDone" | "modTestDue" | "modCurrent"; className: string } | null> = {
+const MODULE_STATE: Record<
+  ModuleProgress["state"],
+  { key: "modCertified" | "modDone" | "modTestDue" | "modCurrent"; className: string } | null
+> = {
+  certified: { key: "modCertified", className: "text-lp-gold-ink" },
   done: { key: "modDone", className: "text-lp-success" },
   test_due: { key: "modTestDue", className: "text-lp-gold-ink" },
   current: { key: "modCurrent", className: "text-lp-gold-deep" },
@@ -338,11 +344,26 @@ function CourseMap({
                 <span className="text-[.7rem] font-bold uppercase tracking-[.1em] text-lp-muted">
                   {t("resumeModule", { n: m.label })}
                 </span>
-                {status && (
-                  <span className={cn("text-[.72rem] font-bold", status.className)}>
-                    {t(status.key)}
-                  </span>
-                )}
+                {status &&
+                  (m.state === "test_due" && m.examId ? (
+                    // The milestone in the way: one click to the module exam.
+                    <Link
+                      href={`/exam/${m.examId}`}
+                      className={cn("text-[.72rem] font-bold hover:underline", status.className)}
+                    >
+                      {t(status.key)} →
+                    </Link>
+                  ) : (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 text-[.72rem] font-bold",
+                        status.className,
+                      )}
+                    >
+                      {m.state === "certified" && <Award aria-hidden className="size-3" strokeWidth={2.4} />}
+                      {t(status.key)}
+                    </span>
+                  ))}
               </div>
               <p className="mb-3 text-[.95rem] font-bold text-lp-ink">
                 {pickLocale(m.title, locale)}
@@ -417,10 +438,18 @@ function NextAssessment({
   }
   return (
     <div className="p-6">
-      <Eyebrow>{t("nextAssessmentEyebrow")}</Eyebrow>
+      <Eyebrow>
+        {t("nextAssessmentEyebrow")} ·{" "}
+        {data.kind === "module_test" && data.moduleNumber != null
+          ? t("nextAssessmentModule", { n: data.moduleNumber })
+          : t("nextAssessmentFinal")}
+      </Eyebrow>
       <h4 className="mb-2 font-lp-heading text-[1.15rem] font-semibold leading-snug text-lp-navy">
         {pickLocale(data.title, locale)}
       </h4>
+      {data.earnsModuleCertificate && (
+        <p className="mb-2 text-[.82rem] text-lp-slate">{t("nextAssessmentModuleCert")}</p>
+      )}
       <p className="mb-4 flex flex-wrap items-center gap-2 text-[.82rem] tabular-nums text-lp-slate">
         <span>{t("metaQuestions", { count: data.questionCount })}</span>
         <span aria-hidden className="text-lp-line-strong">|</span>
@@ -592,17 +621,40 @@ function QuietRow({
   );
 }
 
-function NoCertificateYet({ t }: { t: T }) {
+function NoCertificateYet({
+  moduleCertificates,
+  t,
+}: {
+  moduleCertificates: { done: number; total: number } | null;
+  t: T;
+}) {
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-dashed border-lp-line-strong p-6">
       <span className="grid size-11 shrink-0 place-items-center rounded-xl border-[1.5px] border-dashed border-lp-line-strong">
         <ShieldCheck className="size-[18px] text-lp-muted" strokeWidth={1.75} />
       </span>
       <div>
-        <p className="mb-1 text-[.98rem] font-bold text-lp-ink">{t("noCertsTitle")}</p>
+        <p className="mb-1 text-[.98rem] font-bold text-lp-ink">
+          {moduleCertificates && moduleCertificates.done > 0 ? t("noCourseCertTitle") : t("noCertsTitle")}
+        </p>
         <p className="text-[.86rem] leading-relaxed text-lp-slate">{t("noCertsBody")}</p>
+        {moduleCertificates && <ModuleCertsLine data={moduleCertificates} t={t} />}
       </div>
     </div>
+  );
+}
+
+/** "Module certificates: 2 / 4" — the milestones, one line, to their ledger. */
+function ModuleCertsLine({ data, t }: { data: { done: number; total: number }; t: T }) {
+  return (
+    <Link
+      href="/dashboard/certificates"
+      className="mt-3 inline-flex items-center gap-1.5 text-[.84rem] font-bold text-lp-navy-mid tabular-nums hover:underline"
+    >
+      <Award aria-hidden className="size-3.5" strokeWidth={2} />
+      {t("moduleCertsLine", { done: data.done, total: data.total })}
+      <ArrowRight className="size-3.5" />
+    </Link>
   );
 }
 

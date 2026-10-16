@@ -22,6 +22,7 @@ type CourseLike = {
   accessDurationDays: number;
   passThresholdPct: number;
   certificateEnabled: boolean;
+  moduleCertificatesEnabled: boolean;
 };
 
 const initial: ContentFormState = {};
@@ -126,14 +127,34 @@ export function CourseForm({
         </Field>
       </div>
 
-      <label className="flex items-center gap-3">
-        <Switch
-          name="certificateEnabled"
-          value="true"
-          defaultChecked={course?.certificateEnabled ?? true}
-        />
-        <span className="text-sm">{t("certificateEnabled")}</span>
-      </label>
+      <div className="space-y-3">
+        <label className="flex items-center gap-3">
+          <Switch
+            name="certificateEnabled"
+            value="true"
+            defaultChecked={course?.certificateEnabled ?? true}
+          />
+          <span className="text-sm">{t("certificateEnabled")}</span>
+        </label>
+        {/* Independent switch, but it only has an effect while the course
+            certificate switch above is on (the hint says so). Always rendered:
+            the action reads a missing field as "off". */}
+        <label className="flex items-start gap-3">
+          <Switch
+            name="moduleCertificatesEnabled"
+            value="true"
+            defaultChecked={course?.moduleCertificatesEnabled ?? true}
+            aria-describedby="moduleCertificatesHint"
+            className="mt-0.5"
+          />
+          <span className="text-sm">
+            {t("moduleCertificatesEnabled")}
+            <span id="moduleCertificatesHint" className="mt-0.5 block max-w-prose text-xs text-slate-500">
+              {t("moduleCertificatesHint")}
+            </span>
+          </span>
+        </label>
+      </div>
 
       <Button type="submit" disabled={pending}>
         {submitLabel}

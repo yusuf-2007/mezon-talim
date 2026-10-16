@@ -87,7 +87,12 @@ export default async function AdminAnalyticsPage({
             {
               label: t("kpiCompletion"),
               value: `${overview.completionRatePct}%`,
-              sub: t("kpiCompletionSub", { count: overview.certificateTotal }),
+              // Completion counts COURSE certificates only; module
+              // certificates are milestones and get their own number.
+              sub: t("kpiCompletionSub", {
+                count: overview.certificateTotal,
+                modules: overview.moduleCertificateTotal,
+              }),
             },
           ]}
         />

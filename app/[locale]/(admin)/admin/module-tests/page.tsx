@@ -1,9 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireRole } from "@/lib/auth";
+import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { attemptsRepository } from "@/lib/db/repositories/attempts";
+import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { modulesRepository } from "@/lib/db/repositories/modules";
 import { pickLocale } from "@/lib/i18n/localized";
+import { moduleCertificatesActive } from "@/lib/learning/modules";
 import { cn } from "@/lib/utils";
 import { CourseFilter } from "@/components/admin/course-filter";
 import { AdminPageHeader } from "@/components/admin/page-header";
@@ -17,15 +20,15 @@ import {
 } from "@/components/admin/ui";
 import type { Locale } from "@/lib/i18n/routing";
 
-const PASS_THRESHOLD_HINT = 70;
-
 /**
- * Module tests, one course at a time.
+ * Module exams (the `module_test` assessment), one course at a time.
  *
- * Replaces a ComingSoon stub. The point of the page is the gap: sequential
- * unlock means a module with no test is a wall, and until now nothing told
- * anyone that the wall existed — a student simply stopped, and the reason
- * lived in `curriculum.ts` rather than on a screen.
+ * The rules this page describes: a module exam opens once that module's
+ * lessons are done; passing it (with the lessons done) earns the module
+ * certificate when the course has module certificates on; the course final
+ * opens after every PUBLISHED module exam is passed. Modules unlock lesson by
+ * lesson, never by test — so a module with no exam does not stop anyone, it
+ * just has no module certificate. That gap is what the banner names.
  */
 export default async function AdminModuleTestsPage({
   searchParams,
@@ -40,15 +43,25 @@ export default async function AdminModuleTestsPage({
   const courses = await coursesRepository.listAll();
   const selected = courseId ?? courses[0]?.id;
 
-  const [modules, tests] = await Promise.all([
+  const course = courses.find((c) => c.id === selected) ?? null;
+
+  const [modules, stats, examByModule, certsByModule] = await Promise.all([
     selected ? modulesRepository.listByCourse(selected) : Promise.resolve([]),
     attemptsRepository.byAssessment("module_test"),
+    selected
+      ? assessmentsRepository.listModuleExamsByCourse(selected)
+      : Promise.resolve(new Map<string, never>()),
+    selected
+      ? certificatesRepository.countActiveModuleCertsByCourse(selected)
+      : Promise.resolve(new Map<string, number>()),
   ]);
 
-  const testByModule = new Map(
-    tests.filter((x) => x.moduleId).map((x) => [x.moduleId!, x]),
-  );
-  const missing = modules.filter((m) => !testByModule.has(m.id));
+  // The module's exam is the same deterministic pick the student side uses
+  // (published first, then oldest), so a legacy duplicate is never the one
+  // shown here while students see the other.
+  const statsById = new Map(stats.map((x) => [x.assessmentId, x]));
+  const missing = modules.filter((m) => !examByModule.has(m.id));
+  const certsOn = course ? moduleCertificatesActive(course) : false;
 
   return (
     <>
@@ -66,14 +79,20 @@ export default async function AdminModuleTestsPage({
           placeholder={t("enrollmentsSelectCourse")}
         />
         <p className="max-w-prose text-[.82rem] text-lp-muted">
-          {t("moduleTestsRule", { pct: PASS_THRESHOLD_HINT })}
+          {t("moduleTestsRule")}
         </p>
       </div>
 
+      {course && !certsOn && (
+        <Banner tone="info" className="mb-[18px]">
+          {t("moduleTestsCertsOff")}
+        </Banner>
+      )}
+
       {missing.length > 0 && (
         <Banner tone="warn" className="mb-[18px]">
-          {/* Naming the consequence, not just the absence: the sequential-unlock
-              rule is what turns a missing test into a stuck student. */}
+          {/* Naming the consequence, not just the absence: a module with no
+              exam can never issue its module certificate. */}
           {t("moduleTestsMissing", {
             count: missing.length,
             first: missing[0] ? pickLocale(missing[0].title, locale) : "",
@@ -88,11 +107,13 @@ export default async function AdminModuleTestsPage({
         ) : (
           <ul>
             {modules.map((m, i) => {
-              const test = testByModule.get(m.id);
-              const passed = Number(test?.passed ?? 0);
-              const failed = Number(test?.failed ?? 0);
+              const test = examByModule.get(m.id);
+              const stat = test ? statsById.get(test.id) : undefined;
+              const passed = Number(stat?.passed ?? 0);
+              const failed = Number(stat?.failed ?? 0);
               const total = passed + failed;
               const rate = total > 0 ? Math.round((passed / total) * 100) : null;
+              const certCount = certsByModule.get(m.id) ?? 0;
 
               return (
                 <li
@@ -119,7 +140,7 @@ export default async function AdminModuleTestsPage({
                             <span
                               className={cn(
                                 "block h-full rounded-full",
-                                rate != null && rate >= PASS_THRESHOLD_HINT
+                                rate != null && rate >= test.passThresholdPct
                                   ? "bg-lp-success-dot"
                                   : "bg-lp-gold",
                               )}
@@ -131,7 +152,11 @@ export default async function AdminModuleTestsPage({
                           </span>
                         </span>
                         <span className="mt-1 block text-[.8rem] text-lp-muted">
-                          {t("moduleTestsAttempts", { count: total })}
+                          {t("moduleTestsAttempts", { count: total })} ·{" "}
+                          {t("moduleTestsPassMark", { pct: test.passThresholdPct })}
+                          {certsOn && (
+                            <> · {t("moduleTestsCerts", { count: certCount })}</>
+                          )}
                         </span>
                       </>
                     ) : (

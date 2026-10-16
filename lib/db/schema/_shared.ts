@@ -83,6 +83,14 @@ export const assessmentType = pgEnum("assessment_type", [
   "mock_exam",
 ]);
 
+/**
+ * What a certificate certifies: the whole course (final exam + everything
+ * before it), or one module (its lessons + its module exam). Kind is the truth
+ * — a module certificate's module_id may later become null if the module is
+ * deleted, and it must still read as a module certificate.
+ */
+export const certificateKind = pgEnum("certificate_kind", ["course", "module"]);
+
 export const questionType = pgEnum("question_type", [
   "single",
   "multiple",

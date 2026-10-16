@@ -7,7 +7,9 @@ import { usersRepository } from "@/lib/db/repositories/users";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurriculum } from "@/lib/learning/curriculum";
 import { getFinalExamBox } from "@/lib/assessments/service";
-import { buildFlow, minutesOf, type FlowLesson } from "@/lib/learning/flow";
+import { buildFlow, minutesOf, type FlowLesson, type FlowModule } from "@/lib/learning/flow";
+import { getModuleMilestones, nextModuleExam } from "@/lib/learning/milestones";
+import { moduleCertificatesActive } from "@/lib/learning/modules";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -44,14 +46,24 @@ export default async function CourseDetailPage({
     course.createdBy ? usersRepository.findById(course.createdBy) : Promise.resolve(null),
   ]);
   const exam = finalExam?.isPublished ? finalExam : null;
-  const [examQuestions, examBox] = await Promise.all([
+  const [examQuestions, examBox, milestones] = await Promise.all([
     exam ? questionsRepository.countByAssessment(exam.id) : Promise.resolve(0),
     exam && user && curriculum.enrolled
       ? getFinalExamBox(course.id, user.id)
       : Promise.resolve(null),
+    // Module exams + certificates: spec for everyone, standing only for an
+    // enrolled viewer (the loader leaves state null otherwise).
+    getModuleMilestones(course.id, user?.id ?? null, curriculum),
   ]);
 
-  const flow = buildFlow(curriculum);
+  const flow = buildFlow(curriculum, milestones);
+  const moduleCerts = moduleCertificatesActive(course);
+  const moduleExamCount = flow.modules.filter((m) => m.milestone?.exam).length;
+  // A certificate needs lessons to finish: an empty module issues none.
+  const moduleCertCount = moduleCerts
+    ? flow.modules.filter((m) => m.milestone?.exam && m.lessons.length > 0).length
+    : 0;
+  const moduleExamDue = curriculum.enrolled ? nextModuleExam(milestones) : null;
   const threshold = exam?.passThresholdPct ?? course.passThresholdPct;
   const examMinutes = minutesOf(exam?.timeLimitSeconds);
   const title = pickLocale(course.title, loc);
@@ -151,6 +163,8 @@ export default async function CourseDetailPage({
                 {[
                   t("pathModules", { count: flow.modules.length }),
                   t("pathLessons", { count: curriculum.lessonCount }),
+                  moduleExamCount > 0 ? t("pathModuleExams", { count: moduleExamCount }) : null,
+                  moduleCertCount > 0 ? t("pathModuleCerts", { count: moduleCertCount }) : null,
                   exam ? t("pathExam") : null,
                   course.certificateEnabled ? t("pathCertificate") : null,
                 ]
@@ -175,7 +189,8 @@ export default async function CourseDetailPage({
                           {pickLocale(m.title, loc)}
                         </span>
                       </span>
-                      <span className="shrink-0 text-[.8rem] text-lp-muted tabular-nums">
+                      <span className="flex shrink-0 items-center gap-2 text-[.8rem] text-lp-muted tabular-nums">
+                        <ModuleMark module={m} certs={moduleCerts} t={t} />
                         {t("moduleProgress", { done: m.done, total: m.lessons.length })}
                       </span>
                     </>
@@ -191,12 +206,22 @@ export default async function CourseDetailPage({
                       t={t}
                     />
                   ))}
+                  {m.milestone?.exam && (
+                    <ModuleMilestoneRows
+                      module={m}
+                      enrolled={curriculum.enrolled}
+                      certs={moduleCerts}
+                      t={t}
+                    />
+                  )}
                 </ModuleAccordion>
               ))}
 
               {exam && (
                 <PathExamRow
                   href={curriculum.enrolled ? `/exam/${exam.id}` : null}
+                  badge="I"
+                  title={t("examTitle")}
                   spec={examSpec}
                   state={examBox}
                   lessonsLeft={Math.max(0, curriculum.lessonCount - curriculum.completedCount)}
@@ -214,7 +239,9 @@ export default async function CourseDetailPage({
                   </span>
                   <div>
                     <p className="text-[.94rem] font-semibold text-lp-slate">{t("pathCertTitle")}</p>
-                    <p className="mt-0.5 text-[.8rem] text-lp-muted">{t("pathCertSub")}</p>
+                    <p className="mt-0.5 text-[.8rem] text-lp-muted">
+                      {moduleExamCount > 0 ? t("pathCertSubModules") : t("pathCertSub")}
+                    </p>
                   </div>
                 </div>
               )}
@@ -251,6 +278,12 @@ export default async function CourseDetailPage({
             lessonCount={curriculum.lessonCount}
             accessDurationDays={course.accessDurationDays}
             certificateEnabled={course.certificateEnabled}
+            moduleCertCount={moduleCertCount}
+            moduleExamDue={
+              moduleExamDue
+                ? { id: moduleExamDue.assessmentId, moduleNumber: moduleExamDue.moduleNumber }
+                : null
+            }
             isAuthed={Boolean(user)}
             enrolled={curriculum.enrolled}
             lessonStates={flow.lessons.map((l) => l.state)}
@@ -360,18 +393,27 @@ function PathLessonRow({
 
 function PathExamRow({
   href,
+  badge,
+  title,
   spec,
   state,
   lessonsLeft,
+  tone = "final",
   t,
 }: {
   href: string | null;
+  /** "I" for the final exam, the module number for a module exam. */
+  badge: string;
+  title: string;
   spec: string;
-  state: Awaited<ReturnType<typeof getFinalExamBox>>;
+  /** The viewer's standing; null for anyone not enrolled (spec only). */
+  state: { state: "ready" | "passed" | "locked" | "needs_approval" | null; bestScorePct: number | null } | null;
   lessonsLeft: number;
+  /** The final exam is the course's last step; a module exam is a waypoint. */
+  tone?: "final" | "module";
   t: CourseT;
 }) {
-  const label = !state
+  const label = !state?.state
     ? null
     : state.state === "passed"
       ? { text: t("examPassedLabel", { pct: state.bestScorePct ?? 0 }), cls: "text-lp-success" }
@@ -379,28 +421,157 @@ function PathExamRow({
         ? { text: t("examReadyLabel"), cls: "text-lp-gold-deep" }
         : state.state === "needs_approval"
           ? { text: t("examApprovalLabel"), cls: "text-lp-danger" }
-          : { text: t("examLockedLabel", { count: lessonsLeft }), cls: "text-lp-muted" };
+          : lessonsLeft === 0
+            ? // Lessons done, still locked: the module exams stand in the way.
+              { text: t("examLockedModulesLabel"), cls: "text-lp-muted" }
+            : { text: t("examLockedLabel", { count: lessonsLeft }), cls: "text-lp-muted" };
 
   const inner = (
     <>
-      <span aria-hidden className="grid size-7 place-items-center rounded-[7px] bg-lp-navy font-lp-heading text-[.85rem] font-semibold text-lp-gold">
-        I
+      <span
+        aria-hidden
+        className={cn(
+          "grid size-7 place-items-center rounded-[7px] font-lp-heading text-[.85rem] font-semibold tabular-nums",
+          tone === "final" ? "bg-lp-navy text-lp-gold" : "border-[1.5px] border-lp-navy bg-white text-lp-navy",
+        )}
+      >
+        {badge}
       </span>
-      <span>
-        <span className="block text-[.94rem] font-bold text-lp-navy">{t("examTitle")}</span>
+      <span className="min-w-0">
+        <span className="block text-[.94rem] font-bold text-lp-navy">{title}</span>
         <span className="mt-0.5 block text-[.8rem] text-lp-muted tabular-nums">{spec}</span>
       </span>
-      {label && <span className={cn("text-[.8rem] font-bold", label.cls)}>{label.text}</span>}
+      {label && (
+        <span className={cn("whitespace-nowrap text-[.8rem] font-bold", label.cls)}>{label.text}</span>
+      )}
     </>
   );
-  const cls =
-    "grid grid-cols-[32px_1fr_auto] items-center gap-3.5 border-b border-lp-line-soft bg-[#FFFCF3] px-[22px] py-4";
+  const cls = cn(
+    "grid grid-cols-[32px_1fr_auto] items-center gap-3.5 border-b border-lp-line-soft px-[22px]",
+    tone === "final" ? "bg-[#FFFCF3] py-4" : "bg-lp-wash-alt py-3.5",
+  );
   return href ? (
     <Link href={href} className={cn(cls, "transition-colors hover:bg-lp-gold-wash")}>
       {inner}
     </Link>
   ) : (
     <div className={cls}>{inner}</div>
+  );
+}
+
+/** A module's milestone at a glance in its (possibly folded) header. */
+function ModuleMark({ module: m, certs, t }: { module: FlowModule; certs: boolean; t: CourseT }) {
+  const ms = m.milestone;
+  if (certs && ms?.certificate) {
+    return (
+      <span
+        role="img"
+        aria-label={t("moduleCertEarnedBadge")}
+        title={t("moduleCertEarnedBadge")}
+        className="grid size-[18px] place-items-center rounded-full bg-lp-gold text-lp-navy-deep"
+      >
+        <AwardGlyph size={10} />
+      </span>
+    );
+  }
+  if (ms?.exam?.state === "passed") {
+    return (
+      <span
+        role="img"
+        aria-label={t("examPassedLabel", { pct: ms.exam.bestScorePct ?? 0 })}
+        className="grid size-[18px] place-items-center rounded-full bg-lp-success-dot text-white"
+      >
+        <svg aria-hidden width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </span>
+    );
+  }
+  return null;
+}
+
+/**
+ * The end of a module on the path: its exam and, when the course issues them,
+ * its certificate. Someone not enrolled sees what they are (the spec), never a
+ * standing or a link.
+ */
+function ModuleMilestoneRows({
+  module: m,
+  enrolled,
+  certs,
+  t,
+}: {
+  module: FlowModule;
+  enrolled: boolean;
+  certs: boolean;
+  t: CourseT;
+}) {
+  const ms = m.milestone!;
+  const exam = ms.exam!;
+  const minutes = minutesOf(exam.timeLimitSeconds);
+  const spec = [
+    t("examQuestions", { count: exam.questionCount }),
+    minutes ? t("examMinutes", { count: minutes }) : null,
+    t("examThreshold", { pct: exam.passThresholdPct }),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const open = enrolled && exam.state != null && exam.state !== "locked";
+  const cert = enrolled ? ms.certificate : null;
+
+  return (
+    <>
+      <PathExamRow
+        href={open ? `/exam/${exam.assessmentId}` : null}
+        badge={String(m.number)}
+        title={t("moduleExamTitle", { n: m.number })}
+        spec={spec}
+        state={enrolled ? exam : null}
+        lessonsLeft={Math.max(0, ms.lessons.total - ms.lessons.completed)}
+        tone="module"
+        t={t}
+      />
+      {certs && ms.lessons.total > 0 && (
+        cert ? (
+          <Link
+            href={`/verify/${cert.verificationCode}`}
+            className="grid grid-cols-[32px_1fr_auto] items-center gap-3.5 border-b border-lp-line-soft px-[22px] py-3.5 transition-colors hover:bg-lp-gold-wash"
+          >
+            <span aria-hidden className="grid size-7 place-items-center rounded-full bg-lp-gold text-lp-navy-deep shadow-[0_4px_12px_rgba(248,184,1,.35)]">
+              <AwardGlyph size={13} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[.94rem] font-bold text-lp-navy">{t("moduleCertTitle")}</span>
+              <span className="mt-0.5 block truncate font-mono text-[.8rem] text-lp-muted">
+                {cert.verificationCode}
+              </span>
+            </span>
+            <span className="whitespace-nowrap text-[.8rem] font-bold text-lp-success">
+              {t("moduleCertEarned")}
+            </span>
+          </Link>
+        ) : (
+          <div className="grid grid-cols-[32px_1fr] items-center gap-3.5 border-b border-lp-line-soft px-[22px] py-3.5">
+            <span aria-hidden className="grid size-7 place-items-center rounded-full border-[1.5px] border-dashed border-lp-line-strong text-lp-muted">
+              <AwardGlyph size={13} />
+            </span>
+            <span>
+              <span className="block text-[.94rem] font-semibold text-lp-slate">{t("moduleCertTitle")}</span>
+              <span className="mt-0.5 block text-[.8rem] text-lp-muted">{t("moduleCertSub")}</span>
+            </span>
+          </div>
+        )
+      )}
+    </>
+  );
+}
+
+function AwardGlyph({ size }: { size: number }) {
+  return (
+    <svg aria-hidden width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <circle cx="12" cy="8" r="6" />
+      <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+    </svg>
   );
 }
 

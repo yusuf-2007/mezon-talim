@@ -21,6 +21,10 @@ export interface CertificateData {
   verificationCode: string;
   verifyUrl: string;
   locale: Locale;
+  /** Defaults to 'course'. A module certificate also needs `moduleTitle`. */
+  kind?: "course" | "module";
+  /** Module certificates: the module title, already localized (snapshot). */
+  moduleTitle?: string;
 }
 
 const NAVY = rgb(0.043, 0.122, 0.227); // ~#0B1F3A
@@ -51,6 +55,10 @@ const LABELS: Record<Locale, Record<string, string>> = {
     subtitle: "Tahsilni tamomlaganlik to'g'risida",
     certifies: "Ushbu sertifikat quyidagi shaxsga beriladi",
     completed: "quyidagi kursni muvaffaqiyatli tamomladi",
+    moduleSubtitle: "Modulni tamomlaganlik to'g'risida",
+    moduleCompleted: "quyidagi modulni muvaffaqiyatli tamomladi",
+    // {course} is replaced by the course title.
+    moduleOfCourse: "«{course}» kursi doirasida",
     issued: "Berilgan sana",
     code: "Tekshirish kodi",
     verify: "Haqiqiyligini tekshiring",
@@ -61,6 +69,9 @@ const LABELS: Record<Locale, Record<string, string>> = {
     subtitle: "Об окончании обучения",
     certifies: "Настоящий сертификат выдан",
     completed: "успешно завершил(а) курс",
+    moduleSubtitle: "Об окончании модуля",
+    moduleCompleted: "успешно завершил(а) модуль",
+    moduleOfCourse: "в рамках курса «{course}»",
     issued: "Дата выдачи",
     code: "Код проверки",
     verify: "Проверьте подлинность",
@@ -71,6 +82,9 @@ const LABELS: Record<Locale, Record<string, string>> = {
     subtitle: "Of course completion",
     certifies: "This certificate is awarded to",
     completed: "for successfully completing the course",
+    moduleSubtitle: "Of module completion",
+    moduleCompleted: "for successfully completing the module",
+    moduleOfCourse: "as part of the course “{course}”",
     issued: "Date issued",
     code: "Verification code",
     verify: "Verify authenticity",
@@ -101,6 +115,89 @@ function drawCentered(
     font,
     color,
   });
+}
+
+/** Largest size in [min, max] at which `text` fits `maxWidth` (min if none). */
+function fitSize(
+  font: PDFFont,
+  text: string,
+  maxWidth: number,
+  max: number,
+  min: number,
+): number {
+  let size = max;
+  while (font.widthOfTextAtSize(text, size) > maxWidth && size > min) size -= 1;
+  return size;
+}
+
+/**
+ * Split `text` at the word break that best balances two lines (the wider of
+ * the two as narrow as possible). Null when there is no break to use.
+ */
+function splitTwoLines(
+  font: PDFFont,
+  text: string,
+): [string, string] | null {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length < 2) return null;
+  let best: [string, string] | null = null;
+  let bestWidth = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(" ");
+    const b = words.slice(i).join(" ");
+    const w = Math.max(font.widthOfTextAtSize(a, 10), font.widthOfTextAtSize(b, 10));
+    if (w < bestWidth) {
+      bestWidth = w;
+      best = [a, b];
+    }
+  }
+  return best;
+}
+
+/**
+ * The module variant's middle block: module title as the big line, then the
+ * course it belongs to, smaller. The title shrinks from 22pt to 16pt on one
+ * line; past that it wraps to two lines (each 20pt → 12pt) rather than
+ * shrinking further. Returns nothing; draws at fixed positions above the footer.
+ */
+function drawModuleBlock(
+  page: PDFPage,
+  moduleTitle: string,
+  courseLine: string,
+  bold: PDFFont,
+  regular: PDFFont,
+  maxWidth: number,
+  H: number,
+) {
+  const single = fitSize(bold, moduleTitle, maxWidth, 22, 16);
+  const fitsOneLine = bold.widthOfTextAtSize(moduleTitle, single) <= maxWidth;
+  const lines = fitsOneLine ? null : splitTwoLines(bold, moduleTitle);
+
+  let bottom: number; // baseline of the last title line
+  if (!lines) {
+    // One line (fits, or one unbreakable word: keep shrinking to the floor).
+    const size = fitsOneLine ? single : fitSize(bold, moduleTitle, maxWidth, 16, 10);
+    drawCentered(page, moduleTitle, H - 380, bold, size, NAVY);
+    bottom = H - 380;
+  } else {
+    let size = 20;
+    while (
+      size > 12 &&
+      Math.max(
+        bold.widthOfTextAtSize(lines[0], size),
+        bold.widthOfTextAtSize(lines[1], size),
+      ) > maxWidth
+    ) {
+      size -= 1;
+    }
+    const lead = Math.round(size * 1.25);
+    drawCentered(page, lines[0], H - 372, bold, size, NAVY);
+    drawCentered(page, lines[1], H - 372 - lead, bold, size, NAVY);
+    bottom = H - 372 - lead;
+  }
+
+  const courseSize = fitSize(regular, courseLine, maxWidth, 13, 9);
+  drawCentered(page, courseLine, bottom - 30, regular, courseSize, SLATE);
 }
 
 export async function generateCertificatePdf(
@@ -146,24 +243,38 @@ export async function generateCertificatePdf(
     color: GOLD,
   });
 
+  const isModule = data.kind === "module";
+
   drawCentered(page, L.title, H - 168, bold, 40, NAVY);
-  drawCentered(page, L.subtitle, H - 196, regular, 14, SLATE);
+  drawCentered(page, isModule ? L.moduleSubtitle : L.subtitle, H - 196, regular, 14, SLATE);
 
   // Recipient.
   drawCentered(page, L.certifies, H - 248, regular, 13, SLATE);
   drawCentered(page, data.studentName, H - 296, bold, 30, INK);
 
-  drawCentered(page, L.completed, H - 340, regular, 13, SLATE);
-  // Course title may be long — scale down to fit within the inner frame.
-  let courseSize = 22;
+  drawCentered(page, isModule ? L.moduleCompleted : L.completed, H - 340, regular, 13, SLATE);
   const maxCourseWidth = W - 200;
-  while (
-    bold.widthOfTextAtSize(data.courseTitle, courseSize) > maxCourseWidth &&
-    courseSize > 12
-  ) {
-    courseSize -= 1;
+  if (isModule) {
+    drawModuleBlock(
+      page,
+      data.moduleTitle || "—",
+      L.moduleOfCourse.replace("{course}", data.courseTitle),
+      bold,
+      regular,
+      maxCourseWidth,
+      H,
+    );
+  } else {
+    // Course title may be long — scale down to fit within the inner frame.
+    let courseSize = 22;
+    while (
+      bold.widthOfTextAtSize(data.courseTitle, courseSize) > maxCourseWidth &&
+      courseSize > 12
+    ) {
+      courseSize -= 1;
+    }
+    drawCentered(page, data.courseTitle, H - 380, bold, courseSize, NAVY);
   }
-  drawCentered(page, data.courseTitle, H - 380, bold, courseSize, NAVY);
 
   // Footer: issued date (left) + verification (right).
   const footY = 84;

@@ -62,6 +62,17 @@ export const questionsRepository = {
     return row?.count ?? 0;
   },
 
+  /** Question counts for several assessments in one query (missing = 0). */
+  async countByAssessments(assessmentIds: string[]): Promise<Map<string, number>> {
+    if (assessmentIds.length === 0) return new Map();
+    const rows = await db
+      .select({ assessmentId: questions.assessmentId, count: sql<number>`count(*)::int` })
+      .from(questions)
+      .where(inArray(questions.assessmentId, assessmentIds))
+      .groupBy(questions.assessmentId);
+    return new Map(rows.map((r) => [r.assessmentId, r.count]));
+  },
+
   async create(assessmentId: string, input: QuestionInput) {
     return db.transaction(async (tx) => {
       const [{ next }] = await tx

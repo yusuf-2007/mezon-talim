@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import {
   requireCourseEditor,
@@ -83,6 +84,29 @@ async function requireTargetsInCourse(
   }
 }
 
+/**
+ * Module-exam rules (the module exam IS the module_test): it must be attached
+ * to a module, a module has at most one, and it is always scored — an
+ * unscored attempt "passes" automatically, which would hand out module
+ * certificates and unlock the final for free. Returns a form error, or null.
+ * The database does not enforce one-per-module (legacy rows), so this is the
+ * guard; loaders still pick deterministically if legacy data has two.
+ */
+async function moduleTestRuleError(
+  d: { type: string; moduleId: string | null },
+  exceptId?: string,
+): Promise<AssessFormState | null> {
+  if (d.type !== "module_test") return null;
+  const t = await getTranslations("Assess");
+  if (!d.moduleId) {
+    return { error: t("moduleTestNeedsModule"), fieldErrors: { moduleId: [t("moduleTestNeedsModule")] } };
+  }
+  if (await assessmentsRepository.findOtherModuleTest(d.moduleId, exceptId)) {
+    return { error: t("moduleTestExists"), fieldErrors: { moduleId: [t("moduleTestExists")] } };
+  }
+  return null;
+}
+
 // ── Assessment ───────────────────────────────────────────────────────────────
 
 export async function createAssessmentAction(
@@ -98,6 +122,8 @@ export async function createAssessmentAction(
   const moduleId = d.type === "module_test" ? d.moduleId : null;
   const lessonId = d.type === "lesson_quiz" ? d.lessonId : null;
   await requireTargetsInCourse(courseId, { moduleId, lessonId });
+  const ruleError = await moduleTestRuleError({ type: d.type, moduleId });
+  if (ruleError) return ruleError;
 
   const created = await assessmentsRepository.create({
     type: d.type,
@@ -109,7 +135,7 @@ export async function createAssessmentAction(
     passThresholdPct: d.passThresholdPct,
     maxAttempts: d.maxAttempts,
     attemptCooldownHours: d.attemptCooldownHours,
-    isScored: d.isScored,
+    isScored: d.type === "module_test" ? true : d.isScored, // module exams are always scored
     randomize: d.randomize,
     isPublished: d.isPublished,
     questionsToServe: d.questionsToServe,
@@ -135,6 +161,8 @@ export async function updateAssessmentAction(
   const moduleId = d.type === "module_test" ? d.moduleId : null;
   const lessonId = d.type === "lesson_quiz" ? d.lessonId : null;
   await requireTargetsInCourse(courseId, { moduleId, lessonId }, current);
+  const ruleError = await moduleTestRuleError({ type: d.type, moduleId }, assessmentId);
+  if (ruleError) return ruleError;
 
   await assessmentsRepository.update(assessmentId, {
     type: d.type,
@@ -145,12 +173,13 @@ export async function updateAssessmentAction(
     passThresholdPct: d.passThresholdPct,
     maxAttempts: d.maxAttempts,
     attemptCooldownHours: d.attemptCooldownHours,
-    isScored: d.isScored,
+    isScored: d.type === "module_test" ? true : d.isScored, // module exams are always scored
     randomize: d.randomize,
     isPublished: d.isPublished,
     questionsToServe: d.questionsToServe,
   });
   revalidatePath(`/studio/courses/${courseId}/assessments/${assessmentId}`);
+  revalidatePath(`/admin/courses/${courseId}/assessments/${assessmentId}`);
   return {};
 }
 

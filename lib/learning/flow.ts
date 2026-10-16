@@ -1,5 +1,6 @@
 import type { Curriculum, CurriculumPart } from "./curriculum";
 import type { LocalizedText } from "@/lib/db/schema";
+import type { ModuleMilestone } from "./milestones";
 
 /**
  * One view of the curriculum for every learning-flow screen: the course page,
@@ -30,9 +31,14 @@ export type FlowModule = {
   number: number;
   lessons: FlowLesson[];
   done: number;
+  /** Its module exam + certificate, when the caller loaded milestones. */
+  milestone: ModuleMilestone | null;
 };
 
-export function buildFlow(c: Curriculum): { modules: FlowModule[]; lessons: FlowLesson[] } {
+export function buildFlow(
+  c: Curriculum,
+  milestones?: Map<string, ModuleMilestone>,
+): { modules: FlowModule[]; lessons: FlowLesson[] } {
   let n = 0;
   const modules = c.modules.map((m, mi) => {
     const lessons = m.lessons.map<FlowLesson>((l) => {
@@ -62,6 +68,7 @@ export function buildFlow(c: Curriculum): { modules: FlowModule[]; lessons: Flow
       number: mi + 1,
       lessons,
       done: lessons.filter((l) => l.state === "done").length,
+      milestone: milestones?.get(m.id) ?? null,
     };
   });
   return { modules, lessons: modules.flatMap((m) => m.lessons) };

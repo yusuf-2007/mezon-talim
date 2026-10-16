@@ -67,11 +67,23 @@ export default async function VerifyPage({
           </div>
 
           <dl className="mt-6 divide-y divide-line border-t border-line text-sm">
+            <Row
+              label={t("kind")}
+              value={result.kind === "module" ? t("kindModule") : t("kindCourse")}
+            />
             <Row label={t("student")} value={result.studentName} />
+            {result.kind === "module" && result.moduleTitle && (
+              <Row label={t("module")} value={pickLocale(result.moduleTitle, loc)} />
+            )}
             <Row label={t("course")} value={pickLocale(result.courseTitle, loc)} />
             <Row label={t("issued")} value={formatDate(result.issuedAt)} />
             <Row label={t("code")} value={result.verificationCode} mono />
           </dl>
+
+          {/* An employer must not read a milestone as course completion. */}
+          {result.kind === "module" && (
+            <p className="mt-4 text-center text-sm text-slate-500">{t("moduleNote")}</p>
+          )}
 
           {result.valid && (
             <div className="mt-6 text-center">

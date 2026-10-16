@@ -6,29 +6,37 @@ import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { enrollmentsRepository } from "@/lib/db/repositories/enrollments";
 import { assessmentsRepository } from "@/lib/db/repositories/assessments";
 import { getCurriculum } from "@/lib/learning/curriculum";
+import { getModuleMilestones, moduleCertLedger } from "@/lib/learning/milestones";
+import { moduleCertificatesActive } from "@/lib/learning/modules";
+import { isCountedPass } from "@/lib/assessments/passed";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/student/page-header";
 import { CertificateArtifact } from "@/components/student/certificate-artifact";
 import { CopyLinkButton } from "@/components/student/copy-link-button";
+import { ModuleCertificates } from "@/components/student/module-certificates";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/routing";
 
 /**
  * The certificate, shown at a size worth looking at.
  *
- * A student earns perhaps two of these, so the page leads with the document
- * rather than a list of rows — the detail table beside it carries the facts an
- * employer would check, and the disclaimer states plainly what the credential
- * is and is not (CLAUDE.md §6.2: this is Mezon's, not AAOIFI's).
+ * A student earns perhaps two course certificates, so the page leads with the
+ * document rather than a list of rows — the detail table beside it carries the
+ * facts an employer would check, and the disclaimer states plainly what the
+ * credential is and is not (CLAUDE.md §6.2: this is Mezon's, not AAOIFI's).
+ *
+ * Module certificates (milestones, four to ten a course) are grouped under
+ * their course as one compact ledger, never as more large documents: a module
+ * certificate must not look like course completion.
  */
 export default async function StudentCertificatesPage() {
   const user = await requireUser();
   const t = await getTranslations("Student");
   const locale = (await getLocale()) as Locale;
 
-  const [certs, enrolled, attempts] = await Promise.all([
+  const [allCerts, enrolled, attempts] = await Promise.all([
     certificatesRepository.listForUserAll(user.id),
     enrollmentsRepository.listActiveWithCourse(user.id),
     attemptsRepository.listForUserAll(user.id),
@@ -37,19 +45,54 @@ export default async function StudentCertificatesPage() {
   const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-GB" : "uz-UZ";
   const fmt = (d: Date) => new Date(d).toLocaleDateString(dateLocale);
 
-  // Courses still without a certificate — what the student is working towards.
+  // The large documents are course certificates only; module certificates
+  // go in each course's compact ledger.
+  const certs = allCerts.filter((c) => c.kind === "course");
+  const moduleCerts = allCerts.filter((c) => c.kind === "module");
+
+  // Every enrolled course: its curriculum (pending card + module ledger) and,
+  // when it issues module certificates, the module milestones.
+  // (A revoked course certificate still counts here: it is listed above, and
+  // a revoke is not auto-undone, so "issued automatically" would be untrue.)
   const earnedCourseIds = new Set(certs.map((c) => c.courseId));
-  const pending = await Promise.all(
-    enrolled
-      .filter(({ course }) => !earnedCourseIds.has(course.id))
-      .map(async ({ course }) => {
-        const [curriculum, exam] = await Promise.all([
-          getCurriculum(course.id, user.id),
-          assessmentsRepository.findByTypeForCourse(course.id, "final_exam"),
-        ]);
-        return { course, curriculum, threshold: exam?.passThresholdPct ?? 70 };
-      }),
+  const courseState = await Promise.all(
+    enrolled.map(async ({ course }) => {
+      const [curriculum, exam] = await Promise.all([
+        getCurriculum(course.id, user.id),
+        assessmentsRepository.findByTypeForCourse(course.id, "final_exam"),
+      ]);
+      const milestones = moduleCertificatesActive(course)
+        ? await getModuleMilestones(course.id, user.id, curriculum)
+        : null;
+      return { course, curriculum, milestones, threshold: exam?.passThresholdPct ?? 70 };
+    }),
   );
+  const stateByCourse = new Map(courseState.map((c) => [c.course.id, c]));
+  const ledgerFor = (courseId: string) => {
+    const st = stateByCourse.get(courseId);
+    return moduleCertLedger(
+      moduleCerts.filter((c) => c.courseId === courseId),
+      st?.milestones ? st.curriculum : null,
+      st?.milestones ?? null,
+    );
+  };
+  // Courses still without a course certificate — what the student is working towards.
+  const pending = courseState.filter(({ course }) => !earnedCourseIds.has(course.id));
+  // Module ledgers not shown under a course certificate: a pending course's,
+  // or certificates held for a course the student is no longer enrolled in.
+  const certCourseIds = new Set(certs.map((c) => c.courseId));
+  const pendingIds = new Set(pending.map((p) => p.course.id));
+  const orphanLedgers = [...new Set(moduleCerts.map((c) => c.courseId))]
+    .filter((id) => !certCourseIds.has(id) && !pendingIds.has(id))
+    .map((id) => ({
+      courseId: id,
+      courseTitle: moduleCerts.find((c) => c.courseId === id)!.courseTitle,
+      rows: ledgerFor(id),
+    }));
+  // A course with several course-certificate rows (a revoke + reissue) gets
+  // its ledger once, under the first (newest) of them.
+  const ledgerShownUnder = new Map<string, string>();
+  for (const c of certs) if (!ledgerShownUnder.has(c.courseId)) ledgerShownUnder.set(c.courseId, c.id);
 
   return (
     <>
@@ -60,7 +103,7 @@ export default async function StudentCertificatesPage() {
         role={user.role}
       />
 
-      {certs.length === 0 ? (
+      {certs.length === 0 && moduleCerts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-lp-line-strong bg-surface p-12 text-center">
           <span
             aria-hidden
@@ -83,7 +126,7 @@ export default async function StudentCertificatesPage() {
                 (a) =>
                   a.assessment.courseId === cert.courseId &&
                   a.assessment.type === "final_exam" &&
-                  a.attempt.passed,
+                  isCountedPass(a.attempt),
               )
               .reduce<{ pct: number; no: number } | null>(
                 (acc, a) =>
@@ -95,130 +138,143 @@ export default async function StudentCertificatesPage() {
             const revoked = Boolean(cert.revokedAt);
 
             return (
-              <section
-                key={cert.id}
-                className="grid items-center gap-8 rounded-2xl border border-lp-line bg-surface p-7 shadow-[0_2px_10px_rgba(2,58,105,.05)] lg:grid-cols-[1.25fr_.75fr]"
-              >
-                <CertificateArtifact
-                  studentName={user.fullName || "—"}
-                  courseTitle={cert.courseTitle}
-                  issuedAt={cert.issuedAt}
-                  verificationCode={cert.verificationCode}
-                  detailed
-                />
+              <div key={cert.id}>
+                <section
+                  className="grid items-center gap-8 rounded-2xl border border-lp-line bg-surface p-7 shadow-[0_2px_10px_rgba(2,58,105,.05)] lg:grid-cols-[1.25fr_.75fr]"
+                >
+                  <CertificateArtifact
+                    studentName={user.fullName || "—"}
+                    courseTitle={cert.courseTitle}
+                    issuedAt={cert.issuedAt}
+                    verificationCode={cert.verificationCode}
+                    detailed
+                  />
 
-                <div>
-                  <p className="mb-2.5 text-[.72rem] font-bold uppercase tracking-[.14em] text-lp-gold-deep">
-                    {t("certGiverEyebrow")}
-                  </p>
-                  <h3 className="mb-3.5 font-lp-heading text-[1.45rem] font-semibold leading-tight text-lp-navy">
-                    {pickLocale(cert.courseTitle, locale)}
-                  </h3>
+                  <div>
+                    <p className="mb-2.5 text-[.72rem] font-bold uppercase tracking-[.14em] text-lp-gold-deep">
+                      {t("certGiverEyebrow")}
+                    </p>
+                    <h3 className="mb-3.5 font-lp-heading text-[1.45rem] font-semibold leading-tight text-lp-navy">
+                      {pickLocale(cert.courseTitle, locale)}
+                    </h3>
 
-                  <dl className="mb-5 border-t border-lp-line-soft text-[.88rem]">
-                    <Row label={t("certIssuedOn")} value={fmt(cert.issuedAt)} />
-                    {best && (
-                      <Row
-                        label={t("certFinalExam")}
-                        value={`${best.pct}% · ${best.no}`}
-                      />
-                    )}
-                    <Row label={t("certCode")} value={cert.verificationCode} mono />
-                    <Row
-                      label={t("certStatus")}
-                      value={
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1.5 font-bold",
-                            revoked ? "text-lp-danger" : "text-lp-success",
-                          )}
-                        >
-                          <span
-                            aria-hidden
-                            className={cn(
-                              "size-[7px] rounded-full",
-                              revoked ? "bg-lp-danger" : "bg-lp-success-dot",
-                            )}
-                          />
-                          {revoked ? t("certRevoked") : t("certValid")}
-                        </span>
-                      }
-                    />
-                  </dl>
-
-                  {!revoked && (
-                    <div className="flex flex-col gap-2.5">
-                      <Button
-                        render={
-                          <a
-                            href={`/api/certificates/${cert.verificationCode}/pdf`}
-                            target="_blank"
-                            rel="noreferrer"
-                          />
-                        }
-                        size="lg"
-                        className="bg-lp-gold text-lp-navy-deep shadow-[0_6px_18px_rgba(248,184,1,.3)] hover:bg-lp-gold"
-                      >
-                        <Download className="size-4" />
-                        {t("downloadPdf")}
-                      </Button>
-                      <div className="flex gap-2.5">
-                        <Button
-                          render={<Link href={`/verify/${cert.verificationCode}`} />}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          {t("verifyPage")}
-                        </Button>
-                        <CopyLinkButton
-                          code={cert.verificationCode}
-                          label={t("copyLink")}
+                    <dl className="mb-5 border-t border-lp-line-soft text-[.88rem]">
+                      <Row label={t("certIssuedOn")} value={fmt(cert.issuedAt)} />
+                      {best && (
+                        <Row
+                          label={t("certFinalExam")}
+                          value={`${best.pct}% · ${best.no}`}
                         />
-                      </div>
-                    </div>
-                  )}
+                      )}
+                      <Row label={t("certCode")} value={cert.verificationCode} mono />
+                      <Row
+                        label={t("certStatus")}
+                        value={
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1.5 font-bold",
+                              revoked ? "text-lp-danger" : "text-lp-success",
+                            )}
+                          >
+                            <span
+                              aria-hidden
+                              className={cn(
+                                "size-[7px] rounded-full",
+                                revoked ? "bg-lp-danger" : "bg-lp-success-dot",
+                              )}
+                            />
+                            {revoked ? t("certRevoked") : t("certValid")}
+                          </span>
+                        }
+                      />
+                    </dl>
 
-                  <p className="mt-3.5 text-[.78rem] leading-relaxed text-lp-muted">
-                    {t("certDisclaimer")}
-                  </p>
-                </div>
-              </section>
+                    {!revoked && (
+                      <div className="flex flex-col gap-2.5">
+                        <Button
+                          render={
+                            <a
+                              href={`/api/certificates/${cert.verificationCode}/pdf`}
+                              target="_blank"
+                              rel="noreferrer"
+                            />
+                          }
+                          size="lg"
+                          className="bg-lp-gold text-lp-navy-deep shadow-[0_6px_18px_rgba(248,184,1,.3)] hover:bg-lp-gold"
+                        >
+                          <Download className="size-4" />
+                          {t("downloadPdf")}
+                        </Button>
+                        <div className="flex gap-2.5">
+                          <Button
+                            render={<Link href={`/verify/${cert.verificationCode}`} />}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            {t("verifyPage")}
+                          </Button>
+                          <CopyLinkButton
+                            code={cert.verificationCode}
+                            label={t("copyLink")}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="mt-3.5 text-[.78rem] leading-relaxed text-lp-muted">
+                      {t("certDisclaimer")}
+                    </p>
+                  </div>
+                </section>
+                {ledgerShownUnder.get(cert.courseId) === cert.id && (
+                  <ModuleCertificates rows={ledgerFor(cert.courseId)} />
+                )}
+              </div>
             );
           })}
         </div>
       )}
 
+      {orphanLedgers.map((o) => (
+        <div key={o.courseId} className="mt-5">
+          <h3 className="font-lp-heading text-[1.2rem] font-semibold text-lp-navy">
+            {pickLocale(o.courseTitle, locale)}
+          </h3>
+          <ModuleCertificates rows={o.rows} />
+        </div>
+      ))}
+
       {pending.map(({ course, curriculum, threshold }) => (
-        <section
-          key={course.id}
-          className="mt-5 flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-dashed border-lp-line-strong px-7 py-6"
-        >
-          <div className="flex items-center gap-4">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl border-[1.5px] border-dashed border-lp-line-strong">
-              <Lock className="size-[18px] text-lp-muted" strokeWidth={1.75} />
-            </span>
-            <div>
-              <p className="mb-1 text-[.98rem] font-bold text-lp-ink">
-                {t("nextCertTitle", { course: pickLocale(course.title, locale) })}
-              </p>
-              <p className="text-[.86rem] leading-relaxed text-lp-slate">
-                {t("nextCertBody", {
-                  pct: threshold,
-                  done: curriculum.completedCount,
-                  total: curriculum.lessonCount,
-                })}
-              </p>
+        <div key={course.id} className="mt-5">
+          <section className="flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-dashed border-lp-line-strong px-7 py-6">
+            <div className="flex items-center gap-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl border-[1.5px] border-dashed border-lp-line-strong">
+                <Lock className="size-[18px] text-lp-muted" strokeWidth={1.75} />
+              </span>
+              <div>
+                <p className="mb-1 text-[.98rem] font-bold text-lp-ink">
+                  {t("nextCertTitle", { course: pickLocale(course.title, locale) })}
+                </p>
+                <p className="text-[.86rem] leading-relaxed text-lp-slate">
+                  {t("nextCertBody", {
+                    pct: threshold,
+                    done: curriculum.completedCount,
+                    total: curriculum.lessonCount,
+                  })}
+                </p>
+              </div>
             </div>
-          </div>
-          {curriculum.resumeLessonId && (
-            <Link
-              href={`/learn/${course.id}/${curriculum.resumeLessonId}`}
-              className="inline-flex items-center gap-1 text-[.86rem] font-bold text-lp-navy-mid hover:underline"
-            >
-              {t("resumeContinue")} <ArrowRight className="size-3.5" />
-            </Link>
-          )}
-        </section>
+            {curriculum.resumeLessonId && (
+              <Link
+                href={`/learn/${course.id}/${curriculum.resumeLessonId}`}
+                className="inline-flex items-center gap-1 text-[.86rem] font-bold text-lp-navy-mid hover:underline"
+              >
+                {t("resumeContinue")} <ArrowRight className="size-3.5" />
+              </Link>
+            )}
+          </section>
+          <ModuleCertificates rows={ledgerFor(course.id)} />
+        </div>
       ))}
     </>
   );

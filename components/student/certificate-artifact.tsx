@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { pickLocale } from "@/lib/i18n/localized";
 import { CornerMarks } from "./corner-marks";
 import type { LocalizedText } from "@/lib/db/schema";
@@ -12,6 +12,9 @@ import type { Locale } from "@/lib/i18n/routing";
  * container with everything in `clamp`/percentage units, so the same component
  * serves the small card on the home view and the large one on the certificates
  * page without a second implementation drifting away from the first.
+ *
+ * A module certificate names the module as its subject and the course as its
+ * context, under its own heading — it must never read as course completion.
  */
 export async function CertificateArtifact({
   studentName,
@@ -19,15 +22,24 @@ export async function CertificateArtifact({
   issuedAt,
   verificationCode,
   detailed = false,
+  kind = "course",
+  moduleTitle = null,
 }: {
   studentName: string;
   courseTitle: LocalizedText;
+  kind?: "course" | "module";
+  /** The module title snapshot (module certificates). */
+  moduleTitle?: LocalizedText | null;
   issuedAt: Date;
   verificationCode: string;
   /** The large variant adds the signature line and issuing statement. */
   detailed?: boolean;
 }) {
-  const locale = (await getLocale()) as Locale;
+  const [locale, t] = await Promise.all([
+    getLocale() as Promise<Locale>,
+    getTranslations("Certificate"),
+  ]);
+  const isModule = kind === "module";
   const dateLocale = locale === "ru" ? "ru-RU" : locale === "en" ? "en-GB" : "uz-UZ";
   const issued = new Date(issuedAt).toLocaleDateString(dateLocale);
 
@@ -54,11 +66,7 @@ export async function CertificateArtifact({
               className="mt-[5%] font-bold uppercase tracking-[.22em] text-lp-gold-deep"
               style={{ fontSize: "clamp(.5rem,.9vw,.62rem)" }}
             >
-              {locale === "ru"
-                ? "Сертификат о завершении курса"
-                : locale === "en"
-                  ? "Certificate of completion"
-                  : "Kursni yakunlaganlik sertifikati"}
+              {isModule ? t("artifactModule") : t("artifactCourse")}
             </p>
           </div>
           <div>
@@ -72,7 +80,14 @@ export async function CertificateArtifact({
               className="mx-auto max-w-[44ch] leading-relaxed text-lp-slate"
               style={{ fontSize: "clamp(.5rem,1vw,.72rem)" }}
             >
-              <b className="text-lp-ink">{pickLocale(courseTitle, locale)}</b>
+              {isModule && moduleTitle ? (
+                <>
+                  <b className="block text-lp-ink">{pickLocale(moduleTitle, locale)}</b>
+                  {t("artifactWithinCourse", { course: pickLocale(courseTitle, locale) })}
+                </>
+              ) : (
+                <b className="text-lp-ink">{pickLocale(courseTitle, locale)}</b>
+              )}
             </p>
           </div>
           <div className="flex items-end justify-between gap-[4%]">

@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Award, Check } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { pickLocale } from "@/lib/i18n/localized";
 import { Link } from "@/lib/i18n/navigation";
@@ -9,7 +9,8 @@ import { Eyebrow, LessonTicks, ModuleAccordion, StateDot } from "./flow-ui";
 
 /**
  * The curriculum beside the video: where you are, what is done, what is
- * locked, and the exam as the last step.
+ * locked, each module's exam as the last row of its module, and the final
+ * exam as the last step.
  *
  * The lesson being watched gets the gold edge, not the "current" lesson — a
  * student rewatching lesson 1 should see lesson 1 highlighted, while the dot
@@ -23,6 +24,8 @@ export async function CourseRail({
   done,
   total,
   exam,
+  certificateEnabled = true,
+  moduleCertificates = false,
 }: {
   courseId: string;
   modules: FlowModule[];
@@ -32,6 +35,10 @@ export async function CourseRail({
   done: number;
   total: number;
   exam: FinalExamBox | null;
+  /** The course issues its completion certificate (passed wording). */
+  certificateEnabled?: boolean;
+  /** The course issues module certificates (both switches on). */
+  moduleCertificates?: boolean;
 }) {
   const [t, locale] = await Promise.all([getTranslations("Player"), getLocale()]);
   const states = modules.flatMap((m) => m.lessons.map((l) => l.state));
@@ -52,12 +59,24 @@ export async function CourseRail({
         <ModuleAccordion
           key={m.id}
           index={i}
+          // The first module, and the one holding the lesson on screen.
+          defaultOpen={i === 0 || m.lessons.some((l) => l.id === activeLessonId)}
           summaryClassName="px-5 pb-1.5 pt-3 hover:bg-lp-wash"
           summary={
             <>
               <span className="min-w-0 flex-1 truncate text-[.8rem] font-bold text-lp-muted">
                 {pickLocale(m.title, locale)}
               </span>
+              {moduleCertificates && m.milestone?.certificate && (
+                <span
+                  role="img"
+                  aria-label={t("railModuleCertEarned")}
+                  title={t("railModuleCertEarned")}
+                  className="grid size-4 shrink-0 place-items-center rounded-full bg-lp-gold text-lp-navy-deep"
+                >
+                  <Award aria-hidden className="size-2.5" strokeWidth={2.5} />
+                </span>
+              )}
               <span className="shrink-0 text-[.74rem] text-lp-muted tabular-nums">
                 {m.done} / {m.lessons.length}
               </span>
@@ -175,19 +194,69 @@ export async function CourseRail({
               );
             })}
           </ul>
+          {m.milestone?.exam && (
+            <RailExamCard
+              exam={{
+                ...m.milestone.exam,
+                // Not enrolled: spec only, never a link (as on the course page).
+                state: m.milestone.exam.state ?? "locked",
+                lessonsDone: m.milestone.lessons.completed,
+                lessonsTotal: m.milestone.lessons.total,
+              }}
+              title={t("railModuleExamTitle")}
+              passedText={
+                moduleCertificates && m.milestone.certificate
+                  ? t("railModuleExamPassedCert", { pct: m.milestone.exam.bestScorePct ?? 0 })
+                  : t("railExamPassedPlain", { pct: m.milestone.exam.bestScorePct ?? 0 })
+              }
+              compact
+              t={t}
+            />
+          )}
         </ModuleAccordion>
       ))}
 
-      {exam && <RailExamCard exam={exam} t={t} />}
+      {exam && (
+        <RailExamCard
+          exam={exam}
+          title={t("railExamTitle")}
+          passedText={
+            certificateEnabled
+              ? t("railExamPassed", { pct: exam.bestScorePct ?? 0 })
+              : t("railExamPassedPlain", { pct: exam.bestScorePct ?? 0 })
+          }
+          t={t}
+        />
+      )}
     </aside>
   );
 }
 
+type RailExam = Pick<
+  FinalExamBox,
+  | "assessmentId"
+  | "questionCount"
+  | "passThresholdPct"
+  | "state"
+  | "attempted"
+  | "bestScorePct"
+  | "lessonsDone"
+  | "lessonsTotal"
+  | "timeLimitSeconds"
+>;
+
 function RailExamCard({
   exam,
+  title,
+  passedText,
+  compact = false,
   t,
 }: {
-  exam: FinalExamBox;
+  exam: RailExam;
+  title: string;
+  passedText: string;
+  /** A module exam: a smaller card inside its module, not "the last step". */
+  compact?: boolean;
   t: Awaited<ReturnType<typeof getTranslations<"Player">>>;
 }) {
   const minutes = minutesOf(exam.timeLimitSeconds);
@@ -201,7 +270,11 @@ function RailExamCard({
 
   const status = {
     locked: {
-      text: t("railExamLocked", { done: exam.lessonsDone, total: exam.lessonsTotal }),
+      // Lessons done but still locked: only module exams can be in the way.
+      text:
+        exam.lessonsTotal > 0 && exam.lessonsDone >= exam.lessonsTotal
+          ? t("railExamLockedModules")
+          : t("railExamLocked", { done: exam.lessonsDone, total: exam.lessonsTotal }),
       cls: "text-lp-muted",
       card: "border-lp-line bg-white",
     },
@@ -211,7 +284,7 @@ function RailExamCard({
       card: "border-lp-gold bg-lp-gold-wash",
     },
     passed: {
-      text: t("railExamPassed", { pct: exam.bestScorePct ?? 0 }),
+      text: passedText,
       cls: "text-lp-success",
       card: "border-[#BFE3CF] bg-[#F2FAF6]",
     },
@@ -225,18 +298,29 @@ function RailExamCard({
   const inner = (
     <>
       <span className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="font-lp-heading text-[1.05rem] font-semibold text-lp-navy">
-          {t("railExamTitle")}
+        <span
+          className={cn(
+            "font-lp-heading font-semibold text-lp-navy",
+            compact ? "text-[.95rem]" : "text-[1.05rem]",
+          )}
+        >
+          {title}
         </span>
-        <span className="text-[.66rem] font-extrabold uppercase tracking-[.1em] text-lp-gold-ink">
-          {t("railExamLastStep")}
-        </span>
+        {!compact && (
+          <span className="text-[.66rem] font-extrabold uppercase tracking-[.1em] text-lp-gold-ink">
+            {t("railExamLastStep")}
+          </span>
+        )}
       </span>
       <span className="block text-[.8rem] text-lp-slate tabular-nums">{spec}</span>
       <span className={cn("mt-2 block text-[.8rem] font-bold", status.cls)}>{status.text}</span>
     </>
   );
-  const cls = cn("m-3.5 mt-3 block rounded-xl border-[1.5px] p-3.5", status.card);
+  const cls = cn(
+    "block rounded-xl border-[1.5px]",
+    compact ? "mx-5 mb-3 mt-1 p-3" : "m-3.5 mt-3 p-3.5",
+    status.card,
+  );
 
   return exam.state === "locked" ? (
     <div className={cls}>{inner}</div>

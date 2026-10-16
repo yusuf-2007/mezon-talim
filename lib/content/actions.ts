@@ -98,6 +98,7 @@ export async function createCourseAction(
     accessDurationDays: d.accessDurationDays,
     passThresholdPct: d.passThresholdPct,
     certificateEnabled: d.certificateEnabled,
+    moduleCertificatesEnabled: d.moduleCertificatesEnabled,
     createdBy: user.id,
   });
 
@@ -133,6 +134,7 @@ export async function updateCourseAction(
     accessDurationDays: d.accessDurationDays,
     passThresholdPct: d.passThresholdPct,
     certificateEnabled: d.certificateEnabled,
+    moduleCertificatesEnabled: d.moduleCertificatesEnabled,
   });
 
   revalidateCourse(courseId);

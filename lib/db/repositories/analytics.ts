@@ -41,7 +41,14 @@ export const analyticsRepository = {
         db
           .select({ n: sql<number>`count(distinct ${lessonProgress.userId})` })
           .from(lessonProgress),
-        db.select({ n: sql<number>`count(distinct ${certificates.userId})` }).from(certificates),
+        // "Certified" = holds an active COURSE certificate. A module
+        // certificate is a milestone, not the end of the funnel.
+        db
+          .select({ n: sql<number>`count(distinct ${certificates.userId})` })
+          .from(certificates)
+          .where(
+            and(eq(certificates.kind, "course"), isNull(certificates.revokedAt)),
+          ),
       ]);
 
     return [
@@ -115,8 +122,13 @@ export const analyticsRepository = {
       })
       .from(courses);
 
+    // Active certificates split by kind: completion is course certificates
+    // only (module certificates would push it past 100%).
     const [certs] = await db
-      .select({ total: sql<number>`count(*)` })
+      .select({
+        total: sql<number>`count(*) filter (where ${certificates.kind} = 'course')`,
+        module: sql<number>`count(*) filter (where ${certificates.kind} = 'module')`,
+      })
       .from(certificates)
       .where(sql`${certificates.revokedAt} is null`);
 
@@ -132,7 +144,10 @@ export const analyticsRepository = {
       studentTotal: Number(students?.total ?? 0),
       courseTotal: Number(crs?.total ?? 0),
       publishedCourses: Number(crs?.published ?? 0),
+      /** Active COURSE certificates. */
       certificateTotal: certTotal,
+      /** Active MODULE certificates (shown separately, never in completion). */
+      moduleCertificateTotal: Number(certs?.module ?? 0),
       // Completion = certificates issued ÷ enrollments (B35).
       completionRatePct:
         enrollmentTotal > 0

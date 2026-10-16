@@ -11,6 +11,8 @@ import { notesRepository } from "@/lib/db/repositories/notes";
 import { questionsRepository } from "@/lib/db/repositories/questions";
 import { appDayKey } from "@/lib/utils";
 import { getCurriculum, type Curriculum } from "./curriculum";
+import { moduleCertificatesActive } from "./modules";
+import { getModuleMilestones, type ModuleMilestone } from "./milestones";
 import type { LocalizedText } from "@/lib/db/schema";
 
 /**
@@ -27,10 +29,16 @@ export type ModuleProgress = {
   id: string;
   label: string;
   title: LocalizedText;
-  /** done | test-due | current | upcoming — drives the status word and colour. */
-  state: "done" | "test_due" | "current" | "upcoming";
+  /**
+   * certified | done | test-due | current | upcoming — drives the status word
+   * and colour. "certified" = the module certificate is held (and outranks a
+   * lesson added after issue: the certificate stays valid).
+   */
+  state: "certified" | "done" | "test_due" | "current" | "upcoming";
   completed: number;
   total: number;
+  /** The module exam, when one is published (link target for "test due"). */
+  examId: string | null;
   lessons: { id: string; title: LocalizedText; state: "done" | "current" | "locked" }[];
 };
 
@@ -48,6 +56,11 @@ export type DashboardData = {
   modules: ModuleProgress[];
   nextAssessment: {
     id: string;
+    kind: "module_test" | "final_exam";
+    /** 1-based module position (module exams only). */
+    moduleNumber: number | null;
+    /** Passing it issues a module certificate (module exams, switches on). */
+    earnsModuleCertificate: boolean;
     title: LocalizedText;
     questionCount: number;
     passThresholdPct: number;
@@ -67,6 +80,8 @@ export type DashboardData = {
     issuedAt: Date;
     courseTitle: LocalizedText;
   } | null;
+  /** Module certificates held / issuable in the current course (null = none issued there). */
+  moduleCertificates: { done: number; total: number } | null;
   termOfDay: { term: string; definition: LocalizedText } | null;
   noteCounts: { total: number; pinned: number };
 };
@@ -102,7 +117,9 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       (c) => c.curriculum.lessonCount > 0 && c.curriculum.completedCount < c.curriculum.lessonCount,
     ) ?? withProgress[0] ?? null;
 
-  const activeCerts = certs.filter((c) => !c.revokedAt);
+  // The dashboard's "my certificate" is the course certificate: a module
+  // certificate (a milestone) must not stand in for it.
+  const activeCerts = certs.filter((c) => !c.revokedAt && c.kind === "course");
   const latestCert = activeCerts[0] ?? null;
 
   const base: DashboardData = {
@@ -122,20 +139,33 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       : null,
     termOfDay: null,
     noteCounts,
+    moduleCertificates: null,
   };
 
   if (!current) return base;
 
   const { course, curriculum } = current;
   const resumeId = curriculum.resumeLessonId;
+  const certsOn = moduleCertificatesActive(course);
 
-  const [resumeLesson, moduleStates, nextAssessment, threads, glossary] = await Promise.all([
+  const [resumeLesson, milestones, threads, glossary] = await Promise.all([
     resumeId ? lessonsRepository.findById(resumeId) : Promise.resolve(null),
-    buildModules(course.id, userId, curriculum),
-    findNextAssessment(course.id, userId, curriculum),
+    getModuleMilestones(course.id, userId, curriculum),
     messagesRepository.listThreadsForStudent(userId),
     glossaryRepository.listForCourse(course.id),
   ]);
+  const moduleStates = buildModules(curriculum, milestones, certsOn);
+  const nextAssessment = await findNextAssessment(
+    course.id,
+    userId,
+    curriculum,
+    milestones,
+    certsOn,
+  );
+  const issuable = [...milestones.values()].filter((m) => m.exam && m.lessons.total > 0);
+  const heldModuleCerts = certs.filter(
+    (c) => c.kind === "module" && c.courseId === course.id && !c.revokedAt,
+  ).length;
 
   const position = resumeId
     ? await lessonProgressRepository.forLessons(userId, [resumeId])
@@ -181,32 +211,26 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
         }
       : null,
     termOfDay: pickTermOfDay(glossary),
+    moduleCertificates:
+      (certsOn && issuable.length > 0) || heldModuleCerts > 0
+        ? { done: heldModuleCerts, total: Math.max(issuable.length, heldModuleCerts) }
+        : null,
   };
 }
 
-/** Per-module completion, plus whether its module test is still outstanding. */
-async function buildModules(
-  courseId: string,
-  userId: string,
+/** Per-module completion, plus whether its module exam is still outstanding. */
+function buildModules(
   curriculum: Curriculum,
-): Promise<ModuleProgress[]> {
-  const all = await assessmentsRepository.listByCourse(courseId);
-  const moduleTests = all.filter((a) => a.type === "module_test" && a.isPublished);
-
-  const passed = new Set<string>();
-  await Promise.all(
-    moduleTests.map(async (t) => {
-      const attempts = await attemptsRepository.listForUser(userId, t.id);
-      if (attempts.some((a) => a.passed)) passed.add(t.id);
-    }),
-  );
-
+  milestones: Map<string, ModuleMilestone>,
+  certsOn: boolean,
+): ModuleProgress[] {
   let seenCurrent = false;
   return curriculum.modules.map((m, i) => {
     const total = m.lessons.length;
     const completed = m.lessons.filter((l) => l.completed).length;
-    const test = moduleTests.find((t) => t.moduleId === m.id);
-    const testOutstanding = Boolean(test) && !passed.has(test!.id);
+    const ms = milestones.get(m.id);
+    // Counted passes only (non-voided) — the same rule as the exam page.
+    const testOutstanding = Boolean(ms?.exam) && ms?.exam?.state !== "passed";
 
     const lessons = m.lessons.map((l) => {
       const state: "done" | "current" | "locked" = l.completed
@@ -217,10 +241,13 @@ async function buildModules(
       return { id: l.id, title: l.title, state };
     });
 
-    // "test_due" outranks "done": a finished module whose test is unpassed is
-    // the thing standing between the student and the final exam.
+    // "test_due" outranks "done": a finished module whose exam is unpassed is
+    // the thing standing between the student and the final exam. A held
+    // module certificate outranks both.
     let state: ModuleProgress["state"];
-    if (completed === total && total > 0) {
+    if (certsOn && ms?.certificate) {
+      state = "certified";
+    } else if (completed === total && total > 0) {
       state = testOutstanding ? "test_due" : "done";
     } else if (!seenCurrent && completed > 0) {
       state = "current";
@@ -232,38 +259,63 @@ async function buildModules(
       state = "upcoming";
     }
 
-    return { id: m.id, label: String(i + 1), title: m.title, state, completed, total, lessons };
+    return {
+      id: m.id,
+      label: String(i + 1),
+      title: m.title,
+      state,
+      completed,
+      total,
+      examId: ms?.exam?.assessmentId ?? null,
+      lessons,
+    };
   });
 }
 
-/** The soonest thing to sit: an unpassed module test, else the final exam. */
-async function findNextAssessment(courseId: string, userId: string, curriculum: Curriculum) {
-  const all = await assessmentsRepository.listByCourse(courseId);
-  const ordered = [
-    ...all.filter((a) => a.type === "module_test" && a.isPublished),
-    ...all.filter((a) => a.type === "final_exam" && a.isPublished),
-  ];
-
-  for (const a of ordered) {
-    const attempts = await attemptsRepository.listForUser(userId, a.id);
-    if (attempts.some((at) => at.passed)) continue;
-
-    // A module test only counts once its own module's lessons are done.
-    if (a.type === "module_test" && a.moduleId) {
-      const m = curriculum.modules.find((x) => x.id === a.moduleId);
-      if (!m || m.lessons.some((l) => !l.completed)) continue;
-    }
-    if (a.type === "final_exam" && curriculum.completedCount < curriculum.lessonCount) continue;
-
+/**
+ * The soonest thing to sit: an unpassed module exam whose lessons are done (in
+ * MODULE order, not the order the exams were created), else the final exam.
+ */
+async function findNextAssessment(
+  courseId: string,
+  userId: string,
+  curriculum: Curriculum,
+  milestones: Map<string, ModuleMilestone>,
+  certsOn: boolean,
+): Promise<DashboardData["nextAssessment"]> {
+  const ordered = [...milestones.values()].sort((x, y) => x.number - y.number);
+  for (const m of ordered) {
+    const e = m.exam;
+    // Locked = its module's lessons are not done (the exam page's own lock).
+    if (!e?.state || e.state === "passed" || e.state === "locked" || e.questionCount === 0) continue;
     return {
-      id: a.id,
-      title: a.title,
-      questionCount: await questionsRepository.countByAssessment(a.id),
-      passThresholdPct: a.passThresholdPct,
-      maxAttempts: a.maxAttempts,
+      id: e.assessmentId,
+      kind: "module_test",
+      moduleNumber: m.number,
+      earnsModuleCertificate: certsOn && m.lessons.total > 0,
+      title: e.title,
+      questionCount: e.questionCount,
+      passThresholdPct: e.passThresholdPct,
+      maxAttempts: e.maxAttempts,
     };
   }
-  return null;
+
+  const final = await assessmentsRepository.findByTypeForCourse(courseId, "final_exam");
+  if (!final || !final.isPublished) return null;
+  if (curriculum.completedCount < curriculum.lessonCount) return null;
+  // Every module exam must be passed first — otherwise the final is locked.
+  if (ordered.some((m) => m.exam && m.exam.state !== "passed")) return null;
+  if (await attemptsRepository.hasPassed(userId, final.id)) return null;
+  return {
+    id: final.id,
+    kind: "final_exam",
+    moduleNumber: null,
+    earnsModuleCertificate: false,
+    title: final.title,
+    questionCount: await questionsRepository.countByAssessment(final.id),
+    passThresholdPct: final.passThresholdPct,
+    maxAttempts: final.maxAttempts,
+  };
 }
 
 /** Seven days ending today, zero-filled, oldest first. */

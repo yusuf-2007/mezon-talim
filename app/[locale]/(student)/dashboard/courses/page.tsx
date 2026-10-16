@@ -42,7 +42,10 @@ export default async function MyCoursesPage() {
         (best, a) => Math.max(best ?? 0, a.attempt.scorePct ?? 0),
         null,
       );
-      const cert = certs.find((c) => c.courseId === course.id && !c.revokedAt) ?? null;
+      // The course certificate — a module certificate does not finish a course.
+      const cert =
+        certs.find((c) => c.courseId === course.id && c.kind === "course" && !c.revokedAt) ??
+        null;
       const done =
         curriculum.lessonCount > 0 && curriculum.completedCount >= curriculum.lessonCount;
       return { enrollment, course, curriculum, bestFinal, cert, done };

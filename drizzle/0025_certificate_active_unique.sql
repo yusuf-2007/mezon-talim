@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "certificates_one_active_course_uq" ON "certificates" USING btree ("user_id","course_id") WHERE "certificates"."kind" = 'course' and "certificates"."revoked_at" is null;--> statement-breakpoint
+CREATE UNIQUE INDEX "certificates_one_active_module_uq" ON "certificates" USING btree ("user_id","module_id") WHERE "certificates"."kind" = 'module' and "certificates"."revoked_at" is null and "certificates"."module_id" is not null;

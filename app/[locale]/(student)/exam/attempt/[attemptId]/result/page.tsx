@@ -3,9 +3,16 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { Link } from "@/lib/i18n/navigation";
 import { getExamOverview, getResult } from "@/lib/assessments/service";
-import { issueIfEligible } from "@/lib/certificates/service";
+import {
+  issueIfEligible,
+  issueModuleCertificateIfEligible,
+} from "@/lib/certificates/service";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { getCurriculum } from "@/lib/learning/curriculum";
+import {
+  moduleCertificatesActive,
+  moduleLessonsFromCurriculum,
+} from "@/lib/learning/modules";
 import { pickLocale } from "@/lib/i18n/localized";
 import { APP_TIME_ZONE, cn } from "@/lib/utils";
 import { Eyebrow, FocusBar, initialsOf } from "@/components/learn/flow-ui";
@@ -50,6 +57,34 @@ export default async function ExamResultPage({
   // A pass on the final exam issues the certificate (idempotent) and shows it.
   const certificate =
     result.passed && isFinal && result.isScored ? await issueIfEligible(user.id, a.courseId) : null;
+  // A pass on a module exam: its module certificate, issued if now eligible
+  // (idempotent; normally already issued at submit). Best-effort — a failure
+  // must never break the result page.
+  const isModuleExam = a.type === "module_test" && Boolean(a.moduleId);
+  const moduleCertsOn = isModuleExam && moduleCertificatesActive(course);
+  let moduleCertificate: Awaited<ReturnType<typeof issueModuleCertificateIfEligible>> = null;
+  if (result.passed && result.isScored && moduleCertsOn && a.moduleId) {
+    try {
+      moduleCertificate = await issueModuleCertificateIfEligible(user.id, a.moduleId);
+    } catch (err) {
+      console.error("module certificate on result page failed (non-fatal):", err);
+    }
+  }
+  const moduleIndex = a.moduleId ? curriculum.modules.findIndex((m) => m.id === a.moduleId) : -1;
+  const moduleRow = moduleIndex >= 0 ? curriculum.modules[moduleIndex] : null;
+  const moduleLessons = a.moduleId ? moduleLessonsFromCurriculum(curriculum, a.moduleId) : null;
+  // Passed, certificates on, but the module's lessons are not all done yet:
+  // say when the certificate will come rather than nothing.
+  const modulePending =
+    result.passed &&
+    result.isScored &&
+    moduleCertsOn &&
+    !moduleCertificate &&
+    moduleLessons != null &&
+    moduleLessons.total > 0 &&
+    !moduleLessons.allComplete;
+  const resumeInModule =
+    moduleRow?.lessons.find((l) => !l.completed && l.accessible) ?? moduleRow?.lessons[0] ?? null;
 
   // Where a wrong answer sends the student back to: the module's first lesson.
   const moduleLink = new Map(
@@ -64,7 +99,13 @@ export default async function ExamResultPage({
     ? t("failSub", { pct: result.passThresholdPct })
     : certificate
       ? t("passSubFinal")
-      : t("passSub");
+      : moduleCertificate
+        ? t("passSubModule")
+        : modulePending
+          ? t("passSubModulePending")
+          : t("passSub");
+  const shownCert = certificate ?? moduleCertificate;
+  const isModuleCert = !certificate && Boolean(moduleCertificate);
 
   return (
     <>
@@ -87,7 +128,11 @@ export default async function ExamResultPage({
           <div className="grid items-center gap-8 sm:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <p className="mb-2.5 text-[.74rem] font-bold uppercase tracking-[.14em] text-lp-gold-light">
-                {isFinal ? t("resultEyebrowFinal") : t("resultEyebrow")}
+                {isFinal
+                  ? t("resultEyebrowFinal")
+                  : isModuleExam
+                    ? t("resultEyebrowModule")
+                    : t("resultEyebrow")}
               </p>
               <h1 className="font-lp-heading text-[2.1rem] font-semibold leading-[1.15]">{title}</h1>
               <p className="mt-2.5 max-w-[48ch] text-[1.05rem] text-lp-on-navy">{sub}</p>
@@ -116,33 +161,45 @@ export default async function ExamResultPage({
         </section>
 
         {/* ── Certificate ───────────────────────────────────────────── */}
-        {certificate && (
-          <section className="mt-[22px] grid items-center gap-7 rounded-2xl border border-lp-line bg-lp-wash px-[26px] py-6 sm:grid-cols-[260px_1fr]">
+        {shownCert && (
+          <section
+            className="mt-[22px] grid items-center gap-7 rounded-2xl border border-lp-line bg-lp-wash px-[26px] py-6 sm:grid-cols-[260px_1fr]"
+            data-testid={isModuleCert ? "module-certificate-card" : "certificate-card"}
+          >
             <CertificateThumb
               name={user.fullName ?? ""}
-              course={pickLocale(course.title, locale)}
-              word={t("certWord")}
+              course={
+                isModuleCert && moduleCertificate?.moduleTitle
+                  ? pickLocale(moduleCertificate.moduleTitle, locale)
+                  : pickLocale(course.title, locale)
+              }
+              word={isModuleCert ? t("certWordModule") : t("certWord")}
             />
             <div>
-              <Eyebrow className="mb-2">{t("certReady")}</Eyebrow>
+              <Eyebrow className="mb-2">{isModuleCert ? t("certReadyModule") : t("certReady")}</Eyebrow>
               <h2 className="mb-2 font-lp-heading text-[1.3rem] font-semibold text-lp-navy">
-                {t("certTitle")}
+                {isModuleCert ? t("certTitleModule") : t("certTitle")}
               </h2>
+              {isModuleCert && moduleCertificate?.moduleTitle && (
+                <p className="mb-2 text-[.92rem] font-semibold text-lp-ink">
+                  {pickLocale(moduleCertificate.moduleTitle, locale)}
+                </p>
+              )}
               <p className="mb-4 text-[.85rem] text-lp-slate">
                 <span className="rounded-[5px] border border-lp-line bg-white px-2 py-0.5 font-mono text-lp-ink">
-                  {certificate.verificationCode}
+                  {shownCert.verificationCode}
                 </span>{" "}
                 · {t("verifiedOnline")}
               </p>
               <div className="flex flex-wrap gap-2.5">
                 <Link
-                  href={`/verify/${certificate.verificationCode}`}
+                  href={`/verify/${shownCert.verificationCode}`}
                   className="inline-flex items-center gap-2 rounded-[10px] bg-lp-gold px-5 py-3 text-[.92rem] font-bold text-lp-navy-deep shadow-[0_6px_18px_rgba(248,184,1,.3)] transition hover:-translate-y-px"
                 >
                   {t("viewCertificate")}
                 </Link>
                 <a
-                  href={`/api/certificates/${certificate.verificationCode}/pdf`}
+                  href={`/api/certificates/${shownCert.verificationCode}/pdf`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center rounded-[10px] border-[1.5px] border-lp-navy bg-white px-4 py-[11px] text-[.9rem] font-bold text-lp-navy transition-colors hover:bg-lp-wash"
@@ -150,8 +207,30 @@ export default async function ExamResultPage({
                   {t("downloadPdf")}
                 </a>
               </div>
-              <p className="mt-3 text-[.74rem] text-lp-muted">{t("certDisclaimer")}</p>
+              <p className="mt-3 text-[.74rem] text-lp-muted">
+                {isModuleCert ? t("certModuleDisclaimer") : t("certDisclaimer")}
+              </p>
             </div>
+          </section>
+        )}
+
+        {/* ── Passed, certificate waiting on the module's lessons ───── */}
+        {modulePending && moduleLessons && (
+          <section className="mt-[22px] flex flex-wrap items-center justify-between gap-[18px] rounded-2xl border border-dashed border-lp-line-strong bg-white px-6 py-[22px]">
+            <div>
+              <p className="mb-1 font-bold text-lp-ink">{t("passSubModulePending")}</p>
+              <p className="text-[.88rem] text-lp-slate tabular-nums">
+                {t("pendingModuleLessons", { done: moduleLessons.completed, total: moduleLessons.total })}
+              </p>
+            </div>
+            {resumeInModule && (
+              <Link
+                href={`/learn/${a.courseId}/${resumeInModule.id}`}
+                className="inline-flex items-center rounded-[10px] bg-lp-navy px-5 py-3 text-[.92rem] font-bold text-white transition-colors hover:bg-lp-navy-deep"
+              >
+                {t("toModuleLessons")}
+              </Link>
+            )}
           </section>
         )}
 

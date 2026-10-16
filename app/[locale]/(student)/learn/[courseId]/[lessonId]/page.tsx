@@ -18,6 +18,8 @@ import { questionsRepository } from "@/lib/db/repositories/questions";
 import { getCurriculum, locateLesson } from "@/lib/learning/curriculum";
 import { isCourseInstructor } from "@/lib/learning/lesson-access";
 import { buildFlow, clock } from "@/lib/learning/flow";
+import { getModuleMilestones } from "@/lib/learning/milestones";
+import { moduleCertificatesActive } from "@/lib/learning/modules";
 import { addNoteAction, deleteNoteAction } from "@/lib/learning/actions";
 import { pickLocale } from "@/lib/i18n/localized";
 import { loadLessonSlideDecks } from "@/lib/attachments/queries";
@@ -66,9 +68,13 @@ export default async function PlayerPage({
   const { lesson, nextId } = locateLesson(curriculum, lessonId);
   if (!lesson) notFound();
 
-  const flow = buildFlow(curriculum);
+  const [examBox, milestones] = await Promise.all([
+    getFinalExamBox(courseId, user.id),
+    getModuleMilestones(courseId, user.id, curriculum),
+  ]);
+  const flow = buildFlow(curriculum, milestones);
   const flowLesson = flow.lessons.find((l) => l.id === lessonId)!;
-  const examBox = await getFinalExamBox(courseId, user.id);
+  const flowModule = flow.modules[flowLesson.moduleNumber - 1];
   const courseTitle = pickLocale(course.title, locale);
 
   const bar = (
@@ -90,6 +96,8 @@ export default async function PlayerPage({
       done={curriculum.completedCount}
       total={curriculum.lessonCount}
       exam={examBox}
+      certificateEnabled={course.certificateEnabled}
+      moduleCertificates={moduleCertificatesActive(course)}
     />
   );
 
@@ -182,12 +190,20 @@ export default async function PlayerPage({
   const lessonTitle = pickLocale(lesson.title, locale);
   const bodyText = pickLocale(full?.body, locale);
 
-  // Last lesson: next is the exam, when there is one to sit.
-  const next = nextId
-    ? { href: `/learn/${courseId}/${nextId}`, kind: "lesson" as const }
-    : examBox
-      ? { href: `/exam/${examBox.assessmentId}`, kind: "exam" as const }
-      : null;
+  // The last lesson of a module whose exam is still to pass: next is that
+  // module exam (the milestone), not the next module — the rail still links
+  // on for anyone who wants to carry on first. Last lesson of the course:
+  // next is the final exam, when there is one to sit.
+  const moduleExam = flowModule?.milestone?.exam ?? null;
+  const lastOfModule = flowModule?.lessons.at(-1)?.id === lessonId;
+  const next =
+    lastOfModule && moduleExam && moduleExam.state !== "passed" && moduleExam.questionCount > 0
+      ? { href: `/exam/${moduleExam.assessmentId}`, kind: "module_exam" as const }
+      : nextId
+        ? { href: `/learn/${courseId}/${nextId}`, kind: "lesson" as const }
+        : examBox
+          ? { href: `/exam/${examBox.assessmentId}`, kind: "exam" as const }
+          : null;
 
   const tabs = [
     { key: "notes", label: t("notes"), count: notes.length },
