@@ -5,7 +5,7 @@
  * these shapes — the student client only ever talks to /api/attachments/*.
  */
 import { pickLocale } from "@/lib/i18n/localized";
-import type { AttachmentKind } from "./limits";
+import type { AttachmentKind, AttachmentRole } from "./limits";
 
 export type AttachmentPageSize = { w: number; h: number };
 export type AttachmentStatus = "uploading" | "ready" | "failed";
@@ -18,6 +18,7 @@ export type StudioAttachment = {
   titleUz: string;
   titleRu: string;
   kind: AttachmentKind;
+  role: AttachmentRole;
   status: AttachmentStatus;
   fileName: string;
   mimeType: string;
@@ -35,6 +36,8 @@ export type LessonSlideDeck = {
   /** Already localized for the viewer. */
   title: string;
   kind: AttachmentKind;
+  /** Slides go in the carousel; documents are cards that open a reader. */
+  role: AttachmentRole;
   pageCount: number;
   pages: AttachmentPageSize[];
   allowDownload: boolean;
@@ -59,6 +62,7 @@ type AttachmentRowLike = {
   orderIndex: number;
   title: { uz: string; ru?: string };
   kind: AttachmentKind;
+  role: AttachmentRole;
   status: AttachmentStatus;
   fileName: string;
   mimeType: string;
@@ -76,6 +80,7 @@ export function toStudioAttachment(row: AttachmentRowLike): StudioAttachment {
     titleUz: row.title.uz,
     titleRu: row.title.ru ?? "",
     kind: row.kind,
+    role: row.role,
     status: row.status,
     fileName: row.fileName,
     mimeType: row.mimeType,
@@ -92,6 +97,7 @@ export function toSlideDeck(row: AttachmentRowLike, locale: string): LessonSlide
     id: row.id,
     title: pickLocale(row.title, locale),
     kind: row.kind,
+    role: row.role,
     pageCount: row.pageCount,
     pages: row.pages,
     allowDownload: row.allowDownload,

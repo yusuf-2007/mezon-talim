@@ -13,6 +13,7 @@ import {
   type AttachmentUploadTargets,
 } from "./actions";
 import type { StudioAttachment } from "./dto";
+import type { AttachmentRole } from "./limits";
 import type { PreparedAttachment } from "./rasterize";
 
 type PostTarget = { url: string; fields: Record<string, string> };
@@ -120,6 +121,8 @@ export async function uploadPreparedAttachment(input: {
   lessonId: string;
   prepared: PreparedAttachment;
   allowDownload: boolean;
+  /** Slides or document; the server guesses from the page shape when absent. */
+  role?: AttachmentRole;
   signal: AbortSignal;
   onBegun?: (attachmentId: string) => void;
   onProgress?: (fraction: number) => void;
@@ -139,6 +142,7 @@ export async function uploadPreparedAttachment(input: {
       pages: prepared.slides.map((s) => ({ w: s.w, h: s.h })),
       slideMime: prepared.slideMime,
       allowDownload: input.allowDownload,
+      role: input.role,
     });
   } catch {
     return { ok: false, aborted: false, clientCode: "network" };

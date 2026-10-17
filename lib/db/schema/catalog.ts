@@ -86,6 +86,14 @@ export const lessons = pgTable("lessons", {
 export const attachmentKind = pgEnum("attachment_kind", ["pdf", "image"]);
 
 /**
+ * How students meet an attachment: lecture `slides` page through as a carousel
+ * under the video; a `document` (a terminology list, further reading) is a
+ * card that opens a scrolling reader. Chosen by the teacher; the upload
+ * guesses from the page shape (landscape → slides, portrait → document).
+ */
+export const attachmentRole = pgEnum("attachment_role", ["slides", "document"]);
+
+/**
  * Upload lifecycle. The row is written before the browser uploads straight to
  * the bucket (`uploading`); finalize verifies every object exists and flips it
  * to `ready`, or `failed` when something is missing or not an image.
@@ -119,6 +127,7 @@ export const lessonAttachments = pgTable(
     orderIndex: integer("order_index").notNull(),
     title: jsonb("title").$type<LocalizedText>().notNull(),
     kind: attachmentKind("kind").notNull(),
+    role: attachmentRole("role").notNull().default("slides"),
     status: attachmentStatus("status").notNull().default("uploading"),
     fileName: text("file_name").notNull(), // original name, for the download
     mimeType: text("mime_type").notNull(),

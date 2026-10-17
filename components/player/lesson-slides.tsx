@@ -14,7 +14,6 @@ import {
 import {
   useCallback,
   useEffect,
-  useEffectEvent,
   useId,
   useMemo,
   useRef,
@@ -24,7 +23,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type RefObject,
 } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import {
   attachmentPageUrl,
   type AttachmentPageSize,
@@ -32,25 +31,38 @@ import {
 } from "@/lib/attachments/dto";
 import { Eyebrow } from "@/components/learn/flow-ui";
 import { cn } from "@/lib/utils";
+import { LessonDocuments } from "./lesson-documents";
+import {
+  FOCUS,
+  SHIELD_BG,
+  SlideStore,
+  clampRatio,
+  pageSize,
+  useCanvasPaint,
+  useFormatBytes,
+  useStoreEntry,
+} from "./slide-canvas";
 import { useSlideShield } from "./use-slide-shield";
 
 type T = ReturnType<typeof useTranslations<"Player">>;
 
-/** Gold focus ring, the system's "invitation to act" (DESIGN.md › Inputs). */
-const FOCUS =
-  "outline-none focus-visible:ring-[3px] focus-visible:ring-lp-gold/50 focus-visible:ring-offset-1";
-
-/** The flat panel that replaces a shielded slide. A token, so screenshots come out this gray. */
-const SHIELD_BG = "bg-lp-muted-light";
-
 /** A swipe must travel this far, mostly sideways, to turn the slide. */
 const SWIPE_PX = 40;
+/** A short, quick swipe (a flick) turns the slide even if it travelled little. */
+const FLICK_MS = 250;
+/** Movement before a press becomes a drag (or is left to the page as a scroll). */
+const DRAG_START_PX = 6;
+/** Space between slides on the track, seen while dragging. */
+const PANE_GAP_PX = 16;
 
 /**
- * Lesson materials under the video: each ready attachment is a deck of slides
- * the student pages through. Slides are fetched from /api/attachments/*,
- * decoded into ImageBitmaps and painted onto <canvas> — never an <img> and
- * never an object URL, so there is no element or URL to "save image as".
+ * Lesson materials under the video, by role. Lecture slides are a carousel
+ * the student swipes through; documents (terminology, further reading) are
+ * cards that open a scrolling reader (lesson-documents.tsx).
+ *
+ * Slides are fetched from /api/attachments/*, decoded into ImageBitmaps and
+ * painted onto <canvas> — never an <img> and never an object URL, so there is
+ * no element or URL to "save image as".
  *
  * View-only decks (the teacher left downloads off) also run useSlideShield:
  * the slides blank to a gray panel when a capture is likely, and right-click,
@@ -59,8 +71,15 @@ const SWIPE_PX = 40;
  * in by the server. Downloadable decks get a Download button instead.
  */
 export function LessonSlides({ decks }: { decks: LessonSlideDeck[] }) {
-  if (decks.length === 0) return null;
-  return <SlidesViewer decks={decks} />;
+  const slideDecks = decks.filter((d) => d.role === "slides");
+  const documents = decks.filter((d) => d.role === "document");
+  if (slideDecks.length === 0 && documents.length === 0) return null;
+  return (
+    <div className="space-y-4">
+      {slideDecks.length > 0 && <SlidesViewer decks={slideDecks} />}
+      {documents.length > 0 && <LessonDocuments documents={documents} />}
+    </div>
+  );
 }
 
 function SlidesViewer({ decks }: { decks: LessonSlideDeck[] }) {
@@ -309,9 +328,12 @@ function DeckViewer({
     slides.request(attachmentPageUrl(deck.id, page), { priority: true });
   }, [slides, deck.id, page, total]);
 
-  // Prefetch the next slide once this one is on screen.
+  // Once this slide is on screen, load both neighbours: each is one swipe away
+  // and already peeks in while the student drags.
   useEffect(() => {
-    if (ready && page < total) slides.request(attachmentPageUrl(deck.id, page + 1));
+    if (!ready) return;
+    if (page < total) slides.request(attachmentPageUrl(deck.id, page + 1));
+    if (page > 1) slides.request(attachmentPageUrl(deck.id, page - 1));
   }, [slides, ready, deck.id, page, total]);
 
   const size = pageSize(deck.pages, page);
@@ -319,22 +341,59 @@ function DeckViewer({
   const state = shielded ? "shielded" : (entry?.state ?? "loading");
   const label = t("slidesSlideLabel", { title: deck.title, current: page, total });
 
-  // Touch swipe. touch-action: pan-y keeps vertical scrolling native while the
-  // horizontal gesture reaches us.
-  const swipe = useRef<{ id: number; x: number; y: number } | null>(null);
-  const onPointerDown = (e: ReactPointerEvent) => {
-    if (e.pointerType === "mouse") return;
-    swipe.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  // ── Carousel ──
+  // The slides sit side by side on a track; the track follows the finger (or
+  // the mouse) while dragging, then slides to the chosen slide. Only the
+  // current slide and its two neighbours are mounted.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [drag, setDrag] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const gesture = useRef<{ id: number; x: number; y: number; at: number; axis: "x" | "y" | null } | null>(
+    null,
+  );
+  // Slide between neighbours; a jump (thumbnail, Home/End) cuts straight to
+  // the slide instead of racing past blank ones.
+  const [shown, setShown] = useState({ page, jump: false });
+  if (shown.page !== page) setShown({ page, jump: Math.abs(page - shown.page) > 1 });
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (total < 2 || (e.pointerType === "mouse" && e.button !== 0)) return;
+    gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, at: e.timeStamp, axis: null };
   };
-  const onPointerUp = (e: ReactPointerEvent) => {
-    const start = swipe.current;
-    swipe.current = null;
-    if (!start || start.id !== e.pointerId) return;
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    if (Math.abs(dx) < SWIPE_PX || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-    onPage(dx < 0 ? page + 1 : page - 1);
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    if (!g || g.id !== e.pointerId) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (g.axis === null) {
+      if (Math.abs(dx) < DRAG_START_PX && Math.abs(dy) < DRAG_START_PX) return;
+      g.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (g.axis === "y") return; // a scroll: the page has it
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setDragging(true);
+    }
+    if (g.axis !== "x") return;
+    // Past the first or last slide the track gives a little, then resists.
+    const pastEdge = (dx > 0 && page <= 1) || (dx < 0 && page >= total);
+    setDrag(pastEdge ? dx / 4 : dx);
   };
+  const endGesture = (e: ReactPointerEvent<HTMLDivElement>, cancelled: boolean) => {
+    const g = gesture.current;
+    if (!g || g.id !== e.pointerId) return;
+    gesture.current = null;
+    if (g.axis !== "x") return;
+    setDragging(false);
+    setDrag(0);
+    if (cancelled) return;
+    const dx = e.clientX - g.x;
+    const width = stageRef.current?.clientWidth ?? 0;
+    const far = Math.abs(dx) >= Math.max(SWIPE_PX, Math.min(width * 0.2, 96));
+    const flick = Math.abs(dx) >= SWIPE_PX && e.timeStamp - g.at < FLICK_MS;
+    if (far || flick) onPage(dx < 0 ? page + 1 : page - 1);
+  };
+
+  const panes = [page - 1, page, page + 1].filter((n) => n >= 1 && n <= total);
+  const offset = (n: number) => `calc(${(n - 1) * 100}% + ${(n - 1) * PANE_GAP_PX}px)`;
 
   return (
     <>
@@ -347,22 +406,23 @@ function DeckViewer({
         )}
       >
         <div
+          ref={stageRef}
           tabIndex={0}
           role="group"
+          aria-roledescription={t("slidesCarousel")}
           aria-label={t("slidesViewer", { title: deck.title })}
           data-testid="slides-stage"
           data-state={state}
           data-page={page}
+          data-dragging={dragging ? "true" : undefined}
           onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => {
-            swipe.current = null;
-          }}
+          onPointerMove={onPointerMove}
+          onPointerUp={(e) => endGesture(e, false)}
+          onPointerCancel={(e) => endGesture(e, true)}
           className={cn(
-            "relative mx-auto touch-pan-y touch-pinch-zoom overflow-hidden",
-            fullscreen
-              ? "size-full"
-              : "rounded-[6px] bg-white shadow-[0_2px_10px_rgb(2_58_105/0.08)]",
+            "relative mx-auto touch-pan-y touch-pinch-zoom select-none overflow-hidden",
+            total > 1 && (dragging ? "cursor-grabbing" : "cursor-grab"),
+            fullscreen ? "size-full" : "rounded-[6px] shadow-[0_2px_10px_rgb(2_58_105/0.08)]",
             FOCUS,
           )}
           // Reserve the slide's shape before it arrives: no layout shift. The
@@ -373,13 +433,36 @@ function DeckViewer({
               : { aspectRatio: `${ratio}`, width: `min(100%, calc(min(70vh, 720px) * ${ratio}))` }
           }
         >
-          <SlideCanvas
-            bitmap={entry?.state === "ready" ? entry.bitmap : null}
-            shielded={shielded}
-            label={label}
-            page={page}
-            state={state}
-          />
+          <div
+            data-testid="slides-track"
+            className={cn(
+              "absolute inset-0 will-change-transform",
+              dragging || shown.jump
+                ? "transition-none"
+                : "transition-transform duration-300 ease-[cubic-bezier(.22,.8,.24,1)] motion-reduce:transition-none",
+            )}
+            style={{
+              transform: `translate3d(calc(${-(page - 1) * 100}% - ${(page - 1) * PANE_GAP_PX}px + ${drag}px), 0, 0)`,
+            }}
+          >
+            {panes.map((n) => (
+              <div
+                key={n}
+                className={cn("absolute inset-y-0 w-full", !fullscreen && "bg-white")}
+                style={{ left: offset(n) }}
+              >
+                <SlidePane
+                  store={slides}
+                  src={attachmentPageUrl(deck.id, n)}
+                  n={n}
+                  current={n === page}
+                  shielded={shielded}
+                  label={label}
+                  state={state}
+                />
+              </div>
+            ))}
+          </div>
 
           {!shielded && (entry === undefined || entry.state === "queued" || entry.state === "loading") && (
             <div className="absolute inset-0 grid place-items-center" role="status">
@@ -509,101 +592,41 @@ function StageButton({
 
 /* ─── Canvas painting ─────────────────────────────────────────────────────── */
 
-/** The current slide. Accessible name: deck title and position. */
-function SlideCanvas({
-  bitmap,
+/**
+ * One slide on the carousel track. The current one is the accessible image
+ * (deck title and position); the neighbours peeking in are decoration.
+ */
+function SlidePane({
+  store,
+  src,
+  n,
+  current,
   shielded,
   label,
-  page,
   state,
 }: {
-  bitmap: ImageBitmap | null;
+  store: SlideStore;
+  src: string;
+  n: number;
+  current: boolean;
   shielded: boolean;
   label: string;
-  page: number;
   state: string;
 }) {
-  const ref = useCanvasPaint(bitmap, shielded);
+  const entry = useStoreEntry(store, src);
+  const ref = useCanvasPaint(entry?.state === "ready" ? entry.bitmap : null, shielded);
   return (
     <canvas
       ref={ref}
-      role="img"
-      aria-label={label}
-      data-testid="slides-canvas"
-      data-page={page}
-      data-state={state}
+      role={current ? "img" : undefined}
+      aria-label={current ? label : undefined}
+      aria-hidden={current ? undefined : true}
+      data-testid={current ? "slides-canvas" : "slides-canvas-peek"}
+      data-page={n}
+      data-state={current ? state : undefined}
       className="absolute inset-0 block size-full"
     />
   );
-}
-
-/**
- * Paints `bitmap` onto the returned canvas at device-pixel resolution,
- * contain-fitted. Repaints when the bitmap or shield changes, when the canvas
- * box changes (fullscreen, rotation, layout) and when the device pixel ratio
- * changes (zoom, another screen). While shielded the canvas stays cleared.
- */
-function useCanvasPaint(bitmap: ImageBitmap | null, shielded: boolean) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const draw = useEffectEvent(() => {
-    if (ref.current) paint(ref.current, shielded ? null : bitmap);
-  });
-
-  useEffect(() => {
-    draw();
-  }, [bitmap, shielded]);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const ro = new ResizeObserver(() => draw());
-    ro.observe(canvas);
-
-    let query: MediaQueryList | null = null;
-    const onDprChange = () => {
-      draw();
-      watch();
-    };
-    const watch = () => {
-      query?.removeEventListener("change", onDprChange);
-      query = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-      query.addEventListener("change", onDprChange);
-    };
-    watch();
-
-    return () => {
-      ro.disconnect();
-      query?.removeEventListener("change", onDprChange);
-    };
-  }, []);
-
-  return ref;
-}
-
-/** Size the backing store to the box × devicePixelRatio, clear, contain-fit the bitmap. */
-function paint(canvas: HTMLCanvasElement, bitmap: ImageBitmap | null) {
-  const rect = canvas.getBoundingClientRect();
-  if (rect.width === 0 || rect.height === 0) return;
-  const dpr = window.devicePixelRatio || 1;
-  const w = Math.max(1, Math.round(rect.width * dpr));
-  const h = Math.max(1, Math.round(rect.height * dpr));
-  if (canvas.width !== w) canvas.width = w;
-  if (canvas.height !== h) canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  ctx.clearRect(0, 0, w, h);
-  if (!bitmap) return;
-  const scale = Math.min(w / bitmap.width, h / bitmap.height);
-  const dw = Math.round(bitmap.width * scale);
-  const dh = Math.round(bitmap.height * scale);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  try {
-    ctx.drawImage(bitmap, Math.round((w - dw) / 2), Math.round((h - dh) / 2), dw, dh);
-  } catch {
-    // The bitmap was closed under us (deck switched mid-frame); the next
-    // render brings a live one.
-  }
 }
 
 /* ─── Thumbnails ──────────────────────────────────────────────────────────── */
@@ -756,185 +779,7 @@ function Thumb({
   );
 }
 
-/* ─── Slide store ─────────────────────────────────────────────────────────── */
-
-class SlideHttpError extends Error {
-  constructor(readonly status: number) {
-    super(`HTTP ${status}`);
-  }
-}
-
-type SlideEntry =
-  | { state: "queued" }
-  | { state: "loading"; controller: AbortController }
-  | { state: "ready"; bitmap: ImageBitmap }
-  | { state: "error"; status: number | null };
-
-/**
- * Decoded slides for one deck, keyed by URL, with a small concurrency limit
- * (every view-only slide is watermarked on request, so the server does real
- * work per fetch). Fetches are `no-store` and go straight from the response
- * blob to an ImageBitmap — no object URL is ever created. Dropping an entry
- * aborts its fetch or closes its bitmap; `dispose` drops everything.
- */
-class SlideStore {
-  private entries = new Map<string, SlideEntry>();
-  private queue: string[] = [];
-  private active = 0;
-  private listeners = new Set<() => void>();
-  private readonly concurrency: number;
-  private readonly capacity: number;
-
-  constructor({ concurrency, capacity = Infinity }: { concurrency: number; capacity?: number }) {
-    this.concurrency = concurrency;
-    this.capacity = capacity;
-  }
-
-  subscribe = (listener: () => void) => {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  };
-
-  get(url: string): SlideEntry | undefined {
-    return this.entries.get(url);
-  }
-
-  /** Load `url` unless it is already loaded, loading or failed (failures wait for retry). */
-  request(url: string, { priority = false }: { priority?: boolean } = {}) {
-    const existing = this.entries.get(url);
-    if (existing) {
-      // Most recently wanted moves to the end, so capacity evicts the stalest.
-      this.entries.delete(url);
-      this.entries.set(url, existing);
-      if (priority && existing.state === "queued") {
-        this.queue = [url, ...this.queue.filter((u) => u !== url)];
-      }
-      return;
-    }
-    this.entries.set(url, { state: "queued" });
-    if (priority) this.queue.unshift(url);
-    else this.queue.push(url);
-    this.evict();
-    this.pump();
-    this.emit();
-  }
-
-  retry(url: string) {
-    if (this.entries.get(url)?.state !== "error") return;
-    this.entries.delete(url);
-    this.request(url, { priority: true });
-  }
-
-  /** Drop every entry not in `keep`. */
-  retain(keep: ReadonlySet<string>) {
-    let changed = false;
-    for (const [url, entry] of [...this.entries]) {
-      if (keep.has(url)) continue;
-      this.drop(url, entry);
-      changed = true;
-    }
-    if (changed) this.emit();
-  }
-
-  /**
-   * Nobody is waiting for `url` right now: abort its load, and forget a
-   * failure so it is retried when wanted again. A loaded bitmap stays (the
-   * capacity limit evicts it in time).
-   */
-  release(url: string) {
-    const entry = this.entries.get(url);
-    if (!entry || entry.state === "ready") return;
-    this.drop(url, entry);
-    this.emit();
-  }
-
-  dispose() {
-    for (const [url, entry] of [...this.entries]) this.drop(url, entry);
-    this.queue = [];
-  }
-
-  private emit() {
-    for (const listener of this.listeners) listener();
-  }
-
-  private drop(url: string, entry: SlideEntry) {
-    if (entry.state === "loading") entry.controller.abort();
-    if (entry.state === "ready") entry.bitmap.close();
-    this.entries.delete(url);
-    if (entry.state === "queued") this.queue = this.queue.filter((u) => u !== url);
-  }
-
-  private evict() {
-    if (this.entries.size <= this.capacity) return;
-    for (const [url, entry] of [...this.entries]) {
-      if (this.entries.size <= this.capacity) break;
-      if (entry.state === "ready" || entry.state === "error") this.drop(url, entry);
-    }
-  }
-
-  private pump() {
-    while (this.active < this.concurrency && this.queue.length > 0) {
-      const url = this.queue.shift()!;
-      if (this.entries.get(url)?.state !== "queued") continue;
-      const controller = new AbortController();
-      this.entries.set(url, { state: "loading", controller });
-      this.active += 1;
-      void this.load(url, controller).finally(() => {
-        this.active -= 1;
-        this.pump();
-      });
-    }
-  }
-
-  private async load(url: string, controller: AbortController) {
-    const stillWanted = () => {
-      const entry = this.entries.get(url);
-      return entry?.state === "loading" && entry.controller === controller;
-    };
-    try {
-      const res = await fetch(url, {
-        credentials: "same-origin",
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      if (!res.ok) throw new SlideHttpError(res.status);
-      const bitmap = await createImageBitmap(await res.blob());
-      if (!stillWanted()) {
-        bitmap.close();
-        return;
-      }
-      this.entries.set(url, { state: "ready", bitmap });
-    } catch (err) {
-      if (!stillWanted()) return; // aborted or dropped: nobody is listening
-      this.entries.set(url, {
-        state: "error",
-        status: err instanceof SlideHttpError ? err.status : null,
-      });
-    }
-    this.emit();
-  }
-}
-
-const noEntry = () => undefined;
-
-/** The store's entry for `url`, re-rendering when it changes. */
-function useStoreEntry(store: SlideStore, url: string): SlideEntry | undefined {
-  return useSyncExternalStore(store.subscribe, () => store.get(url), noEntry);
-}
-
 /* ─── Small helpers ───────────────────────────────────────────────────────── */
-
-function pageSize(pages: AttachmentPageSize[], n: number): AttachmentPageSize {
-  const p = pages[n - 1];
-  return p && p.w > 0 && p.h > 0 ? p : { w: 16, h: 9 };
-}
-
-/** Very tall or very wide pages are letterboxed rather than given an extreme frame. */
-function clampRatio(r: number): number {
-  return Math.min(Math.max(r, 0.5), 3);
-}
 
 const noopSubscribe = () => () => {};
 
@@ -964,22 +809,3 @@ function useFullscreen(ref: RefObject<HTMLElement | null>) {
   return { supported, active, toggle };
 }
 
-const MB = 1024 * 1024;
-
-function useFormatBytes() {
-  const locale = useLocale();
-  return useMemo(() => {
-    const mb = new Intl.NumberFormat(locale, {
-      style: "unit",
-      unit: "megabyte",
-      maximumFractionDigits: 1,
-    });
-    const kb = new Intl.NumberFormat(locale, {
-      style: "unit",
-      unit: "kilobyte",
-      maximumFractionDigits: 0,
-    });
-    return (bytes: number) =>
-      bytes >= MB ? mb.format(bytes / MB) : kb.format(Math.max(1, Math.round(bytes / 1024)));
-  }, [locale]);
-}

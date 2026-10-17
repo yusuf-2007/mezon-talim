@@ -85,6 +85,17 @@ async function twoPagePdf(): Promise<Buffer> {
   return Buffer.from(await pdf.save());
 }
 
+/** Three A4 portrait pages of terms: read as a document, not paged as slides. */
+async function portraitPdf(): Promise<Buffer> {
+  const pdf = await PDFDocument.create();
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  for (const n of [1, 2, 3]) {
+    const page = pdf.addPage([595, 842]);
+    page.drawText(`TERMS ${n}`, { x: 60, y: 760, size: 40, font, color: grayscale(0.15) });
+  }
+  return Buffer.from(await pdf.save());
+}
+
 async function diagramPng(): Promise<Buffer> {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">
     <rect width="1200" height="800" fill="#f3e6c4"/>
@@ -156,6 +167,7 @@ type AttachmentDbRow = {
   lesson_id: string;
   status: string;
   kind: string;
+  role: string;
   page_count: number;
   pages: { w: number; h: number }[];
   allow_download: boolean;
@@ -170,7 +182,7 @@ type AttachmentDbRow = {
 async function attachmentsOf(lessonId: string): Promise<AttachmentDbRow[]> {
   const sql = testSql();
   const rows = await sql<AttachmentDbRow[]>`
-    select id, lesson_id, status, kind, page_count, pages, allow_download, file_name,
+    select id, lesson_id, status, kind, role, page_count, pages, allow_download, file_name,
            mime_type, size_bytes, slide_mime, storage_prefix, order_index
     from lesson_attachments where lesson_id = ${lessonId} order by order_index`;
   await sql.end();
@@ -334,6 +346,23 @@ test("(2) an enrolled student gets a view-only viewer with watermarked, never-do
   await expect(page.getByTestId("slides-counter")).toHaveText("2 / 2");
   await expect(stageCanvas(page)).toHaveAttribute("data-page", "2");
   await expect(stageCanvas(page)).toHaveAttribute("data-state", "ready", { timeout: 30_000 });
+
+  // A carousel: dragging the slide to the right brings back the one before;
+  // a short drag snaps back to where it was.
+  const stage = page.getByTestId("slides-stage");
+  const box = (await stage.boundingBox())!;
+  const midY = box.y + box.height / 2;
+  await page.mouse.move(box.x + box.width * 0.5, midY);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.52, midY, { steps: 3 });
+  await page.mouse.up();
+  await expect(page.getByTestId("slides-counter")).toHaveText("2 / 2");
+  await page.mouse.move(box.x + box.width * 0.3, midY);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.8, midY, { steps: 10 });
+  await page.mouse.up();
+  await expect(page.getByTestId("slides-counter")).toHaveText("1 / 2");
+  await expect(stageCanvas(page)).toHaveAttribute("data-page", "1");
 
   // The page never hands the client a storage key or a presigned URL.
   const html = await page.content();
@@ -703,6 +732,141 @@ test("(3b) the student can then download the original, and the slides are no lon
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await expect(page.getByTestId("slides-shield")).toHaveCount(0);
   await expect(page.getByTestId("slides-stage")).toHaveAttribute("data-state", "ready");
+});
+
+// ── (9) Documents ───────────────────────────────────────────────────────────
+
+const PORTRAIT_NAME = "e2e-atamalar.pdf";
+let documentId: string | null = null;
+
+function requireDocument(): string {
+  if (!documentId) throw new Error("No document yet: test (9a) must pass first.");
+  return documentId;
+}
+
+test("(9a) a portrait PDF is taken as a document; the teacher can see and change that", async ({
+  page,
+}) => {
+  await signIn(page, "admin");
+  const section = await openLessonEditor(page, "Birinchi dars");
+  await section.getByTestId("attachments-input").setInputFiles({
+    name: PORTRAIT_NAME,
+    mimeType: "application/pdf",
+    buffer: await portraitPdf(),
+  });
+
+  await expect(section.locator("[data-testid=attachment-row][data-status=ready]")).toHaveCount(2, {
+    timeout: 60_000,
+  });
+  documentId = (await attachmentsOf(IDS.lesson1)).find((a) => a.file_name === PORTRAIT_NAME)!.id;
+  const row = section.locator(`[data-testid=attachment-row][data-attachment-id="${documentId}"]`);
+  const role = row.getByTestId("attachment-role");
+  await expect(role).toHaveAttribute("data-value", "document");
+  await expect(role.getByRole("radio", { name: S.attachmentRoleDocument })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  const doc = (await attachmentsOf(IDS.lesson1)).find((a) => a.id === documentId)!;
+  expect(doc.role).toBe("document");
+  // The landscape deck from (1) is still slides.
+  const slides = (await attachmentsOf(IDS.lesson1)).find((a) => a.id === requireDeck().id)!;
+  expect(slides.role).toBe("slides");
+});
+
+test("(9b) the student sees a document card that opens a scrolling, view-only reader", async ({
+  page,
+}) => {
+  const id = requireDocument();
+  await signIn(page, "studentA");
+  await page.goto(LESSON1_URL);
+
+  // The slide deck stays in the carousel; the document is not one of its decks.
+  await expect(page.getByTestId("lesson-slides")).toHaveAttribute("data-deck-id", requireDeck().id);
+  await expect(page.getByTestId("slides-deck-chip")).toHaveCount(0);
+  const shelf = page.getByTestId("lesson-documents");
+  const card = shelf.locator(`[data-testid=document-card][data-document-id="${id}"]`);
+  await expect(card).toContainText("e2e-atamalar");
+  await expect(card).toContainText(fill(uz.Player.docsPages, { count: 3 }));
+  await expect(card.getByTestId("document-download")).toHaveCount(0);
+  await expect(shelf.locator("img")).toHaveCount(0);
+
+  await card.getByTestId("document-open").click();
+  const reader = page.getByTestId("document-reader");
+  await expect(reader).toBeVisible();
+  await expect(reader).toHaveAttribute("data-view-only", "true");
+  await expect(reader.getByTestId("document-page")).toHaveCount(3);
+  await expect(reader.getByTestId("document-page").first()).toHaveAttribute("data-state", "ready", {
+    timeout: 30_000,
+  });
+  await expect(reader.getByTestId("document-counter")).toHaveText(
+    fill(uz.Player.docsPageOf, { current: 1, total: 3 }),
+  );
+  await expect(reader.locator("img")).toHaveCount(0);
+
+  // Scrolling to the end reads the last page.
+  await reader.getByTestId("document-pages").evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  await expect(reader.getByTestId("document-counter")).toHaveText(
+    fill(uz.Player.docsPageOf, { current: 3, total: 3 }),
+  );
+  await expect(reader.getByTestId("document-page").last()).toHaveAttribute("data-state", "ready", {
+    timeout: 30_000,
+  });
+
+  // Shielded like the slides: the pages are cleared, not just covered.
+  const paintedPages = () =>
+    reader.locator("[data-testid=document-page] canvas").evaluateAll(
+      (canvases) =>
+        (canvases as HTMLCanvasElement[]).filter((c) => {
+          const ctx = c.getContext("2d");
+          if (!ctx || c.width === 0 || c.height === 0) return false;
+          const data = ctx.getImageData(0, 0, c.width, c.height).data;
+          for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) return true;
+          return false;
+        }).length,
+    );
+  await expect.poll(paintedPages).toBeGreaterThan(0);
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await expect(reader.getByTestId("document-shield")).toBeVisible();
+  await expect.poll(paintedPages).toBe(0);
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(reader.getByTestId("document-shield")).toHaveCount(0);
+  await expect.poll(paintedPages).toBeGreaterThan(0);
+
+  // Escape closes it, back to the lesson.
+  await page.keyboard.press("Escape");
+  await expect(reader).toHaveCount(0);
+  await expect(card).toBeVisible();
+});
+
+test("(9c) switched to slides, the document joins the carousel instead", async ({ page }) => {
+  const id = requireDocument();
+  await signIn(page, "admin");
+  const section = await openLessonEditor(page, "Birinchi dars");
+  const row = section.locator(`[data-testid=attachment-row][data-attachment-id="${id}"]`);
+  await row.getByTestId("attachment-role").getByRole("radio", { name: S.attachmentRoleSlides }).click();
+  await expect(row.getByTestId("attachment-role")).toHaveAttribute("data-value", "slides");
+  await expect(row.getByTestId("attachment-save-state")).toContainText(S.attachmentSaved);
+  await expect
+    .poll(async () => (await attachmentsOf(IDS.lesson1)).find((a) => a.id === id)?.role)
+    .toBe("slides");
+
+  await page.context().clearCookies();
+  await signIn(page, "studentA");
+  await page.goto(LESSON1_URL);
+  await expect(page.getByTestId("lesson-documents")).toHaveCount(0);
+  await expect(page.getByTestId("slides-deck-chip")).toHaveCount(2);
+
+  // Remove it again: the tests after this one expect lesson 1's single deck.
+  await page.context().clearCookies();
+  await signIn(page, "admin");
+  const again = await openLessonEditor(page, "Birinchi dars");
+  page.once("dialog", (d) => void d.accept());
+  await again
+    .locator(`[data-testid=attachment-row][data-attachment-id="${id}"]`)
+    .getByTestId("attachment-delete")
+    .click();
+  await expect.poll(async () => (await attachmentsOf(IDS.lesson1)).length).toBe(1);
+  documentId = null;
 });
 
 // ── (6) Delete ──────────────────────────────────────────────────────────────

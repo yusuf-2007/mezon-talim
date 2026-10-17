@@ -16,6 +16,20 @@ export const IMAGE_MIME = ["image/png", "image/jpeg", "image/webp"] as const;
 
 export type AttachmentKind = "pdf" | "image";
 
+/** How students see an attachment: a slide carousel, or a document to read. */
+export const ATTACHMENT_ROLES = ["slides", "document"] as const;
+export type AttachmentRole = (typeof ATTACHMENT_ROLES)[number];
+
+/**
+ * The upload's best guess at a role: a portrait PDF (first page taller than
+ * wide — A4 terminology lists, reading) is a document; landscape pages and
+ * images are lecture slides. The teacher can change it.
+ */
+export function guessRole(kind: AttachmentKind, pages: { w: number; h: number }[]): AttachmentRole {
+  const first = pages[0];
+  return kind === "pdf" && first && first.h > first.w ? "document" : "slides";
+}
+
 const MB = 1024 * 1024;
 
 /** Original-file caps per kind. */

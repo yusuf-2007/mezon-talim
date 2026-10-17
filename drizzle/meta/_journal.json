@@ -183,6 +183,13 @@
       "when": 1792176725036,
       "tag": "0025_certificate_active_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792249943820,
+      "tag": "0026_attachment_role",
+      "breakpoints": true
     }
   ]
 }

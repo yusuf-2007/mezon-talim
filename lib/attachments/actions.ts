@@ -25,6 +25,7 @@ import { attachmentStoragePrefix, originalKey, pageKey } from "./keys";
 import {
   MAX_ATTACHMENTS_PER_LESSON,
   MAX_IMAGE_BYTES,
+  ATTACHMENT_ROLES,
   MAX_PAGE_BYTES,
   MAX_PAGES,
   MAX_PDF_BYTES,
@@ -33,10 +34,12 @@ import {
   SNIFF_BYTES,
   isAcceptedMime,
   kindForMime,
+  guessRole,
   maxBytesForKind,
   sniffAcceptedMime,
   withExtensionFor,
   type AttachmentKind,
+  type AttachmentRole,
   type SlideMime,
 } from "./limits";
 import { isDeclaredSlide } from "./verify";
@@ -92,6 +95,8 @@ export type BeginAttachmentUploadInput = {
    */
   slideMime?: "image/webp" | "image/jpeg";
   allowDownload: boolean;
+  /** Carousel slides or a document; guessed from the page shape when absent. */
+  role?: AttachmentRole;
   titleUz?: string;
   titleRu?: string;
 };
@@ -123,6 +128,7 @@ export type UpdateAttachmentInput = {
   titleUz?: string;
   titleRu?: string;
   allowDownload?: boolean;
+  role?: AttachmentRole;
 };
 
 /**
@@ -154,6 +160,7 @@ const beginSchema = z.object({
   pages: z.array(pageSizeSchema).min(1).max(1000),
   slideMime: z.enum(SLIDE_MIMES).default("image/webp"),
   allowDownload: z.boolean().default(false),
+  role: z.enum(ATTACHMENT_ROLES).optional(),
   titleUz: z.string().trim().max(MAX_TITLE).optional(),
   titleRu: z.string().trim().max(MAX_TITLE).optional(),
 });
@@ -162,6 +169,7 @@ const updateSchema = z.object({
   titleUz: z.string().trim().min(1).max(MAX_TITLE).optional(),
   titleRu: z.string().trim().max(MAX_TITLE).optional(),
   allowDownload: z.boolean().optional(),
+  role: z.enum(ATTACHMENT_ROLES).optional(),
 });
 
 const reorderIdsSchema = z.array(z.uuid()).min(1).max(MAX_ATTACHMENTS_PER_LESSON * 2);
@@ -337,6 +345,7 @@ export async function beginAttachmentUploadAction(
       lessonId,
       title: loc(d.titleUz || titleFromFileName(givenName), d.titleRu),
       kind: d.kind,
+      role: d.role ?? guessRole(d.kind, d.pages),
       fileName,
       mimeType,
       sizeBytes: d.sizeBytes,
@@ -482,7 +491,7 @@ export async function finalizeAttachmentUploadAction(
 
 // ── Edit / reorder / delete ──────────────────────────────────────────────────
 
-/** Rename (uz/ru) and/or flip "allow download". Applies immediately. */
+/** Rename (uz/ru), flip "allow download" and/or change the role. Applies immediately. */
 export async function updateAttachmentAction(
   courseId: string,
   attachmentId: string,
@@ -510,6 +519,7 @@ export async function updateAttachmentAction(
         }
       : {}),
     ...(d.allowDownload !== undefined ? { allowDownload: d.allowDownload } : {}),
+    ...(d.role !== undefined ? { role: d.role } : {}),
   });
   if (!updated) return fail("not_found");
   revalidateCourse(courseId);

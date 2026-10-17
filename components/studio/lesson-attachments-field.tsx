@@ -36,9 +36,11 @@ import {
   MAX_IMAGE_BYTES,
   MAX_PAGES,
   MAX_PDF_BYTES,
+  guessRole,
   kindForMime,
   maxBytesForKind,
   type AttachmentKind,
+  type AttachmentRole,
 } from "@/lib/attachments/limits";
 import {
   RasterizeError,
@@ -71,6 +73,8 @@ type QueueItem = {
   phase: Phase;
   /** Passed to begin; only editable before the upload starts. */
   allowDownload: boolean;
+  /** Slides or document: guessed once the pages are rendered, then the teacher's to change. */
+  role: AttachmentRole | null;
   prepDone: number;
   prepTotal: number;
   /** Upload progress, 0..1. */
@@ -269,7 +273,11 @@ export function LessonAttachmentsField({
       });
       if (!exists(item.key) || ctrl.signal.aborted) return;
       preparedRef.current.set(item.key, prepared);
-      patch(item.key, { phase: "ready", slideCount: prepared.slides.length });
+      patch(item.key, {
+        phase: "ready",
+        slideCount: prepared.slides.length,
+        role: itemsRef.current.find((i) => i.key === item.key)?.role ?? guessRole(prepared.kind, prepared.slides),
+      });
     } catch (err) {
       if (!exists(item.key) || ctrl.signal.aborted) return;
       patch(item.key, { phase: "invalid", error: rasterizeMessage(err) });
@@ -289,6 +297,7 @@ export function LessonAttachmentsField({
       lessonId: target,
       prepared,
       allowDownload: item.allowDownload,
+      role: (itemsRef.current.find((i) => i.key === item.key) ?? item).role ?? undefined,
       signal: ctrl.signal,
       onBegun: (attachmentId) => patch(item.key, { attachmentId }),
       onProgress: (progress) => patch(item.key, { progress }),
@@ -521,6 +530,7 @@ export function LessonAttachmentsField({
         file,
         phase: "new",
         allowDownload: false,
+        role: null,
         prepDone: 0,
         prepTotal: 0,
         progress: 0,
@@ -617,6 +627,7 @@ export function LessonAttachmentsField({
                   onRetry={() => retry(item.key)}
                   onRemove={() => drop(item.key)}
                   onAllowDownload={(v) => patch(item.key, { allowDownload: v })}
+                  onRole={(v) => patch(item.key, { role: v })}
                 />
               ))}
             </ul>
@@ -695,6 +706,59 @@ export function LessonAttachmentsField({
 
 // ── Rows ────────────────────────────────────────────────────────────────────
 
+/**
+ * How students meet the file: lecture slides (a carousel under the video) or a
+ * document (a card that opens a scrolling reader). Two segments, one choice.
+ */
+function RolePicker({
+  value,
+  onChange,
+  disabled = false,
+  testId,
+}: {
+  value: AttachmentRole;
+  onChange: (role: AttachmentRole) => void;
+  disabled?: boolean;
+  testId: string;
+}) {
+  const t = useTranslations("Studio");
+  const options: { role: AttachmentRole; label: string }[] = [
+    { role: "slides", label: t("attachmentRoleSlides") },
+    { role: "document", label: t("attachmentRoleDocument") },
+  ];
+  return (
+    <div className="space-y-1">
+      <div
+        role="radiogroup"
+        aria-label={t("attachmentRole")}
+        data-testid={testId}
+        data-value={value}
+        className="inline-flex rounded-md border border-line bg-surface p-0.5"
+      >
+        {options.map((o) => (
+          <button
+            key={o.role}
+            type="button"
+            role="radio"
+            aria-checked={value === o.role}
+            disabled={disabled}
+            onClick={() => onChange(o.role)}
+            className={cn(
+              "rounded px-3 py-1 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-navy-600 focus-visible:outline-none disabled:opacity-60",
+              value === o.role ? "bg-navy-800 text-white" : "text-slate-600 hover:text-ink",
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-slate-500">
+        {value === "slides" ? t("attachmentRoleSlidesHint") : t("attachmentRoleDocumentHint")}
+      </p>
+    </div>
+  );
+}
+
 function KindIcon({ kind, className }: { kind: AttachmentKind | null; className?: string }) {
   const Icon = kind === "pdf" ? FileText : kind === "image" ? FileImage : FileIcon;
   return <Icon className={className} aria-hidden />;
@@ -756,6 +820,8 @@ function SavedAttachmentRow({
   const [save, setSave] = useState<SaveState>({ kind: "idle" });
   const [allowDownload, setAllowDownload] = useOptimistic(a.allowDownload);
   const [toggling, startToggle] = useTransition();
+  const [role, setRole] = useOptimistic(a.role);
+  const [changingRole, startRole] = useTransition();
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ready = a.status === "ready";
 
@@ -805,6 +871,20 @@ function SavedAttachmentRow({
     });
   }
 
+  function changeRole(next: AttachmentRole) {
+    if (next === role) return;
+    startRole(async () => {
+      setRole(next);
+      const res = await updateAttachmentAction(courseId, a.id, { role: next }).catch(() => null);
+      if (!res || !res.ok) {
+        setSave({ kind: "error", message: res?.error ?? t("attachmentErrNetwork") });
+        return;
+      }
+      onUpdated(res.attachment);
+      flashSaved();
+    });
+  }
+
   // Enter in a title must save it, not submit the surrounding lesson form.
   const onTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -815,7 +895,9 @@ function SavedAttachmentRow({
 
   const meta = [
     a.kind === "pdf" ? t("attachmentKindPdf") : t("attachmentKindImage"),
-    t("attachmentSlides", { count: a.pageCount }),
+    role === "document"
+      ? t("attachmentPages", { count: a.pageCount })
+      : t("attachmentSlides", { count: a.pageCount }),
     formatBytes(a.sizeBytes),
   ].join(" · ");
 
@@ -866,6 +948,10 @@ function SavedAttachmentRow({
             {a.fileName}
           </p>
         </div>
+
+        {ready && (
+          <RolePicker value={role} disabled={changingRole} onChange={changeRole} testId="attachment-role" />
+        )}
 
         {ready ? (
           <div className="space-y-1">
@@ -956,6 +1042,7 @@ function QueueRow({
   onRetry,
   onRemove,
   onAllowDownload,
+  onRole,
 }: {
   item: QueueItem;
   hasLesson: boolean;
@@ -963,6 +1050,7 @@ function QueueRow({
   onRetry: () => void;
   onRemove: () => void;
   onAllowDownload: (v: boolean) => void;
+  onRole: (v: AttachmentRole) => void;
 }) {
   const t = useTranslations("Studio");
   // null for a refused file of an unknown type: no kind label is shown.
@@ -1048,6 +1136,11 @@ function QueueRow({
           <p role="alert" className="text-sm text-danger" data-testid="attachment-upload-error">
             {item.error}
           </p>
+        )}
+
+        {/* Create mode: the role is chosen up front, once the pages are read. */}
+        {item.phase === "ready" && !hasLesson && item.role && (
+          <RolePicker value={item.role} onChange={onRole} testId="attachment-queued-role" />
         )}
 
         {/* The download choice can be made up front, before the upload starts. */}

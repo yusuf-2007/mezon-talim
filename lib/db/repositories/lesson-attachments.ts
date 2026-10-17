@@ -13,6 +13,7 @@ export type LessonAttachmentInsert = {
   lessonId: string;
   title: LocalizedText;
   kind: "pdf" | "image";
+  role: "slides" | "document";
   fileName: string;
   mimeType: string;
   sizeBytes: number;
@@ -26,6 +27,7 @@ export type LessonAttachmentInsert = {
 
 export type LessonAttachmentUpdate = {
   title?: LocalizedText;
+  role?: "slides" | "document";
   allowDownload?: boolean;
 };
 
