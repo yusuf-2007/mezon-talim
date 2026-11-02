@@ -1,4 +1,5 @@
 import "server-only";
+import { publicBaseUrl } from "@/lib/base-url";
 import { randomBytes } from "node:crypto";
 import { certificatesRepository } from "@/lib/db/repositories/certificates";
 import { coursesRepository } from "@/lib/db/repositories/courses";
@@ -16,7 +17,6 @@ import {
 } from "@/lib/notifications/service";
 import { generateCertificatePdf } from "./pdf";
 import { pickLocale } from "@/lib/i18n/localized";
-import { env } from "@/lib/env";
 import type { Locale } from "@/lib/i18n/routing";
 import type { LocalizedText } from "@/lib/db/schema";
 
@@ -59,8 +59,9 @@ function studentDisplayName(user: {
 }
 
 function verifyUrl(code: string): string {
-  const base = (env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
-  return `${base}/verify/${code}`;
+  // Printed on the PDF itself, so a localhost fallback here is a dead link on
+  // a document a student hands to an employer. See publicBaseUrl.
+  return `${publicBaseUrl()}/verify/${code}`;
 }
 
 /** Has the user a counted pass on the course's final exam? */

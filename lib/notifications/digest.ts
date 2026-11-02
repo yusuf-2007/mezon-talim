@@ -1,9 +1,9 @@
 import "server-only";
+import { publicBaseUrl } from "@/lib/base-url";
 import { messagesRepository } from "@/lib/db/repositories/messages";
 import { coursesRepository } from "@/lib/db/repositories/courses";
 import { usersRepository } from "@/lib/db/repositories/users";
 import { pickLocale } from "@/lib/i18n/localized";
-import { env } from "@/lib/env";
 import { dispatchEmail } from "./service";
 import { unansweredDigestEmail } from "./templates";
 import type { Locale } from "@/lib/i18n/routing";
@@ -50,7 +50,7 @@ export async function sendUnansweredDigests(): Promise<{
     byAuthor.set(course.createdBy, list);
   }
 
-  const base = (env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = publicBaseUrl();
   let authorsNotified = 0;
   let totalUnanswered = 0;
 
